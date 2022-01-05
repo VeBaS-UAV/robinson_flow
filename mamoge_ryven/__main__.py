@@ -6,6 +6,7 @@ import sys
 import os
 
 from vebas.components.common import MqttTopicFilter
+from vebas.messaging.mqtt.serializer import JsonTransform
 # os.environ['QT_API'] = 'pyside2'  # tells QtPy to use PySide2
 os.environ['QT_API'] = 'pyqt5'  # tells QtPy to use PySide2
 # from qtpy.QtWidgets import QMainWindow, QApplication, QMenuBar, QToolbar
@@ -36,48 +37,90 @@ from vebas.messaging import MQTTConnection
 import vebas.config
 from functools import partial
 config = vebas.config.default_config()
+import importlib
+# pymavlink.dialects.v20.ardupilotmega.MAVLink_message
 
+# from pymavlink.dialects.v20.ardupilotmega import MAVLink_message
 # %%
 class RobinsonFlowExecutor(FlowExecutor):
 
+    json_transformers = {}
 
-    def call_external_source(self, external_source, msg):
-        print("call_external_source", external_source, msg)
+    def __init__(self, flow):
+        self.flow = flow
+        self.running = False
+        self.thread = None
+        self.mqtt = MQTTConnection("mqtt", config["mqtt"]["server_uri"])
+        self.mqtt.init()
 
-        external_source.set_output_val(0,msg)
+
+        self.ext_sources = [n for n in self.flow.nodes if isinstance(n,nodes.ExternalSource)]
+        self.ext_sink = [n for n in self.flow.nodes if isinstance(n,nodes.ExternalSink)]
+
+        for es in self.ext_sources:
+            self.register_external_source(es)
+
+        for es in self.ext_sink:
+            self.register_external_sink(es)
+
+    def call_external_source(self, node, msg):
+        print("call_external_source", node, msg)
+
+        topic_type = node.get_topic_type()
+
+        if topic_type is not None and len(topic_type) > 0:
+            if topic_type not in self.json_transformers:
+                if topic_type.find(".") >= 1:
+                    module_name, class_name = topic_type.rsplit(".",1)
+                    module = importlib.import_module(module_name)
+                    cls = getattr(module, class_name)
+                    self.json_transformers[topic_type] = JsonTransform(cls)
+                else:
+                    cls = eval(topic_type)
+                    self.json_transformers[topic_type] = JsonTransform(cls)
+            json_transform = self.json_transformers[topic_type]
+        else:
+            json_transform = JsonTransform()
+
+        node.set_output_val(0,json_transform.json_transform(msg))
 
     def receive_from_external_sink(self, es, topic, msg):
         print("Received from external sink", topic, msg)
 
         self.mqtt.publish(topic, msg)
 
-    def __init__(self, flow):
-        self.flow = flow
-        self.running = False
-        self.thread = None
+    def register_external_source(self,node):
+        topic = node.get_topic()
+        self.mqtt.mqtt_output(topic) >> partial(self.call_external_source, node)
+        print("register topic ", topic)
+        return
 
-        self.ext_sources = [n for n in self.flow.nodes if isinstance(n,nodes.ExternalSource)]
-        self.ext_sink = [n for n in self.flow.nodes if isinstance(n,nodes.ExternalSink)]
+    def register_external_sink(self,node):
+        topic = node.get_topic()
 
-        self.mqtt = MQTTConnection("mqtt", config["mqtt"]["server_uri"])
-        self.mqtt.init()
+        if topic is None:
+            print("Topic is none for sink ", node)
+            return
+        print("Register sink for topic ", topic)
+        node.external_output.connect(partial(self.receive_from_external_sink, node, topic))
 
-        for es in self.ext_sources:
-            topic = es.get_topic()
-            self.mqtt.mqtt_output(topic).connect(partial(self.call_external_source, es))
-            print("register topic ", topic)
-        print("external sources", self.ext_sources)
-        # self.start()
+    def node_added(self, node):
+        if isinstance(node, nodes.ExternalSource):
+            node.topic_changed.connect(self.register_external_source)
 
-        for es in self.ext_sink:
-            topic = es.get_topic()
+        if isinstance(node, nodes.ExternalSink):
+            node.topic_changed.connect(self.register_external_sink)
 
-            if topic is None:
-                print("Topic is none for sink ", es)
-                continue
+    def node_removed(self, node):
+        if isinstance(node, nodes.ExternalSource):
+            topic = node.get_topic()
+            print("TODO unregister topic ", topic)
+            return
 
-            print("Register sink for topic ", topic)
-            es.external_output.connect(partial(self.receive_from_external_sink, es, topic))
+        if isinstance(node, nodes.ExternalSink):
+            topic = node.get_topic()
+            print("TODO unregister sink")
+
 
 
     # Node.update() =>
@@ -234,6 +277,8 @@ class RobinsonMainWindow(QMainWindow):
         self.flow = self.script.flow
         self.script.flow.executor = RobinsonFlowExecutor(self.script.flow)
         self.executor = self.flow.executor
+        self.flow.node_added.connect(self.executor.node_added)
+        self.flow.node_removed.connect(self.executor.node_removed)
 
         # getting the flow widget of the newly created self.script
         flow_view = self.session.flow_views[self.script]

@@ -171,6 +171,7 @@ class ExternalSource(MamoGeRyvenNode):
     main_widget_pos = 'between ports'  # alternatively 'between ports'
     # main_widget_pos = 'below ports'  # alternatively 'between ports'
 
+    topic_changed = pyqtSignal(rc.Node)
     # you can use those for your data inputs
     # input_widget_classes = {
         # 'topic_widget': widgets.ExternalSourceInputTopicWidget
@@ -178,7 +179,7 @@ class ExternalSource(MamoGeRyvenNode):
 
     init_inputs = [
         # NodeInputBP(label='', add_data={'widget name': 'topic_widget', 'widget pos': 'besides'})
-        NodeInputBP(label='')
+        # NodeInputBP(label='')
     ]
 
     init_outputs = [
@@ -189,11 +190,21 @@ class ExternalSource(MamoGeRyvenNode):
         super().__init__(params)
         self.logger = getlogger(self)
         self.topic = None
+        self.topic_type = None
 
     def get_topic(self):
         return self.topic
 
+    def get_topic_type(self):
+        return self.topic_type
 
+    def set_topic(self, topic):
+        self.topic = topic
+        self.topic_changed.emit(self)
+
+    def set_topic_type(self, topic):
+        self.topic_type = topic
+        # self.topic_changed.emit(self)
 
 class ExternalSink(MamoGeRyvenNode):
 
@@ -203,6 +214,7 @@ class ExternalSink(MamoGeRyvenNode):
     main_widget_class = widgets.ExternalSinkWidget
     main_widget_pos = 'between ports'  # alternatively 'between ports'
 
+    topic_changed = pyqtSignal(rc.Node)
     # you can use those for your data inputs
     input_widget_classes = {
         # 'topic_widget': widgets.ExternalSinkTopicWidget
@@ -230,6 +242,11 @@ class ExternalSink(MamoGeRyvenNode):
 
     def get_topic(self):
         return self.topic
+
+    def set_topic(self, topic):
+        self.topic = topic
+        self.topic_changed.emit(self)
+
 
     def update_event(self, inp=-1):
         print("sink update", self.input(0))
@@ -263,8 +280,7 @@ class PrintNodeRyven(rc.Node):
     color = '#A9D5EF'
 
     def update_event(self, inp=-1):
-        print("PrintNodeRyven update_event")
-        print(self.input(0))
+        print("PrintNodeRyven update_event", type(self.input(0)), self.input(0))
 
 def export_nodes():
 
