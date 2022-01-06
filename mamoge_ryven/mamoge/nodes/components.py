@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 
-from vebas.components import Component, DataPortOutput, InputOutputPortComponent
+from vebas.components import Component, DataPortOutput, InputOutputPortComponent, InputPortComponent, OutputPortComponent
 from mamoge_ryven.mamoge.base import MamoGeRyvenWrapper
 
 
@@ -51,20 +51,31 @@ class PrintOutputComponent(Component):
             self.logger.info(f"received msg: {self.msg}")
             self.msg = None
 
+class AddComponent(OutputPortComponent):
 
-# class TestNode(MamoGeRyvenWrapper):
-#     """Prints your data"""
-#     title = "Test"
-#     # we could also skip the constructor here
-#     def __init__(self, params):
-#         super().__init__(TestComponent, params)
+    a = None
+    b = None
 
-# class PrintNode(MamoGeRyvenWrapper):
-#     """Prints your data"""
-#     title = "Print"
-#     # we could also skip the constructor here
-#     def __init__(self, params):
-#         super().__init__(PrintOutputComponent, params)
+    def __init__(self, name: str):
+        super().__init__(name)
+
+    def dataport_input_a(self, a):
+        self.logger.info(f"input a {a}")
+        self.a = a
+
+    def dataport_input_b(self, b):
+        self.logger.info(f"input b {b}")
+        self.b = b
+
+    def update(self):
+        self.logger.info(f"call update method {self.a}, {self.b}")
+        if self.a is None or self.b is None:
+            return
+
+        self.dataport_output(self.a+self.b)
+
+        self.a = None
+        self.b = None
 
 def factory(cls):
     name = cls.__name__
@@ -78,9 +89,15 @@ def factory(cls):
         def __init__(self, params):
             super().__init__(cls, params)
 
-    return RyvenTemplateNode
+    cl =  RyvenTemplateNode
+    cl.__name__ = name
+
+    return cl
 
 def export_nodes():
-    component_list = [TestComponent, PrintOutputComponent]
+    component_list = [TestComponent, PrintOutputComponent, AddComponent]
 
+    #TODO import mamoge components for testing
+    #TODO Ports?
+    #
     return [factory(c) for c in component_list]

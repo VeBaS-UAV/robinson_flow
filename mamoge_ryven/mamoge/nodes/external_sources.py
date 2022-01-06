@@ -45,6 +45,7 @@ class ExternalSource(MamoGeRyvenNode):
         self.topic_changed.emit(self)
 
     def receive_msg(self, msg):
+        self.logger.info(f"receive msg {msg}")
         self.set_output_val(0,msg)
     # def get_topic_type(self):
     #    return self.topic_type
@@ -96,5 +97,4 @@ class ExternalSink(MamoGeRyvenNode):
 
 
     def update_event(self, inp=-1):
-        print("sink update", self.input(0))
         self.external_output.emit(self.input(0))

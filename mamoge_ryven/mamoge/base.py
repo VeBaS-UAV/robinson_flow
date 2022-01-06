@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-
+#import  ryvencore as rc
 import ryvencore_qt as rc
 from functools import partial
 
@@ -60,15 +60,12 @@ class MamoGeRyvenWrapper(MamoGeRyvenNode):
             # getattr(self.component, output_port).connect(lambda *args, **kw_args: self.outputs[port_index].set_val(args[0]))
             getattr(self.component, output_port).connect(partial(self.call_output_port_by_index, port_index))
 
-    # def update(self, inp=-1):
-    #     # print("update", inp)
-    #     # if inp >= 0:
-    #         # print("call input wires", inp)
-    #         # self.input_wires[inp](self.input(inp))
-    #     super().update(inp)
-    #     return
-
-
     def update_event(self, inp=-1):
+
+        if inp > -1:
+            self.input_wires[inp](self.input(inp))
+
+        super().update_event(inp)
+
         # print("update event")
         self.component.update()

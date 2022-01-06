@@ -6,6 +6,8 @@ from pymavlink.dialects.v20.ardupilotmega import MAVLink_message
 from ryvencore.FlowExecutor import FlowExecutor
 from vebas.messaging.mqtt.serializer import JsonTransform
 
+from mamoge_ryven.mamoge.base import MamoGeRyvenNode
+
 from . import nodes
 import vebas.config
 
@@ -14,13 +16,16 @@ config = vebas.config.default_config()
 vebas.config.default_logging_settings()
 
 class TopicRegistryItem():
-    msg_type = None
-    transformer = None
 
-    def __init__(self, msg_type, transformer) -> None:
+    def __init__(self, msg_type, transformer, *args, **kwargs) -> None:
         self.msg_type = msg_type
         self.transformer = transformer
-        pass
+        self.args = args
+        self.kwargs = kwargs
+
+    def create(self):
+        return self.transformer(*self.args, **self.kwargs)
+
 
 class TopicRegistry():
 
@@ -28,9 +33,9 @@ class TopicRegistry():
 
     def __init__(self) -> None:
 
-        self.registry["mavlink/*"] = TopicRegistryItem(MAVLink_message, JsonTransform(MAVLink_message))
-        self.registry["*"] = TopicRegistryItem(dict, JsonTransform())
-        self.registry["default"] = TopicRegistryItem(dict, JsonTransform())
+        self.registry["mavlink/*"] = TopicRegistryItem(MAVLink_message, JsonTransform, MAVLink_message)
+        self.registry["*"] = TopicRegistryItem(dict, JsonTransform)
+        self.registry["default"] = TopicRegistryItem(dict, JsonTransform)
 
     def find(self, topic:str) -> TopicRegistryItem:
         import fnmatch
@@ -46,6 +51,8 @@ class TopicRegistry():
 
 class ExternalSourceConnector():
 
+    connections:dict = {}
+
     def __init__(self, topic_registry:TopicRegistry):
         self.logger = vebas.config.getLogger(self)
 
@@ -53,16 +60,45 @@ class ExternalSourceConnector():
         self.mqtt = MQTTConnection("mqtt", config["mqtt"]["server_uri"])
         self.mqtt.init()
 
+    def connect_topic_to_node(self, topic, node:MamoGeRyvenNode):
 
-    def connect_topic_to_node(self, topic, node):
         self.logger.info(f"connect {topic} to {node}")
+        # self.logger.info(f"connect topic to node {node.ID}, {node.GLOBAL_ID}")
+
+        mqtt_port = self.mqtt.mqtt_output(topic)
+
+        global_id = node.GLOBAL_ID
+
+        if global_id in self.connections:
+            mqtt_port.disconnect(self.connections[global_id])
+            self.connections[global_id].cleanup()
+            del self.connections[global_id]
+
         reg_item = self.topic_reg.find(topic)
-        self.mqtt.mqtt_output(topic) >> reg_item.transformer >> node.receive_msg
+
+        transformer = reg_item.create()
+        transformer.connect(node.receive_msg)
+
+        self.connections[global_id] = transformer
+        mqtt_port.connect(transformer)
+
+
 
     def connect_node_to_topic(self, node, topic):
         reg_item = self.topic_reg.find(topic)
-        transformer = reg_item.transformer
-        transformer >> self.mqtt.mqtt_input(topic)
+
+        mqtt_port = self.mqtt.mqtt_input(topic)
+
+        global_id = node.GLOBAL_ID
+
+        if global_id in self.connections:
+            self.connections[global_id].cleanup()
+            del self.connections[global_id]
+
+        transformer = reg_item.create()
+        self.connections[global_id] = transformer
+
+        transformer.connect(mqtt_port)
         node.external_output.connect(transformer)
 
     def cleanup(self):
@@ -91,12 +127,14 @@ class RobinsonFlowExecutor(FlowExecutor):
             self.register_external_sink(es)
 
     def register_external_source(self,node):
+        self.logger.info(f"register external source for node {node}")
         topic = node.get_topic()
         if self.topic_registry.is_valid_topic(topic):
             self.external_source_connector.connect_topic_to_node(topic, node)
             self.logger.info(f"Register external source for topic {topic}")
 
     def register_external_sink(self,node):
+        self.logger.info(f"register external sink for node {node}")
         topic = node.get_topic()
         if self.topic_registry.is_valid_topic(topic):
             self.external_source_connector.connect_node_to_topic(node, topic)
@@ -104,9 +142,11 @@ class RobinsonFlowExecutor(FlowExecutor):
 
     def node_added(self, node):
         if isinstance(node, nodes.ExternalSource):
+            self.logger.info(f"node_added ExternalSource for node {node}")
             node.topic_changed.connect(self.register_external_source)
 
         if isinstance(node, nodes.ExternalSink):
+            self.logger.info(f"node_added ExternalSink for node {node}")
             node.topic_changed.connect(self.register_external_sink)
 
     def node_removed(self, node):
