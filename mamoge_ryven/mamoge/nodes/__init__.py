@@ -51,13 +51,80 @@ class PrintNodeRyven(rc.Node):
     def update_event(self, inp=-1):
         print("PrintNodeRyven update_event", type(self.input(0)), self.input(0))
 
+# class CVImage:
+#     """
+#     The OpenCV Mat(rix) data type seems to have overridden comparison operations to perform element-wise comparisons
+#     which breaks ryverncore-internal object comparisons.
+#     To avoid this, I'll simply use this wrapper class and recreate a new object every time for now, so ryvencore
+#     doesn't think two different images are the same.
+#     """
+
+#     def __init__(self, img):
+#         self.img = img
+
+
+class WebcamFeed(rc.Node):
+    title = 'Webcam Feed'
+    init_inputs = []
+    init_outputs = [
+        NodeOutputBP(),
+    ]
+    main_widget_class = external_sources.WebcamFeedWidget
+
+    def video_picture_updated(self, frame):
+        self.set_output_val(0, frame)
+
+
+class OpenCVNodeBase(rc.Node):
+    title = 'Display Image'
+    init_outputs = [
+        # NodeOutputBP()
+    ]
+    init_inputs = [
+        NodeInputBP('img'),
+    ]
+    main_widget_class = external_sources.OpenCVNode_MainWidget
+    main_widget_pos = 'below ports'
+
+    def __init__(self, params):
+        super().__init__(params)
+
+        if self.session.gui:
+            from PyQt5.QtCore import QObject, Signal
+            class Signals(QObject):
+                new_img = Signal(object)
+
+            # to send images to main_widget in gui mode
+            self.SIGNALS = Signals()
+
+    def view_place_event(self):
+        self.SIGNALS.new_img.connect(self.main_widget().show_image)
+
+        try:
+            self.SIGNALS.new_img.emit(self.get_img())
+        except:  # there might not be an image ready yet
+            pass
+
+    def update_event(self, inp=-1):
+        new_img_wrp = self.get_img()
+
+        if self.session.gui:
+            self.SIGNALS.new_img.emit(new_img_wrp)
+
+        # self.set_output_val(0, new_img_wrp)
+
+    def get_img(self):
+        return self.input(0)
+
 def export_nodes():
 
     nodes = []
 
     nodes.extend([
         ExternalSource,
-        ExternalSink
+        ExternalSink,
+        WebcamFeed,
+        OpenCVNodeBase
     ])
 
     nodes.extend(component_nodes())

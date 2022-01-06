@@ -14,6 +14,7 @@ import vebas.config
 from vebas.messaging.mqtt import MQTTConnection
 config = vebas.config.default_config()
 vebas.config.default_logging_settings()
+import queue
 
 class TopicRegistryItem():
 
@@ -126,6 +127,8 @@ class RobinsonFlowExecutor(FlowExecutor):
         for es in self.ext_sink:
             self.register_external_sink(es)
 
+        self.exec_nodes = []
+
     def register_external_source(self,node):
         self.logger.info(f"register external source for node {node}")
         topic = node.get_topic()
@@ -149,6 +152,10 @@ class RobinsonFlowExecutor(FlowExecutor):
             self.logger.info(f"node_added ExternalSink for node {node}")
             node.topic_changed.connect(self.register_external_sink)
 
+        # if isinstance(node, nodes.ExecNode):
+            # self.exec_nodes.append(node)
+
+
     def node_removed(self, node):
         if isinstance(node, nodes.ExternalSource):
             topic = node.get_topic()
@@ -158,6 +165,9 @@ class RobinsonFlowExecutor(FlowExecutor):
         if isinstance(node, nodes.ExternalSink):
             topic = node.get_topic()
             print("TODO unregister sink")
+
+        # if isinstance(node, nodes.ExecNode):
+            # self.exec_nodes.remove(node)
 
     # Node.update() =>
     def update_node(self, node, inp):
@@ -204,9 +214,6 @@ class RobinsonFlowExecutor(FlowExecutor):
         self.external_source_connector.cleanup()
 
     def step(self):
-
-        if True:
-            return
 
         node_stack = queue.Queue()
         nodes = filter(lambda n: len(n.inputs)==0 or all([len(p.connections)==0 for p in n.inputs]),self.flow.nodes)

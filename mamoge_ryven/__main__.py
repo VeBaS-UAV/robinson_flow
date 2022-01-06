@@ -4,8 +4,11 @@
 # %gui qt5
 import sys
 import os
-
 from mamoge_ryven.mamoge import nodes
+import cv2
+for k, v in os.environ.items():
+    if k.startswith("QT_") and "cv2" in v:
+        del os.environ[k]
 # os.environ['QT_API'] = 'pyside2'  # tells QtPy to use PySide2
 os.environ['QT_API'] = 'pyqt5'  # tells QtPy to use PySide2
 # from qtpy.QtWidgets import QMainWindow, QApplication, QMenuBar, QToolbar
@@ -111,8 +114,6 @@ class RobinsonMainWindow(QMainWindow):
         # getting the flow widget of the newly created self.script
         flow_view = self.session.flow_views[self.script]
         self.setCentralWidget(flow_view)  # and show it in the main window
-
-
 
     def stepExecution(self):
         self.executor.step()

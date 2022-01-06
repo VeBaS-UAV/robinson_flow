@@ -1,10 +1,8 @@
 #!/usr/bin/env python3
 
 
-from vebas.components import Component, DataPortOutput, InputOutputPortComponent, InputPortComponent, OutputPortComponent
+from vebas.components import Component, DataPortOutput, InputOutputPortComponent, InputPortComponent, OutputPortComponent, Partial
 from mamoge_ryven.mamoge.base import MamoGeRyvenWrapper
-
-
 
 class TestComponent(InputOutputPortComponent):
 
@@ -47,7 +45,7 @@ class PrintOutputComponent(Component):
 
 
     def update(self):
-        if self.msg:
+        if self.msg is not None:
             self.logger.info(f"received msg: {self.msg}")
             self.msg = None
 
@@ -95,7 +93,10 @@ def factory(cls):
     return cl
 
 def export_nodes():
-    component_list = [TestComponent, PrintOutputComponent, AddComponent]
+
+    from vebas.tracking.components.cv import CVVideoInput, RGB2HSV_Transform, ColoredCircleDetection, ImageView, DetectionOverlay, CV_HSVMask_View
+
+    component_list = [TestComponent, PrintOutputComponent, AddComponent, RGB2HSV_Transform, DetectionOverlay, ColoredCircleDetection, Partial]
 
     #TODO import mamoge components for testing
     #TODO Ports?
