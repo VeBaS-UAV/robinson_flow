@@ -90,6 +90,8 @@ class RobinsonMainWindow(QMainWindow):
         # self.session.design.set_flow_theme(name='pure light')  # setting the design theme
         self.session.design.set_flow_theme(theme=FlowTheme())  # setting the design theme
          # and register our nodes
+
+        self.session.nodes.clear()
         self.session.register_nodes(export_nodes())
         # self.session.register_widgets(export_widgets())
 
