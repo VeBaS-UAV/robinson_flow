@@ -2,17 +2,71 @@
 
 import threading
 import time
+from pymavlink.dialects.v20.ardupilotmega import MAVLink_message
 from ryvencore.FlowExecutor import FlowExecutor
 from vebas.messaging.mqtt.serializer import JsonTransform
 
 from . import nodes
-import importlib
 import vebas.config
-from functools import partial
 
 from vebas.messaging.mqtt import MQTTConnection
 config = vebas.config.default_config()
 vebas.config.default_logging_settings()
+
+class TopicRegistryItem():
+    msg_type = None
+    transformer = None
+
+    def __init__(self, msg_type, transformer) -> None:
+        self.msg_type = msg_type
+        self.transformer = transformer
+        pass
+
+class TopicRegistry():
+
+    registry = {}
+
+    def __init__(self) -> None:
+
+        self.registry["mavlink/*"] = TopicRegistryItem(MAVLink_message, JsonTransform(MAVLink_message))
+        self.registry["*"] = TopicRegistryItem(dict, JsonTransform())
+        self.registry["default"] = TopicRegistryItem(dict, JsonTransform())
+
+    def find(self, topic:str) -> TopicRegistryItem:
+        import fnmatch
+
+        for key, item in self.registry.items():
+            if fnmatch.fnmatch(topic, key):
+                return item
+
+        return self.registry["default"]
+
+    def is_valid_topic(self, topic):
+        return True if topic is not None and len(topic) > 0 else False
+
+class ExternalSourceConnector():
+
+    def __init__(self, topic_registry:TopicRegistry):
+        self.logger = vebas.config.getLogger(self)
+
+        self.topic_reg = topic_registry
+        self.mqtt = MQTTConnection("mqtt", config["mqtt"]["server_uri"])
+        self.mqtt.init()
+
+
+    def connect_topic_to_node(self, topic, node):
+        self.logger.info(f"connect {topic} to {node}")
+        reg_item = self.topic_reg.find(topic)
+        self.mqtt.mqtt_output(topic) >> reg_item.transformer >> node.receive_msg
+
+    def connect_node_to_topic(self, node, topic):
+        reg_item = self.topic_reg.find(topic)
+        transformer = reg_item.transformer
+        transformer >> self.mqtt.mqtt_input(topic)
+        node.external_output.connect(transformer)
+
+    def cleanup(self):
+        self.mqtt.cleanup()
 
 class RobinsonFlowExecutor(FlowExecutor):
 
@@ -23,8 +77,9 @@ class RobinsonFlowExecutor(FlowExecutor):
         self.flow = flow
         self.running = False
         self.thread = None
-        self.mqtt = MQTTConnection("mqtt", config["mqtt"]["server_uri"])
-        self.mqtt.init()
+        self.topic_registry = TopicRegistry()
+
+        self.external_source_connector = ExternalSourceConnector(self.topic_registry)
 
         self.ext_sources = [n for n in self.flow.nodes if isinstance(n,nodes.ExternalSource)]
         self.ext_sink = [n for n in self.flow.nodes if isinstance(n,nodes.ExternalSink)]
@@ -37,45 +92,15 @@ class RobinsonFlowExecutor(FlowExecutor):
 
     def register_external_source(self,node):
         topic = node.get_topic()
-        self.mqtt.mqtt_output(topic) >> partial(self.call_external_source, node)
-        print("register topic ", topic)
-        return
+        if self.topic_registry.is_valid_topic(topic):
+            self.external_source_connector.connect_topic_to_node(topic, node)
+            self.logger.info(f"Register external source for topic {topic}")
 
     def register_external_sink(self,node):
         topic = node.get_topic()
-
-        if topic is None:
-            print("Topic is none for sink ", node)
-            return
-        print("Register sink for topic ", topic)
-        node.external_output.connect(partial(self.receive_from_external_sink, node, topic))
-
-    def call_external_source(self, node, msg):
-        print("call_external_source", node, msg)
-
-        topic_type = node.get_topic_type()
-
-        if topic_type is not None and len(topic_type) > 0:
-            if topic_type not in self.json_transformers:
-                if topic_type.find(".") >= 1:
-                    module_name, class_name = topic_type.rsplit(".",1)
-                    module = importlib.import_module(module_name)
-                    cls = getattr(module, class_name)
-                    self.json_transformers[topic_type] = JsonTransform(cls)
-                else:
-                    cls = eval(topic_type)
-                    self.json_transformers[topic_type] = JsonTransform(cls)
-            json_transform = self.json_transformers[topic_type]
-        else:
-            json_transform = JsonTransform()
-
-        node.set_output_val(0,json_transform.json_transform(msg))
-
-    def receive_from_external_sink(self, es, topic, msg):
-        print("Received from external sink", topic, msg)
-
-        self.mqtt.publish(topic, msg)
-
+        if self.topic_registry.is_valid_topic(topic):
+            self.external_source_connector.connect_node_to_topic(node, topic)
+            self.logger.info(f"Register external sink for topic {topic}")
 
     def node_added(self, node):
         if isinstance(node, nodes.ExternalSource):
@@ -93,8 +118,6 @@ class RobinsonFlowExecutor(FlowExecutor):
         if isinstance(node, nodes.ExternalSink):
             topic = node.get_topic()
             print("TODO unregister sink")
-
-
 
     # Node.update() =>
     def update_node(self, node, inp):
@@ -138,8 +161,7 @@ class RobinsonFlowExecutor(FlowExecutor):
 
     def cleanup(self):
         self.running = False
-        self.mqtt.cleanup()
-
+        self.external_source_connector.cleanup()
 
     def step(self):
 

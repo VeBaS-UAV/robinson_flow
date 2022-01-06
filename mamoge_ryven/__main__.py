@@ -5,11 +5,6 @@
 import sys
 import os
 
-from vebas.components.common import MqttTopicFilter
-from vebas.messaging.mqtt.serializer import JsonTransform
-
-from mamoge_ryven import mamoge
-
 from mamoge_ryven.mamoge import nodes
 # os.environ['QT_API'] = 'pyside2'  # tells QtPy to use PySide2
 os.environ['QT_API'] = 'pyqt5'  # tells QtPy to use PySide2
@@ -19,29 +14,19 @@ from PyQt5.QtWidgets import QMainWindow, QApplication, QToolBar, QMenuBar, QActi
 
 # ryvencore-qt
 import ryvencore_qt as rc
-import threading
-import time
 import json
-import queue
 
 import vebas.config
 vebas.config.default_logging_settings()
 
 from ryvencore_qt.src.Design import FlowTheme_Blender as FlowTheme
 
-from ryvencore.FlowExecutor import FlowExecutor
-
 from mamoge_ryven.mamoge import nodes as nodes
-from mamoge_ryven.mamoge.nodes import ExternalSource, export_nodes
-from mamoge_ryven.mamoge.widgets import export_widgets
+from mamoge_ryven.mamoge.nodes import export_nodes
 from mamoge_ryven.mamoge.executor import RobinsonFlowExecutor
 
-from vebas.messaging import MQTTConnection
 import vebas.config
-from functools import partial
 config = vebas.config.default_config()
-import importlib
-# pymavlink.dialects.v20.ardupilotmega.MAVLink_message
 
 # %%
 
@@ -69,8 +54,6 @@ class RobinsonMainWindow(QMainWindow):
         self.loadAction.setText("&Load")
         self.loadAction.triggered.connect(self.load)
         self.toolBar.addAction(self.loadAction)
-
-
 
         self.stepAction = QAction(self)
         self.stepAction.setText("&Step")
@@ -184,8 +167,6 @@ script = session.scripts[0]
 
 flow = script.flow
 
-# sys.exit(app.exec_())
+sys.exit(app.exec_())
 
 # %%
-
-session

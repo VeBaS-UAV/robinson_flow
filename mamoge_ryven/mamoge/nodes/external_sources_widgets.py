@@ -1,0 +1,90 @@
+#!/usr/bin/env python3
+
+from ryvencore_qt import \
+        Node as Node, \
+        IWB as IWB, \
+        MWB as MWB
+
+from PyQt5.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLabel, QPushButton, QLineEdit, QSlider
+from PyQt5.QtCore import Qt
+from PyQt5.QtGui import QFontMetrics, QFont
+
+
+class ExternalSinkWidget(MWB, QWidget):
+    def __init__(self, params):
+        MWB.__init__(self, params)
+        QWidget.__init__(self)
+
+        self.setLayout(QHBoxLayout())
+        self.topic = QLineEdit()
+
+        self.setStyleSheet('''
+            QWidget{
+                color: white;
+                background: transparent;
+                border-radius: 4px;
+            }
+                    ''')
+        self.topic.setFont(QFont('source code pro', 10))
+
+        self.topic.setPlaceholderText('topic')
+
+        self.topic.editingFinished.connect(self.topic_changed)
+
+        self.layout().addWidget(self.topic)
+
+    def get_state(self) -> dict:
+        print("getting state")
+        return {
+            'topic': self.topic.text()
+        }
+
+    def set_state(self, data: dict):
+        self.topic.setText(data['topic'])
+        self.topic_changed()
+        pass
+
+    def topic_changed(self):
+        self.node.set_topic(self.topic.text())
+
+class ExternalSourceWidget(MWB, QWidget):
+    def __init__(self, params):
+        MWB.__init__(self, params)
+        QWidget.__init__(self)
+
+        self.setLayout(QHBoxLayout())
+        self.topic = QLineEdit()
+        # self.topic_type = QLineEdit()
+
+        self.setStyleSheet('''
+            QWidget{
+                color: white;
+                background: transparent;
+                border-radius: 4px;
+            }
+                    ''')
+        self.topic.setFont(QFont('source code pro', 10))
+        self.topic.setPlaceholderText('topic')
+        self.topic.editingFinished.connect(self.topic_changed)
+
+        self.layout().addWidget(self.topic)
+
+        # self.topic_type.setFont(QFont('source code pro', 10))
+        # self.topic_type.setPlaceholderText('topic_type')
+        # self.topic_type.editingFinished.connect(self.type_changed)
+
+        # self.layout().addWidget(self.topic_type)
+
+    def get_state(self) -> dict:
+        print("getting state")
+        return {
+            'topic': self.topic.text()
+        }
+
+    def set_state(self, data: dict):
+        self.topic.setText(data['topic'])
+        self.topic_changed()
+        pass
+
+    def topic_changed(self):
+        self.node.set_topic(self.topic.text())

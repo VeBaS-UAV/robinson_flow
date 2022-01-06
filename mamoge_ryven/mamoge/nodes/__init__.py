@@ -17,19 +17,11 @@ import vebas.config
 
 from mamoge_ryven.mamoge.base import MamoGeRyvenNode, MamoGeRyvenWrapper
 
+from .external_sources import *
+
 # from mamoge_ryven.mamoge.nodes import MamoGeRyvenNode, MamoGeRyvenWrapper
 vebas.config.default_logging_settings()
 
-import logging
-from PyQt5.QtCore import pyqtSignal
-
-from . import widgets
-# cl = InputOutputPortComponent
-def getLogger(cl, name=None):
-    fullname = ".".join([type(cl).__module__, type(cl).__name__])
-    if name:
-        fullname += f".{name}"
-    return logging.getLogger(fullname)
 
 from ryvencore_qt.src.flows.nodes.PortItemInputWidgets import Data_IW_M as Data_IW
 
@@ -94,97 +86,6 @@ class PrintNode(MamoGeRyvenWrapper):
     # we could also skip the constructor here
     def __init__(self, params):
         super().__init__(PrintOutputComponent, params)
-
-class ExternalSource(MamoGeRyvenNode):
-
-    title = "External Source"
-    color = '#e06c78'
-    # this one gets automatically created once for each object
-    main_widget_class = widgets.ExternalSourceWidget
-    main_widget_pos = 'between ports'  # alternatively 'between ports'
-    # main_widget_pos = 'below ports'  # alternatively 'between ports'
-
-    topic_changed = pyqtSignal(MamoGeRyvenNode)
-    # you can use those for your data inputs
-    # input_widget_classes = {
-        # 'topic_widget': widgets.ExternalSourceInputTopicWidget
-    # }
-
-    init_inputs = [
-        # NodeInputBP(label='', add_data={'widget name': 'topic_widget', 'widget pos': 'besides'})
-        # NodeInputBP(label='')
-    ]
-
-    init_outputs = [
-        NodeOutputBP(label='')
-    ]
-
-    def __init__(self, params):
-        super().__init__(params)
-        self.logger = getLogger(self)
-        self.topic = None
-        # self.topic_type = None
-
-    def get_topic(self):
-        return self.topic
-
-
-    def set_topic(self, topic):
-        self.topic = topic
-        self.topic_changed.emit(self)
-
-    # def get_topic_type(self):
-    #    return self.topic_type
-
-    # def set_topic_type(self, topic):
-    #     self.topic_type = topic
-    #     # self.topic_changed.emit(self)
-
-class ExternalSink(MamoGeRyvenNode):
-
-    title = "External Sink"
-    color = '#DC8665'
-    # this one gets automatically created once for each object
-    main_widget_class = widgets.ExternalSinkWidget
-    main_widget_pos = 'between ports'  # alternatively 'between ports'
-
-    topic_changed = pyqtSignal(MamoGeRyvenNode)
-    # you can use those for your data inputs
-    input_widget_classes = {
-        # 'topic_widget': widgets.ExternalSinkTopicWidget
-    }
-
-    init_inputs = [
-        # NodeInputBP(label='', add_data={'widget name': 'topic_widget', 'widget pos': 'besides'})
-        NodeInputBP(label='')
-    ]
-
-    init_outputs = [
-        # NodeOutputBP(label='')
-    ]
-
-    external_output = pyqtSignal(object)
-
-    def __init__(self, params):
-        super().__init__(params)
-        self.logger = getLogger(self)
-
-        # self.create_input("topic", add_data={'widget name': 'my inp widget', 'widget pos': 'beside'})
-        # self.create_output("output")
-
-        self.topic = None
-
-    def get_topic(self):
-        return self.topic
-
-    def set_topic(self, topic):
-        self.topic = topic
-        self.topic_changed.emit(self)
-
-
-    def update_event(self, inp=-1):
-        print("sink update", self.input(0))
-        self.external_output.emit(self.input(0))
 
 class RandNodeRyven(rc.Node):
     """Generates scaled random float values"""
