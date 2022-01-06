@@ -1,91 +1,25 @@
 #!/usr/bin/env python3
-from ryvencore import dtypes
 from ryvencore.NodePortBP import NodeInputBP, NodeOutputBP
 from random import random
 
 import ryvencore_qt as rc
-import traceback as tb
-import ipdb
-from functools import partial
 # let's define some nodes
 # to easily see something in action, we create one node generating random numbers, and one that prints them
 
-from vebas.components.common import DebugOutput
 from vebas.components import Component, DataPortOutput, InputOutputPortComponent
 
 import vebas.config
+from mamoge_ryven import mamoge
 
-from mamoge_ryven.mamoge.base import MamoGeRyvenNode, MamoGeRyvenWrapper
+from mamoge_ryven.mamoge.base import MamoGeRyvenWrapper
 
 from .external_sources import *
+from .components import export_nodes as component_nodes
 
 # from mamoge_ryven.mamoge.nodes import MamoGeRyvenNode, MamoGeRyvenWrapper
 vebas.config.default_logging_settings()
 
-
 from ryvencore_qt.src.flows.nodes.PortItemInputWidgets import Data_IW_M as Data_IW
-
-
-class TestComponent(InputOutputPortComponent):
-
-    def __init__(self, name):
-        super(TestComponent, self).__init__(name)
-        self.dataport_output_test = DataPortOutput("testout")
-
-        self.testinput = None
-        self.defaultinput = None
-
-    def dataport_input(self, msg):
-        self.logger.info("Received defaultinput %s", msg)
-        self.defaultinput = msg
-
-    def dataport_input_testinput(self, msg):
-        self.logger.info("Received testinput %s", msg)
-        self.testinput = msg
-
-    def update(self):
-        self.logger.info("Textcomponent update")
-
-        if self.defaultinput is not None:
-            self.logger.info("call defaultport")
-            self.dataport_output(self.defaultinput)
-            self.defaultinput = None
-        if self.testinput is not None:
-            self.logger.info("call testport")
-            self.dataport_output_test(self.testinput)
-            self.testinput = None
-
-
-class PrintOutputComponent(Component):
-
-    def __init__(self, name: str):
-        super().__init__(name)
-        self.msg = None
-
-    def dataport_input_msg(self, msg):
-        self.msg = msg
-
-
-    def update(self):
-        if self.msg:
-            self.logger.info(f"received msg: {self.msg}")
-            self.msg = None
-
-
-
-class TestNode(MamoGeRyvenWrapper):
-    """Prints your data"""
-    title = "Test"
-    # we could also skip the constructor here
-    def __init__(self, params):
-        super().__init__(TestComponent, params)
-
-class PrintNode(MamoGeRyvenWrapper):
-    """Prints your data"""
-    title = "Print"
-    # we could also skip the constructor here
-    def __init__(self, params):
-        super().__init__(PrintOutputComponent, params)
 
 class RandNodeRyven(rc.Node):
     """Generates scaled random float values"""
@@ -119,11 +53,14 @@ class PrintNodeRyven(rc.Node):
 
 def export_nodes():
 
-    return [
-        PrintNode,
-        TestNode,
-        RandNodeRyven,
-        PrintNodeRyven,
+    nodes = []
+
+    nodes.extend([
         ExternalSource,
         ExternalSink
-    ]
+    ])
+
+    nodes.extend(component_nodes())
+
+
+    return nodes
