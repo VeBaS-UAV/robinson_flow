@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 from ryvencore import dtypes
 from ryvencore.NodePortBP import NodeInputBP, NodeOutputBP
-import ryvencore_qt as rc
 from random import random
 
+import ryvencore_qt as rc
 import traceback as tb
 import ipdb
 from functools import partial
@@ -14,15 +14,18 @@ from vebas.components.common import DebugOutput
 from vebas.components import Component, DataPortOutput, InputOutputPortComponent
 
 import vebas.config
+
+from mamoge_ryven.mamoge.base import MamoGeRyvenNode, MamoGeRyvenWrapper
+
+# from mamoge_ryven.mamoge.nodes import MamoGeRyvenNode, MamoGeRyvenWrapper
 vebas.config.default_logging_settings()
 
 import logging
-
 from PyQt5.QtCore import pyqtSignal
 
-
+from . import widgets
 # cl = InputOutputPortComponent
-def getlogger(cl, name=None):
+def getLogger(cl, name=None):
     fullname = ".".join([type(cl).__module__, type(cl).__name__])
     if name:
         fullname += f".{name}"
@@ -30,7 +33,6 @@ def getlogger(cl, name=None):
 
 from ryvencore_qt.src.flows.nodes.PortItemInputWidgets import Data_IW_M as Data_IW
 
-import widgets
 
 class TestComponent(InputOutputPortComponent):
 
@@ -78,75 +80,6 @@ class PrintOutputComponent(Component):
             self.msg = None
 
 
-class MamoGeRyvenNode(rc.Node):
-
-    def __init__(self, params):
-        super().__init__(params)
-
-            
-    # def update(self, inp=-1):
-    #     # print("update", inp)
-    #     #return super().update(inp=inp)
-    #     #do not propagate update, executor will do it
-    #     return
-
-
-class MamoGeRyvenWrapper(MamoGeRyvenNode):
-
-    def __init__(self, component, params):
-        super().__init__(params)
-        self.component = component(self.title)
-
-        self.input_wires = []
-        self.output_wires = []
-
-    def call_input_port_by_name(self, name, *args, **kw_args):
-        # print("call_input_port_by_name", name, args, kw_args)
-        getattr(self.component, name)(*args, **kw_args)
-
-    def call_output_port_by_index(self, index, *args, **kw_args):
-        # print("call outputport by index", index, args, kw_args)
-        self.outputs[index].set_val(args[0])
-
-    def cl_input_ports(self, cl):
-        return [f for f in cl.__class__.__dict__.keys() if f.startswith("dataport_input")]
-
-    def cl_output_ports(self, cl):
-        return [f for f in cl.__dict__.keys() if f.startswith("dataport_output")]
-
-    def setup_ports(self, inputs_data=None, outputs_data=None):
-        # overwrite default port creation
-        #
-        input_ports = self.cl_input_ports(self.component)
-        output_ports = self.cl_output_ports(self.component)
-
-        for port_name in input_ports:
-            port_index = len(self.inputs)
-            self.create_input(port_name[port_name.rfind("_")+1:])
-            # print("creating input port at index ", port_index)
-            self.input_wires.append(partial(self.call_input_port_by_name, port_name))
-
-        for output_port in output_ports:
-            port_index = len(self.outputs)
-            # print("create output wirde for index", port_index, output_port)
-            self.create_output(output_port[output_port.rfind("_")+1:])
-            # getattr(self.component, output_port).connect(lambda *args, **kw_args: self.outputs[port_index].set_val(*args, **kw_args))
-            # getattr(self.component, output_port).connect(lambda *args, **kw_args: self.outputs[port_index].set_val(args[0]))
-            getattr(self.component, output_port).connect(partial(self.call_output_port_by_index, port_index))
-
-    # def update(self, inp=-1):
-    #     # print("update", inp)
-    #     # if inp >= 0:
-    #         # print("call input wires", inp)
-    #         # self.input_wires[inp](self.input(inp))
-    #     super().update(inp)
-    #     return
-
-
-    def update_event(self, inp=-1):
-        # print("update event")
-        self.component.update()
-
 
 class TestNode(MamoGeRyvenWrapper):
     """Prints your data"""
@@ -171,7 +104,7 @@ class ExternalSource(MamoGeRyvenNode):
     main_widget_pos = 'between ports'  # alternatively 'between ports'
     # main_widget_pos = 'below ports'  # alternatively 'between ports'
 
-    topic_changed = pyqtSignal(rc.Node)
+    topic_changed = pyqtSignal(MamoGeRyvenNode)
     # you can use those for your data inputs
     # input_widget_classes = {
         # 'topic_widget': widgets.ExternalSourceInputTopicWidget
@@ -188,23 +121,24 @@ class ExternalSource(MamoGeRyvenNode):
 
     def __init__(self, params):
         super().__init__(params)
-        self.logger = getlogger(self)
+        self.logger = getLogger(self)
         self.topic = None
-        self.topic_type = None
+        # self.topic_type = None
 
     def get_topic(self):
         return self.topic
 
-    def get_topic_type(self):
-        return self.topic_type
 
     def set_topic(self, topic):
         self.topic = topic
         self.topic_changed.emit(self)
 
-    def set_topic_type(self, topic):
-        self.topic_type = topic
-        # self.topic_changed.emit(self)
+    # def get_topic_type(self):
+    #    return self.topic_type
+
+    # def set_topic_type(self, topic):
+    #     self.topic_type = topic
+    #     # self.topic_changed.emit(self)
 
 class ExternalSink(MamoGeRyvenNode):
 
@@ -214,7 +148,7 @@ class ExternalSink(MamoGeRyvenNode):
     main_widget_class = widgets.ExternalSinkWidget
     main_widget_pos = 'between ports'  # alternatively 'between ports'
 
-    topic_changed = pyqtSignal(rc.Node)
+    topic_changed = pyqtSignal(MamoGeRyvenNode)
     # you can use those for your data inputs
     input_widget_classes = {
         # 'topic_widget': widgets.ExternalSinkTopicWidget
@@ -233,7 +167,7 @@ class ExternalSink(MamoGeRyvenNode):
 
     def __init__(self, params):
         super().__init__(params)
-        self.logger = getlogger(self)
+        self.logger = getLogger(self)
 
         # self.create_input("topic", add_data={'widget name': 'my inp widget', 'widget pos': 'beside'})
         # self.create_output("output")
@@ -267,7 +201,7 @@ class RandNodeRyven(rc.Node):
     def update_event(self, inp=-1):
         print("RandNodeRyven update event")
         # random float between 0 and value at input
-        val = random() * self.input(0)
+        val = random() * float(self.input(0))
 
         # setting the value of the first output
         self.set_output_val(0, val)

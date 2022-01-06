@@ -51,7 +51,7 @@ class ExternalSourceWidget(MWB, QWidget):
 
         self.setLayout(QHBoxLayout())
         self.topic = QLineEdit()
-        self.topic_type = QLineEdit()
+        # self.topic_type = QLineEdit()
 
         self.setStyleSheet('''
             QWidget{
@@ -66,11 +66,11 @@ class ExternalSourceWidget(MWB, QWidget):
 
         self.layout().addWidget(self.topic)
 
-        self.topic_type.setFont(QFont('source code pro', 10))
-        self.topic_type.setPlaceholderText('topic_type')
-        self.topic_type.editingFinished.connect(self.type_changed)
+        # self.topic_type.setFont(QFont('source code pro', 10))
+        # self.topic_type.setPlaceholderText('topic_type')
+        # self.topic_type.editingFinished.connect(self.type_changed)
 
-        self.layout().addWidget(self.topic_type)
+        # self.layout().addWidget(self.topic_type)
 
     def get_state(self) -> dict:
         print("getting state")
@@ -86,8 +86,8 @@ class ExternalSourceWidget(MWB, QWidget):
     def topic_changed(self):
         self.node.set_topic(self.topic.text())
 
-    def type_changed(self):
-        self.node.set_topic_type(self.topic_type.text())
+    # def type_changed(self):
+        # self.node.set_topic_type(self.topic_type.text())
 
 # class ExternalSourceInputTopicWidget(IWB, QLineEdit):
 #     def __init__(self, params):
