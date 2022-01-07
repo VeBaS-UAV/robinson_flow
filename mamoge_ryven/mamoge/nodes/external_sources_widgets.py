@@ -97,6 +97,8 @@ import cv2
 import os
 
 class WebcamFeedWidget(MWB, QWidget):
+    capture_device = None
+
     def __init__(self, params):
         MWB.__init__(self, params)
         QWidget.__init__(self)
@@ -118,7 +120,9 @@ class WebcamFeedWidget(MWB, QWidget):
         self.resize(self.video_size)
 
     def setup_camera(self):
-        self.capture = cv2.VideoCapture(0)
+        if WebcamFeedWidget.capture_device is None:
+            WebcamFeedWidget.capture_device = cv2.VideoCapture(0)
+        self.capture = WebcamFeedWidget.capture_device
         self.capture.set(cv2.CAP_PROP_FRAME_WIDTH, self.video_size.width())
         self.capture.set(cv2.CAP_PROP_FRAME_HEIGHT, self.video_size.height())
 
@@ -159,6 +163,8 @@ class OpenCVNode_MainWidget(MWB, QLabel):
         except cv2.error:
             return
 
+        if len(rgb_image.shape) == 0:
+            return
         h, w, ch = rgb_image.shape
         bytes_per_line = ch * w
         qt_image = QImage(rgb_image.data, w, h, bytes_per_line, QImage.Format_RGB888)

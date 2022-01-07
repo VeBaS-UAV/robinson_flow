@@ -26,6 +26,7 @@ from ryvencore_qt.src.Design import FlowTheme_Blender as FlowTheme
 
 from mamoge_ryven.mamoge import nodes as nodes
 from mamoge_ryven.mamoge.nodes import export_nodes
+from mamoge_ryven.mamoge.std.nodes import export_nodes as std_export_nodes
 from mamoge_ryven.mamoge.executor import RobinsonFlowExecutor
 
 import vebas.config
@@ -34,7 +35,6 @@ config = vebas.config.default_config()
 # %%
 
 # first, we create the Qt application and a window
-app = QApplication([])
 
 class RobinsonMainWindow(QMainWindow):
 
@@ -96,6 +96,7 @@ class RobinsonMainWindow(QMainWindow):
 
         self.session.nodes.clear()
         self.session.register_nodes(export_nodes())
+        self.session.register_nodes(std_export_nodes())
         # self.session.register_widgets(export_widgets())
 
         # to get a flow where we can place nodes, we need to crate a new script
@@ -130,14 +131,28 @@ class RobinsonMainWindow(QMainWindow):
         sys.exit(0)
 
     def reload(self):
-
-        # print(self.session.nodes)
         import importlib
+        import mamoge_ryven.mamoge.nodes.components
+        # import vebas.tracking.components.cv
+        # importlib.reload(vebas.tracking.components.cv)
+        importlib.reload(mamoge_ryven.mamoge.nodes.components)
+
+        for n in session.nodes:
+            module = sys.modules[n.__module__]
+            importlib.reload(module)
+
+            if hasattr(n, "base_class"):
+                base_cls = n.base_class
+                module = sys.modules[base_cls.__module__]
+                importlib.reload(module)
+        # print(self.session.nodes)
         importlib.reload(nodes)
         self.session.nodes.clear()
         self.session.register_nodes(export_nodes())
+        self.session.register_nodes(std_export_nodes())
 
-        self.init()
+        self.load()
+        # self.init()
         # pass
 
     def save(self):
@@ -158,18 +173,26 @@ class RobinsonMainWindow(QMainWindow):
 
         self.init()
 
-session = rc.Session()
-                # finally, show the window and run the application
-mw = RobinsonMainWindow(session)
+try:
+    app = QApplication([])
+    session = rc.Session()
+                    # finally, show the window and run the application
+    mw = RobinsonMainWindow(session)
 
-mw.show()
-# app.exec_()
+    mw.show()
+    # app.exec_()
+
+    # mw.load()
+
+    script = session.scripts[0]
+
+    flow = script.flow
 
 
-script = session.scripts[0]
-
-flow = script.flow
-
-sys.exit(app.exec_())
-
+    if sys.flags.interactive:
+        pass
+    else:
+        sys.exit(app.exec_())
+except Exception as e:
+    print(e)
 # %%

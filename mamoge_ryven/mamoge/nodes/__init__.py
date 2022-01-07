@@ -51,6 +51,7 @@ class PrintNodeRyven(rc.Node):
     def update_event(self, inp=-1):
         print("PrintNodeRyven update_event", type(self.input(0)), self.input(0))
 
+
 # class CVImage:
 #     """
 #     The OpenCV Mat(rix) data type seems to have overridden comparison operations to perform element-wise comparisons
@@ -90,18 +91,20 @@ class OpenCVNodeBase(rc.Node):
         super().__init__(params)
 
         if self.session.gui:
-            from PyQt5.QtCore import QObject, Signal
+            from PyQt5.QtCore import QObject, pyqtSignal
             class Signals(QObject):
-                new_img = Signal(object)
+                new_img = pyqtSignal(object)
 
             # to send images to main_widget in gui mode
-            self.SIGNALS = Signals()
+            # self.SIGNALS = Signals()
 
     def view_place_event(self):
-        self.SIGNALS.new_img.connect(self.main_widget().show_image)
+        # self.SIGNALS.new_img.connect(self.main_widget().show_image)
 
         try:
-            self.SIGNALS.new_img.emit(self.get_img())
+            # pass
+            self.main_widget().show_image(self.get_img())
+            # self.SIGNALS.new_img.emit(self.get_img())
         except:  # there might not be an image ready yet
             pass
 
@@ -109,18 +112,47 @@ class OpenCVNodeBase(rc.Node):
         new_img_wrp = self.get_img()
 
         if self.session.gui:
-            self.SIGNALS.new_img.emit(new_img_wrp)
+            # self.SIGNALS.new_img.emit(new_img_wrp)
+            self.main_widget().show_image(self.get_img())
 
         # self.set_output_val(0, new_img_wrp)
 
     def get_img(self):
         return self.input(0)
 
+
+class Args(rc.Node):
+    title = 'ArgsConcat'
+    init_inputs = [
+        NodeInputBP("arg_0"),
+        NodeInputBP("arg_1"),
+    ]
+    init_outputs = [
+        NodeOutputBP("*args"),
+        NodeOutputBP("arg_0, arg_1"),
+        NodeOutputBP("**kwargs"),
+    ]
+    color = '#A9D5EF'
+
+    def update_event(self, inp=-1):
+        args = [self.input(i) for i in range(len(self.inputs))]
+
+        try:
+            self.set_output_val(0, set(args))
+            self.set_output_val(1, tuple(args))
+            self.set_output_val(2, dict(arg_0=args[0], arg_1=args[1]))
+        except Exception as e:
+            self.logger = getLogger(self)
+            self.logger.error(e)
+
+
+
 def export_nodes():
 
     nodes = []
 
     nodes.extend([
+        Args,
         ExternalSource,
         ExternalSink,
         WebcamFeed,
