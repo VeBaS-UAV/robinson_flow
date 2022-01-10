@@ -3,47 +3,54 @@
 #import  ryvencore as rc
 import ryvencore_qt as rc
 from functools import partial
+# from robinson_ryven import robinson
 
+from robinson.components import Component
 import robinson_ryven.robinson.utils
 import robinson_ryven
+
+import inspect
+
+from PyQt5.QtCore import pyqtSignal
 
 class RobinsonRyvenNode(rc.Node):
 
     def __init__(self, params):
         super().__init__(params)
 
-    # def update(self, inp=-1):
-    #     # print("update", inp)
-    #     #return super().update(inp=inp)
-    #     #do not propagate update, executor will do it
-    #     return
-import inspect
+    @property
+    def name(self):
+        return self.display_title
 
 class RobinsonRyvenWrapper(RobinsonRyvenNode):
 
     input_name = "dataport_input"
     output_name = "dataport_output"
 
+    reinit_node = pyqtSignal(RobinsonRyvenNode)
+
     def __init__(self, cls, params):
         super().__init__(params)
-        self.logger = robinson_ryven.robinson.utils.getLogger(self)
+        self.logger = robinson_ryven.robinson.utils.getLogger(self, self.display_title)
+        self.logger.info(f"__init__ RyvenWrapper {self.name} with params {params}")
         self.cls = cls
+        self.component:Component = None
 
         self.input_wires = []
         self.output_wires = []
 
+        self.create_component()
 
-    def init(self, **kwargs):
+    def create_component(self):
+        self.logger.info(f"creating component {self.name}")
+        self.logger = robinson_ryven.robinson.utils.getLogger(self, self.name)
 
         try:
-            self.component = self.cls(self.title)
+                self.component = self.cls(self.title)
         except Exception as e:
-            self.logger.error(f"error while setting up component {self.cls}")
-            self.logger.error(e)
-            self.component = None
-
-
-        self.component.init(kwargs)
+                self.logger.error(f"error while setting up component {self.cls}")
+                self.logger.error(e)
+                self.component = None
 
 
     def __del__(self):
@@ -112,6 +119,7 @@ class RobinsonRyvenWrapper(RobinsonRyvenNode):
         if self.component is None:
             self.logger.warn("No component available for {self.cls}, could not init ports")
             return
+
         try:
             print("setup ports")
             input_ports = self.cl_input_ports(self.component)
@@ -137,14 +145,40 @@ class RobinsonRyvenWrapper(RobinsonRyvenNode):
             self.logger.error(e)
 
     def update_event(self, inp=-1):
-
+        self.logger.info(f"update_event for node {self.name}, {inp}")
         if inp > -1:
+            self.logger.info(f"update input wires")
             self.input_wires[inp](self.input(inp))
-
-        super().update_event(inp)
+        else:
+            self.logger.info(f"call super().update_event(inp)")
+            super().update_event(inp)
 
         try:
             self.component.update()
         except Exception as e:
             self.logger.warn("Error occured in update_event")
             self.logger.warn(e)
+
+
+    def init(self,**kwargs):
+        self.logger.info(f"init with args {kwargs}")
+        self.component.init(**kwargs)
+
+    def set_state(self, data: dict, version):
+        self.logger.info(f"set_state of base {data}")
+        return super().set_state(data, version)
+
+
+    def change_title(self):
+        self.logger.info(f"change_title")
+        old_title = self.name
+        super().change_title()
+
+        self.logger.info(f"title {old_title} vs {self.name}")
+        if old_title != self.name:
+            self.reinit_node.emit(self)
+            pass
+
+    def set_display_title(self, t: str):
+        super().set_display_title(t)
+        self.reinit_node.emit(self)

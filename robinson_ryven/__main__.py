@@ -4,6 +4,8 @@
 # %gui qt5
 import sys
 import os
+
+from ryvencore_qt.src.core_wrapper.Session import Session
 from robinson_ryven.robinson import nodes
 import cv2
 for k, v in os.environ.items():
@@ -31,6 +33,8 @@ from robinson_ryven.robinson.executor import RobinsonFlowExecutor
 
 import vebas.config
 config = vebas.config.default_config()
+
+import yaml
 
 # %%
 
@@ -84,7 +88,7 @@ class RobinsonMainWindow(QMainWindow):
         self.toolBar.addAction(self.exitAction)
 
 # now we initialize a new ryvencore-qt session
-        self.session = session
+        self.session:Session = session
 
         self.init()
 
@@ -96,7 +100,7 @@ class RobinsonMainWindow(QMainWindow):
 
         self.session.nodes.clear()
         self.session.register_nodes(export_nodes())
-        self.session.register_nodes(std_export_nodes())
+        # self.session.register_nodes(std_export_nodes())
         # self.session.register_widgets(export_widgets())
 
         # to get a flow where we can place nodes, we need to crate a new script
@@ -107,7 +111,7 @@ class RobinsonMainWindow(QMainWindow):
             self.script = self.session.scripts[-1]
 
         self.flow = self.script.flow
-        self.script.flow.executor = RobinsonFlowExecutor(self.script.flow)
+        self.script.flow.executor = RobinsonFlowExecutor(self.script.flow, self.load_config())
         self.executor = self.flow.executor
         self.flow.node_added.connect(self.executor.node_added)
         self.flow.node_removed.connect(self.executor.node_removed)
@@ -149,7 +153,7 @@ class RobinsonMainWindow(QMainWindow):
         importlib.reload(nodes)
         self.session.nodes.clear()
         self.session.register_nodes(export_nodes())
-        self.session.register_nodes(std_export_nodes())
+        # self.session.register_nodes(std_export_nodes())
 
         self.load()
         # self.init()
@@ -158,6 +162,11 @@ class RobinsonMainWindow(QMainWindow):
     def save(self):
         sd = self.session.serialize()
         json.dump(sd, open("data.json","w"))
+
+    def load_config(self):
+        with open("data.config.yml","r") as fh:
+            cfg = yaml.load(fh, Loader=yaml.FullLoader)
+            return cfg
 
     def load(self):
 
@@ -193,6 +202,7 @@ try:
         pass
     else:
         sys.exit(app.exec_())
+        pass
 except Exception as e:
     print(e)
 # %%

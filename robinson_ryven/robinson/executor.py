@@ -1,12 +1,13 @@
 #!/usr/bin/env python3
 
+import inspect
 import threading
 import time
 from pymavlink.dialects.v20.ardupilotmega import MAVLink_message
 from ryvencore.FlowExecutor import FlowExecutor
 from robinson.messaging.mqtt.serializer import JsonTransform
 
-from robinson_ryven.robinson.base import RobinsonRyvenNode
+from robinson_ryven.robinson.base import RobinsonRyvenNode, RobinsonRyvenWrapper
 from robinson_ryven.robinson import base
 
 from . import nodes
@@ -110,8 +111,9 @@ class RobinsonFlowExecutor(FlowExecutor):
 
     json_transformers = {}
 
-    def __init__(self, flow):
+    def __init__(self, flow, config):
         self.logger = vebas.config.getLogger(self)
+        self.config = config
         self.flow = flow
         self.running = False
         self.thread = None
@@ -128,7 +130,9 @@ class RobinsonFlowExecutor(FlowExecutor):
         for es in self.ext_sink:
             self.register_external_sink(es)
 
-        self.exec_nodes = []
+        [self.init_node(n) for n in self.flow.nodes if isinstance(n,RobinsonRyvenWrapper)]
+
+        [n.reinit_node.connect(self.init_node) for n in self.flow.nodes if isinstance(n,RobinsonRyvenWrapper)]
 
     def register_external_source(self,node):
         self.logger.info(f"register external source for node {node}")
@@ -145,6 +149,7 @@ class RobinsonFlowExecutor(FlowExecutor):
             self.logger.info(f"Register external sink for topic {topic}")
 
     def node_added(self, node):
+        self.logger.info(f"node_added {node}")
         if isinstance(node, nodes.ExternalSource):
             self.logger.info(f"node_added ExternalSource for node {node}")
             node.topic_changed.connect(self.register_external_source)
@@ -153,14 +158,9 @@ class RobinsonFlowExecutor(FlowExecutor):
             self.logger.info(f"node_added ExternalSink for node {node}")
             node.topic_changed.connect(self.register_external_sink)
 
-        if isinstance(node, base.RobinsonRyvenNode):
-            #TODO update config?
-            #
-        # if isinstance(node, nodes.ExecNode):
-        # o
-        #
-            # self.exec_nodes.append(node)
-
+        if isinstance(node, RobinsonRyvenNode):
+            node.reinit_node.connect(self.init_node)
+            self.init_node(node)
 
     def node_removed(self, node):
         if isinstance(node, nodes.ExternalSource):
@@ -172,8 +172,6 @@ class RobinsonFlowExecutor(FlowExecutor):
             topic = node.get_topic()
             print("TODO unregister sink")
 
-        # if isinstance(node, nodes.ExecNode):
-            # self.exec_nodes.remove(node)
 
     # Node.update() =>
     def update_node(self, node, inp):
@@ -195,6 +193,22 @@ class RobinsonFlowExecutor(FlowExecutor):
         print("flow exec output", node, index)
         pass
 
+
+    def init_node(self, node):
+        self.logger.info(f"init_node component {node.display_title}")
+        config_args = {}
+        name = node.display_title.lower()
+
+        if name in self.config:
+            config_args = self.config[name]
+            self.logger.info(f"Loading config {config_args}")
+        else:
+            self.logger.warn(f"Could not find config for component {name}")
+        try:
+            node.init(**config_args)
+        except Exception as e:
+            self.logger.error("Could not init component {node}")
+            self.logger.error(e)
 
     def start(self):
 
@@ -234,7 +248,7 @@ class RobinsonFlowExecutor(FlowExecutor):
         # print("executing stack on queue", node_stack, node_stack.empty())
         while not node_stack.empty():
             n = node_stack.get(block=False)
-            # print("Call update on node ", n)
+            print("Call update on node ", n)
             n.update_event()
 
             for suc in self.flow.node_successors[n]:

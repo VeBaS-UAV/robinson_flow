@@ -1,0 +1,5 @@
+printoutput1:
+  console_output: "myoutput>"
+  init_msg: "Hello World"
+otheroutput:
+  console_output: "$$$$:"

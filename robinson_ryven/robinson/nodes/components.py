@@ -4,7 +4,7 @@
 import inspect
 import sys
 from socket import MsgFlag
-from robinson.components import Component, DataPortOutput, InputOutputPortComponent, InputPortComponent, OutputPortComponent, Partial, Port
+from robinson.components import Component, DataPortOutput, InputOutputPortComponent, OutputPortComponent, Port
 from robinson_ryven.robinson.base import RobinsonRyvenWrapper
 
 class TestComponent(InputOutputPortComponent):
@@ -42,6 +42,7 @@ class PrintOutputComponent(Component):
     def __init__(self, name: str):
         super().__init__(name)
         self.msg = None
+        self.console_output = ""
 
     def dataport_input_msg(self, msg):
         self.msg = msg
@@ -62,10 +63,13 @@ class PrintOutputComponent(Component):
         #self.logger.info(f"received multi args {arg1}, {arg2}")
         self.msg = arg1, arg2
 
+    def init(self, console_output, **kwargs):
+        self.logger.info(f"Config called with args {kwargs}")
+        self.console_output = console_output
 
     def update(self):
         if self.msg is not None:
-            self.logger.info(f"received msg: {self.msg}")
+            self.logger.info(f"{self.console_output}: {self.msg}")
             self.msg = None
 
 class AddComponent(OutputPortComponent):
@@ -142,12 +146,15 @@ def export_nodes():
 
     component_list = []#[TestComponent, PrintOutputComponent, AddComponent, RGB2HSV, BGR2HSV, RGB2BRG, BGR2RGB, DetectionOverlay, ColoredCircleDetection, MyPartial]
 
-    component_list.extend(load_components_from_module(vebas.tracking.components.cv))
-    component_list.extend(load_components_from_module(vebas.tracking.components.control))
-    component_list.extend(load_components_from_module(vebas.tracking.components.filter))
-    component_list.extend(load_components_from_module(vebas.tracking.components.transform))
-    component_list.extend(load_components_from_module(kf_ctl))
+    # component_list.extend(load_components_from_module(vebas.tracking.components.cv))
+    # component_list.extend(load_components_from_module(vebas.tracking.components.control))
+    # component_list.extend(load_components_from_module(vebas.tracking.components.filter))
+    # component_list.extend(load_components_from_module(vebas.tracking.components.transform))
+    # component_list.extend(load_components_from_module(kf_ctl))
 
+
+    component_list.append(TestComponent)
+    component_list.append(PrintOutputComponent)
 
     #TODO import robinson components for testing
     #TODO Ports?
