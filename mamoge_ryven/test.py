@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
-from vebas.components.common import DebugOutput
-from vebas.components import DataPortOutput, InputOutputPortComponent
+from robinson.components.common import DebugOutput
+from robinson.components import DataPortOutput, InputOutputPortComponent
 
 # cl = InputOutputPortComponent
 

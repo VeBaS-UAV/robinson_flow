@@ -1,8 +1,10 @@
 #!/usr/bin/env python3
 
 
+import inspect
+import sys
 from socket import MsgFlag
-from vebas.components import Component, DataPortOutput, InputOutputPortComponent, InputPortComponent, OutputPortComponent, Partial, Port
+from robinson.components import Component, DataPortOutput, InputOutputPortComponent, InputPortComponent, OutputPortComponent, Partial, Port
 from mamoge_ryven.mamoge.base import MamoGeRyvenWrapper
 
 class TestComponent(InputOutputPortComponent):
@@ -121,11 +123,31 @@ class MyPartial(Port):
         # return super().__call__(*self.args, *fargs, **{**self.kw_args, **fkw_args})
         return super().__call__(*fargs, **fkw_args)
 
+def load_components_from_module(module):
+    results =  []
+    for name, obj in inspect.getmembers(module):
+        if inspect.isclass(obj):
+            if sys.modules[obj.__module__] == module:
+                if issubclass(obj, Component):
+                    results.append(obj)
+    return results
+
 def export_nodes():
 
-    from vebas.tracking.components.cv import CVVideoInput, RGB2HSV, BGR2HSV, RGB2BRG, BGR2RGB, ColoredCircleDetection, ImageView, DetectionOverlay, CV_HSVMask_View
+    import vebas.tracking.components.cv #import CVVideoInput, RGB2HSV, BGR2HSV, RGB2BRG, BGR2RGB, ColoredCircleDetection, ImageView, DetectionOverlay, CV_HSVMask_View
+    import vebas.tracking.components.control
+    import vebas.tracking.components.filter
+    import vebas.tracking.components.transform
+    import vebas.tracking.kf_ctl_loop.components as kf_ctl
 
-    component_list = [TestComponent, PrintOutputComponent, AddComponent, RGB2HSV, BGR2HSV, RGB2BRG, BGR2RGB, DetectionOverlay, ColoredCircleDetection, MyPartial]
+    component_list = []#[TestComponent, PrintOutputComponent, AddComponent, RGB2HSV, BGR2HSV, RGB2BRG, BGR2RGB, DetectionOverlay, ColoredCircleDetection, MyPartial]
+
+    component_list.extend(load_components_from_module(vebas.tracking.components.cv))
+    component_list.extend(load_components_from_module(vebas.tracking.components.control))
+    component_list.extend(load_components_from_module(vebas.tracking.components.filter))
+    component_list.extend(load_components_from_module(vebas.tracking.components.transform))
+    component_list.extend(load_components_from_module(kf_ctl))
+
 
     #TODO import mamoge components for testing
     #TODO Ports?

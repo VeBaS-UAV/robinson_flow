@@ -6,7 +6,7 @@ import ryvencore_qt as rc
 # let's define some nodes
 # to easily see something in action, we create one node generating random numbers, and one that prints them
 
-from vebas.components import Component, DataPortOutput, InputOutputPortComponent
+from robinson.components import Component, DataPortOutput, InputOutputPortComponent
 
 import vebas.config
 from mamoge_ryven import mamoge
