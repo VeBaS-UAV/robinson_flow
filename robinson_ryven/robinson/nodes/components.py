@@ -5,7 +5,7 @@ import inspect
 import sys
 from socket import MsgFlag
 from robinson.components import Component, DataPortOutput, InputOutputPortComponent, InputPortComponent, OutputPortComponent, Partial, Port
-from robinson_ryven.mamoge.base import MamoGeRyvenWrapper
+from robinson_ryven.robinson.base import RobinsonRyvenWrapper
 
 class TestComponent(InputOutputPortComponent):
 
@@ -99,7 +99,7 @@ def factory(cls):
     if name.endswith("Component"):
         name = name[:-len("Component")]
 
-    class RyvenTemplateNode(MamoGeRyvenWrapper):
+    class RyvenTemplateNode(RobinsonRyvenWrapper):
         """Prints your data"""
         title = name
         base_class = cls
@@ -149,7 +149,7 @@ def export_nodes():
     component_list.extend(load_components_from_module(kf_ctl))
 
 
-    #TODO import mamoge components for testing
+    #TODO import robinson components for testing
     #TODO Ports?
     #
     return [factory(c) for c in component_list]

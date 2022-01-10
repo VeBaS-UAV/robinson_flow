@@ -5,7 +5,7 @@
             "name": "Debug MamoGy Ryven",
             "type": "python",
             "request": "launch",
-            "program": "/home/matthias/src/mamoge/mamoge-ryven/robinson_ryven/__main__.py",
+            "program": "/home/matthias/src/robinson/robinson-ryven/robinson_ryven/__main__.py",
             "args": ["-i"],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",

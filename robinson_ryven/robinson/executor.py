@@ -6,7 +6,8 @@ from pymavlink.dialects.v20.ardupilotmega import MAVLink_message
 from ryvencore.FlowExecutor import FlowExecutor
 from robinson.messaging.mqtt.serializer import JsonTransform
 
-from robinson_ryven.mamoge.base import MamoGeRyvenNode
+from robinson_ryven.robinson.base import RobinsonRyvenNode
+from robinson_ryven.robinson import base
 
 from . import nodes
 import vebas.config
@@ -61,7 +62,7 @@ class ExternalSourceConnector():
         self.mqtt = MQTTConnection("mqtt", config["mqtt"]["server_uri"])
         self.mqtt.init()
 
-    def connect_topic_to_node(self, topic, node:MamoGeRyvenNode):
+    def connect_topic_to_node(self, topic, node:RobinsonRyvenNode):
 
         self.logger.info(f"connect {topic} to {node}")
         # self.logger.info(f"connect topic to node {node.ID}, {node.GLOBAL_ID}")
@@ -152,7 +153,12 @@ class RobinsonFlowExecutor(FlowExecutor):
             self.logger.info(f"node_added ExternalSink for node {node}")
             node.topic_changed.connect(self.register_external_sink)
 
+        if isinstance(node, base.RobinsonRyvenNode):
+            #TODO update config?
+            #
         # if isinstance(node, nodes.ExecNode):
+        # o
+        #
             # self.exec_nodes.append(node)
 
 

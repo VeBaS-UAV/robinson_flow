@@ -9,14 +9,14 @@ import ryvencore_qt as rc
 from robinson.components import Component, DataPortOutput, InputOutputPortComponent
 
 import vebas.config
-from robinson_ryven import mamoge
+from robinson_ryven import robinson
 
-from robinson_ryven.mamoge.base import MamoGeRyvenWrapper
+from robinson_ryven.robinson.base import RobinsonRyvenWrapper
 
 from .external_sources import *
 from .components import export_nodes as component_nodes
 
-# from robinson_ryven.mamoge.nodes import MamoGeRyvenNode, MamoGeRyvenWrapper
+# from robinson_ryven.robinson.nodes import RobinsonRyvenNode, RobinsonRyvenWrapper
 vebas.config.default_logging_settings()
 
 from ryvencore_qt.src.flows.nodes.PortItemInputWidgets import Data_IW_M as Data_IW

@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
 
 from .external_sources_widgets import *
-from robinson_ryven.mamoge.base import MamoGeRyvenNode
+from robinson_ryven.robinson.base import RobinsonRyvenNode
 from ryvencore.NodePortBP import NodeInputBP, NodeOutputBP
 
 from PyQt5.QtCore import pyqtSignal
-from robinson_ryven.mamoge.utils import getLogger
+from robinson_ryven.robinson.utils import getLogger
 
-class ExternalSource(MamoGeRyvenNode):
+class ExternalSource(RobinsonRyvenNode):
 
     title = "External Source"
     color = '#e06c78'
@@ -16,7 +16,7 @@ class ExternalSource(MamoGeRyvenNode):
     main_widget_pos = 'between ports'  # alternatively 'between ports'
     # main_widget_pos = 'below ports'  # alternatively 'between ports'
 
-    topic_changed = pyqtSignal(MamoGeRyvenNode)
+    topic_changed = pyqtSignal(RobinsonRyvenNode)
     # you can use those for your data inputs
     # input_widget_classes = {
         # 'topic_widget': widgets.ExternalSourceInputTopicWidget
@@ -54,7 +54,7 @@ class ExternalSource(MamoGeRyvenNode):
     #     self.topic_type = topic
     #     # self.topic_changed.emit(self)
 
-class ExternalSink(MamoGeRyvenNode):
+class ExternalSink(RobinsonRyvenNode):
 
     title = "External Sink"
     color = '#DC8665'
@@ -62,7 +62,7 @@ class ExternalSink(MamoGeRyvenNode):
     main_widget_class = ExternalSinkWidget
     main_widget_pos = 'between ports'  # alternatively 'between ports'
 
-    topic_changed = pyqtSignal(MamoGeRyvenNode)
+    topic_changed = pyqtSignal(RobinsonRyvenNode)
     # you can use those for your data inputs
     input_widget_classes = {
         # 'topic_widget': widgets.ExternalSinkTopicWidget

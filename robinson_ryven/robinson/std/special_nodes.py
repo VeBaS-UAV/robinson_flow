@@ -3,7 +3,7 @@ from contextlib import redirect_stdout, redirect_stderr
 
 from ryvencore_qt import Node, dtypes, NodeInputBP, NodeOutputBP
 
-import robinson_ryven.mamoge.std.widgets as widgets
+import robinson_ryven.robinson.std.widgets as widgets
 
 from PyQt5.QtCore import QTimer
 # widgets = import_widgets(__file__)

@@ -4,15 +4,13 @@
 import ryvencore_qt as rc
 from functools import partial
 
-from robinson_ryven import mamoge
-import robinson_ryven.mamoge.utils
+import robinson_ryven.robinson.utils
 import robinson_ryven
 
-class MamoGeRyvenNode(rc.Node):
+class RobinsonRyvenNode(rc.Node):
 
     def __init__(self, params):
         super().__init__(params)
-
 
     # def update(self, inp=-1):
     #     # print("update", inp)
@@ -21,24 +19,31 @@ class MamoGeRyvenNode(rc.Node):
     #     return
 import inspect
 
-class MamoGeRyvenWrapper(MamoGeRyvenNode):
+class RobinsonRyvenWrapper(RobinsonRyvenNode):
 
     input_name = "dataport_input"
     output_name = "dataport_output"
 
     def __init__(self, cls, params):
         super().__init__(params)
-        self.logger = robinson_ryven.mamoge.utils.getLogger(self)
+        self.logger = robinson_ryven.robinson.utils.getLogger(self)
         self.cls = cls
-        try:
-            self.component = cls(self.title)
-        except Exception as e:
-            self.logger.error(f"error while setting up component {cls}")
-            self.logger.error(e)
-            self.component = None
 
         self.input_wires = []
         self.output_wires = []
+
+
+    def init(self, **kwargs):
+
+        try:
+            self.component = self.cls(self.title)
+        except Exception as e:
+            self.logger.error(f"error while setting up component {self.cls}")
+            self.logger.error(e)
+            self.component = None
+
+
+        self.component.init(kwargs)
 
 
     def __del__(self):
