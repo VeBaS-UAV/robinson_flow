@@ -4,9 +4,9 @@
 import ryvencore_qt as rc
 from functools import partial
 
-from mamoge_ryven import mamoge
-import mamoge_ryven.mamoge.utils
-import mamoge_ryven
+from robinson_ryven import mamoge
+import robinson_ryven.mamoge.utils
+import robinson_ryven
 
 class MamoGeRyvenNode(rc.Node):
 
@@ -28,7 +28,7 @@ class MamoGeRyvenWrapper(MamoGeRyvenNode):
 
     def __init__(self, cls, params):
         super().__init__(params)
-        self.logger = mamoge_ryven.mamoge.utils.getLogger(self)
+        self.logger = robinson_ryven.mamoge.utils.getLogger(self)
         self.cls = cls
         try:
             self.component = cls(self.title)

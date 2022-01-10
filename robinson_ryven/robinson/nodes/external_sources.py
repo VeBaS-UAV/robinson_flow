@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 
 from .external_sources_widgets import *
-from mamoge_ryven.mamoge.base import MamoGeRyvenNode
+from robinson_ryven.mamoge.base import MamoGeRyvenNode
 from ryvencore.NodePortBP import NodeInputBP, NodeOutputBP
 
 from PyQt5.QtCore import pyqtSignal
-from mamoge_ryven.mamoge.utils import getLogger
+from robinson_ryven.mamoge.utils import getLogger
 
 class ExternalSource(MamoGeRyvenNode):
 

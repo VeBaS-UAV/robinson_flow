@@ -5,7 +5,7 @@ import inspect
 import sys
 from socket import MsgFlag
 from robinson.components import Component, DataPortOutput, InputOutputPortComponent, InputPortComponent, OutputPortComponent, Partial, Port
-from mamoge_ryven.mamoge.base import MamoGeRyvenWrapper
+from robinson_ryven.mamoge.base import MamoGeRyvenWrapper
 
 class TestComponent(InputOutputPortComponent):
 

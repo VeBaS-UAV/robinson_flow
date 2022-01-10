@@ -2,11 +2,11 @@ import setuptools
 from distutils.extension import Extension
 
 setuptools.setup(
-    name="mamoge-ryven",
+    name="robinson-ryven",
     version="0.0.1",
     author="matthias fueller",
     author_email="matthias.fueller@fhdw.de",
-    description="mamoge task planner",
+    description="robinson task planner",
     long_description="TBD",
     long_description_content_type="text/markdown",
     url="https://github.com/TBD",

@@ -6,7 +6,7 @@ from pymavlink.dialects.v20.ardupilotmega import MAVLink_message
 from ryvencore.FlowExecutor import FlowExecutor
 from robinson.messaging.mqtt.serializer import JsonTransform
 
-from mamoge_ryven.mamoge.base import MamoGeRyvenNode
+from robinson_ryven.mamoge.base import MamoGeRyvenNode
 
 from . import nodes
 import vebas.config

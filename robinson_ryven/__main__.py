@@ -4,7 +4,7 @@
 # %gui qt5
 import sys
 import os
-from mamoge_ryven.mamoge import nodes
+from robinson_ryven.mamoge import nodes
 import cv2
 for k, v in os.environ.items():
     if k.startswith("QT_") and "cv2" in v:
@@ -24,10 +24,10 @@ vebas.config.default_logging_settings()
 
 from ryvencore_qt.src.Design import FlowTheme_Blender as FlowTheme
 
-from mamoge_ryven.mamoge import nodes as nodes
-from mamoge_ryven.mamoge.nodes import export_nodes
-from mamoge_ryven.mamoge.std.nodes import export_nodes as std_export_nodes
-from mamoge_ryven.mamoge.executor import RobinsonFlowExecutor
+from robinson_ryven.mamoge import nodes as nodes
+from robinson_ryven.mamoge.nodes import export_nodes
+from robinson_ryven.mamoge.std.nodes import export_nodes as std_export_nodes
+from robinson_ryven.mamoge.executor import RobinsonFlowExecutor
 
 import vebas.config
 config = vebas.config.default_config()
@@ -132,10 +132,10 @@ class RobinsonMainWindow(QMainWindow):
 
     def reload(self):
         import importlib
-        import mamoge_ryven.mamoge.nodes.components
+        import robinson_ryven.mamoge.nodes.components
         # import vebas.tracking.components.cv
         # importlib.reload(vebas.tracking.components.cv)
-        importlib.reload(mamoge_ryven.mamoge.nodes.components)
+        importlib.reload(robinson_ryven.mamoge.nodes.components)
 
         for n in session.nodes:
             module = sys.modules[n.__module__]
