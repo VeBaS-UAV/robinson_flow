@@ -28,13 +28,13 @@ class RandNodeRyven(rc.Node):
     ]
     color = '#fcba03'
 
-    def update_event(self, inp=-1):
-        print("RandNodeRyven update event")
-        # random float between 0 and value at input
-        val = random() * float(self.input(0))
+    # def update_event(self, inp=-1):
+    #     print("RandNodeRyven update event")
+    #     # random float between 0 and value at input
+    #     val = random() * float(self.input(0))
 
-        # setting the value of the first output
-        self.set_output_val(0, val)
+    #     # setting the value of the first output
+    #     self.set_output_val(0, val)
 
 class PrintNodeRyven(rc.Node):
     title = 'Print(ryven)'
