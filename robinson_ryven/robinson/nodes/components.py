@@ -43,6 +43,7 @@ class PrintOutputComponent(Component):
         super().__init__(name)
         self.msg = None
         self.console_output = ""
+        self.console_counter = 0
 
     def dataport_input_msg(self, msg):
         self.msg = msg
@@ -64,12 +65,18 @@ class PrintOutputComponent(Component):
         self.msg = arg1, arg2
 
     def init(self, console_output, **kwargs):
-        self.logger.info(f"Config called with args {kwargs}")
+        self.logger.info(f"Init called with args {kwargs}")
         self.console_output = console_output
+
+    def config(self, console_counter, **kwargs):
+        self.logger.info(f"Config called with args {kwargs}")
+        self.console_counter = console_counter
+
 
     def update(self):
         if self.msg is not None:
-            self.logger.info(f"{self.console_output}: {self.msg}")
+            self.logger.info(f"{self.console_output}: {self.msg} ({self.console_counter})")
+            self.console_counter += 1
             self.msg = None
 
 class AddComponent(OutputPortComponent):

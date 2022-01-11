@@ -1,11 +1,14 @@
 #!/usr/bin/env python3
 
+from robinson.messaging.mqtt import MQTTConnection
+from robinson_ryven.robinson.executor import TopicRegistry
 from .external_sources_widgets import *
 from robinson_ryven.robinson.base import RobinsonRyvenNode
 from ryvencore.NodePortBP import NodeInputBP, NodeOutputBP
 
 from PyQt5.QtCore import pyqtSignal
 from robinson_ryven.robinson.utils import getLogger
+
 
 class ExternalSource(RobinsonRyvenNode):
 

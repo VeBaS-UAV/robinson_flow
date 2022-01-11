@@ -100,7 +100,7 @@ class RobinsonMainWindow(QMainWindow):
 
         self.session.nodes.clear()
         self.session.register_nodes(export_nodes())
-        # self.session.register_nodes(std_export_nodes())
+        self.session.register_nodes(std_export_nodes())
         # self.session.register_widgets(export_widgets())
 
         # to get a flow where we can place nodes, we need to crate a new script
@@ -153,7 +153,7 @@ class RobinsonMainWindow(QMainWindow):
         importlib.reload(nodes)
         self.session.nodes.clear()
         self.session.register_nodes(export_nodes())
-        # self.session.register_nodes(std_export_nodes())
+        self.session.register_nodes(std_export_nodes())
 
         self.load()
         # self.init()

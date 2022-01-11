@@ -18,6 +18,8 @@ config = vebas.config.default_config()
 vebas.config.default_logging_settings()
 import queue
 
+from robinson_ryven.robinson.utils import getLogger
+
 class TopicRegistryItem():
 
     def __init__(self, msg_type, transformer, *args, **kwargs) -> None:
@@ -54,10 +56,11 @@ class TopicRegistry():
 
 class ExternalSourceConnector():
 
+
     connections:dict = {}
 
     def __init__(self, topic_registry:TopicRegistry):
-        self.logger = vebas.config.getLogger(self)
+        self.logger = getLogger(self)
 
         self.topic_reg = topic_registry
         self.mqtt = MQTTConnection("mqtt", config["mqtt"]["server_uri"])
@@ -199,16 +202,16 @@ class RobinsonFlowExecutor(FlowExecutor):
         config_args = {}
         name = node.display_title.lower()
 
-        if name in self.config:
-            config_args = self.config[name]
-            self.logger.info(f"Loading config {config_args}")
-        else:
-            self.logger.warn(f"Could not find config for component {name}")
-        try:
-            node.init(**config_args)
-        except Exception as e:
-            self.logger.error("Could not init component {node}")
-            self.logger.error(e)
+        # if name in self.config:
+        #     config_args = self.config[name]
+        #     self.logger.info(f"Loading config {config_args}")
+        # else:
+        #     self.logger.warn(f"Could not find config for component {name}")
+        # try:
+        #     node.init(**config_args)
+        # except Exception as e:
+        #     self.logger.error(f"Could not init component {node}")
+        #     self.logger.error(e)
 
     def start(self):
 

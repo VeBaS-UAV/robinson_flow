@@ -8,6 +8,8 @@ import ryvencore_qt as rc
 
 import vebas.config
 
+from robinson_ryven.robinson.utils import getNodeLogger
+
 from .external_sources import *
 from robinson_ryven.robinson.nodes.components import export_nodes as component_nodes
 
@@ -28,13 +30,13 @@ class RandNodeRyven(rc.Node):
     ]
     color = '#fcba03'
 
-    # def update_event(self, inp=-1):
-    #     print("RandNodeRyven update event")
-    #     # random float between 0 and value at input
-    #     val = random() * float(self.input(0))
+    def update_event(self, inp=-1):
+        print("RandNodeRyven update event")
+        # random float between 0 and value at input
+        val = random() * float(self.input(0))
 
-    #     # setting the value of the first output
-    #     self.set_output_val(0, val)
+        # setting the value of the first output
+        self.set_output_val(0, val)
 
 class PrintNodeRyven(rc.Node):
     title = 'Print(ryven)'
@@ -137,7 +139,7 @@ class Args(rc.Node):
             self.set_output_val(1, tuple(args))
             self.set_output_val(2, dict(arg_0=args[0], arg_1=args[1]))
         except Exception as e:
-            self.logger = getLogger(self)
+            self.logger = getNodeLogger(self)
             self.logger.error(e)
 
 
