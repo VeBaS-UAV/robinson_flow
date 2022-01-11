@@ -1,13 +1,12 @@
 #!/usr/bin/env python3
 
-from robinson.messaging.mqtt import MQTTConnection
-from robinson_ryven.robinson.executor import TopicRegistry
-from .external_sources_widgets import *
 from robinson_ryven.robinson.base import RobinsonRyvenNode
 from ryvencore.NodePortBP import NodeInputBP, NodeOutputBP
 
 from PyQt5.QtCore import pyqtSignal
-from robinson_ryven.robinson.utils import getLogger
+
+from robinson_ryven.robinson.nodes.external_sources_widgets import ExternalSinkWidget, ExternalSourceWidget
+from robinson_ryven.robinson.utils import getNodeLogger
 
 
 class ExternalSource(RobinsonRyvenNode):
@@ -36,7 +35,7 @@ class ExternalSource(RobinsonRyvenNode):
 
     def __init__(self, params):
         super().__init__(params)
-        self.logger = getLogger(self)
+        self.logger = getNodeLogger(self)
         self.topic = None
         # self.topic_type = None
 
@@ -84,7 +83,7 @@ class ExternalSink(RobinsonRyvenNode):
 
     def __init__(self, params):
         super().__init__(params)
-        self.logger = getLogger(self)
+        self.logger = getNodeLogger(self)
 
         # self.create_input("topic", add_data={'widget name': 'my inp widget', 'widget pos': 'beside'})
         # self.create_output("output")

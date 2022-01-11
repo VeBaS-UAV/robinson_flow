@@ -136,10 +136,11 @@ class WebcamFeedWidget(MWB, QWidget):
             return
         if frame is None:
             return
-        frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+        frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
         # frame = cv2.flip(frame, 1)
-        image = QImage(frame, frame.shape[1], frame.shape[0],
-                       frame.strides[0], QImage.Format_RGB888)
+        image = QImage(frame_rgb, frame_rgb.shape[1], frame_rgb.shape[0],
+                       frame_rgb.strides[0], QImage.Format_RGB888)
+                       # frame.strides[0], QImage.Format_RGB888)
         scaled_image = image.scaled(self.video_size)
         self.image_label.setPixmap(QPixmap.fromImage(scaled_image))
 
@@ -167,7 +168,8 @@ class OpenCVNode_MainWidget(MWB, QLabel):
             return
         h, w, ch = rgb_image.shape
         bytes_per_line = ch * w
-        qt_image = QImage(rgb_image.data, w, h, bytes_per_line, QImage.Format_RGB888)
+        # qt_image = QImage(rgb_image.data, w, h, bytes_per_line, QImage.Format_RGB888)
+        qt_image = QImage(rgb_image.data, w, h, bytes_per_line, QImage.Format_BGR888)
         img_w = qt_image.width()
         img_h = qt_image.height()
         proportion = img_w / img_h

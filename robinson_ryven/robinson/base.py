@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 
 #import  ryvencore as rc
+import pydantic
+from pydantic.main import BaseModel
 import ryvencore_qt as rc
 from functools import partial
 # from robinson_ryven import robinson
@@ -161,16 +163,21 @@ class RobinsonRyvenWrapper(RobinsonRyvenNode):
                     self.create_input(f"init_{name}")
                     self.input_wires.append(partial(self.ensure_connection, port_index, self.update_init, name))
 
-            cfg_parameter = inspect.signature(self.cls.config).parameters
-
-            if cfg_parameter is not None:
-                for name, p in cfg_parameter.items():
-                    if name == "self":
-                        continue
+            if (isinstance(self.cls.config, pydantic.BaseModel)):
+                for name,v in self.cls.config.__dict__.items():
                     port_index = len(self.inputs)
                     self.create_input(f"config_{name}")
                     self.input_wires.append(partial(self.ensure_connection, port_index, self.update_config, name))
+            else:
+                cfg_parameter = inspect.signature(self.cls.config).parameters
 
+                if cfg_parameter is not None:
+                    for name, p in cfg_parameter.items():
+                        if name == "self":
+                            continue
+                        port_index = len(self.inputs)
+                        self.create_input(f"config_{name}")
+                        self.input_wires.append(partial(self.ensure_connection, port_index, self.update_config, name))
         except Exception as e:
             self.logger.error(f"Error while setting up ports for {self.component}")
             self.logger.error(e)
@@ -194,7 +201,7 @@ class RobinsonRyvenWrapper(RobinsonRyvenNode):
         self.config_args[key] = value
 
         try:
-            self.component.config(**self.config_args)
+            self.component.config_update(**self.config_args)
         except Exception as e:
             self.logger.warn(f"Could not update config")
             self.logger.error(e)

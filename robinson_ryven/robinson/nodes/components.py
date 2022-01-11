@@ -6,8 +6,10 @@ import sys
 from socket import MsgFlag
 from robinson.components import Component, DataPortOutput, InputOutputPortComponent, OutputPortComponent, Port
 from robinson_ryven.robinson.base import RobinsonRyvenWrapper
+from pydantic import BaseModel
 
 class TestComponent(InputOutputPortComponent):
+
 
     def __init__(self, name):
         super(TestComponent, self).__init__(name)
@@ -39,11 +41,17 @@ class TestComponent(InputOutputPortComponent):
 
 class PrintOutputComponent(Component):
 
+    class Config(BaseModel):
+        console_output:str = ">"
+        console_counter:int = 0
+
+    config:Config = Config()
+
     def __init__(self, name: str):
         super().__init__(name)
         self.msg = None
-        self.console_output = ""
-        self.console_counter = 0
+        # self.console_output = ""
+        # self.console_counter = 0
 
     def dataport_input_msg(self, msg):
         self.msg = msg
@@ -68,15 +76,16 @@ class PrintOutputComponent(Component):
         self.logger.info(f"Init called with args {kwargs}")
         self.console_output = console_output
 
-    def config(self, console_counter, **kwargs):
-        self.logger.info(f"Config called with args {kwargs}")
-        self.console_counter = console_counter
+    def config_update(self, **kwargs):
+        self.logger.info(f"update_config called with args {kwargs}")
+
+        self.config = PrintOutputComponent.Config(**{**self.config.dict(),**kwargs})
 
 
     def update(self):
         if self.msg is not None:
-            self.logger.info(f"{self.console_output}: {self.msg} ({self.console_counter})")
-            self.console_counter += 1
+            self.logger.info(f"{self.config.console_output}: {self.msg} ({self.config.console_counter})")
+            self.config.console_counter += 1
             self.msg = None
 
 class AddComponent(OutputPortComponent):

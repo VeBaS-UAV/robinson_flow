@@ -9,6 +9,7 @@ from robinson.messaging.mqtt.serializer import JsonTransform
 
 from robinson_ryven.robinson.base import RobinsonRyvenNode, RobinsonRyvenWrapper
 from robinson_ryven.robinson import base
+from robinson_ryven.robinson.nodes.external_sources import ExternalSink, ExternalSource
 
 from . import nodes
 import vebas.config
@@ -124,8 +125,8 @@ class RobinsonFlowExecutor(FlowExecutor):
 
         self.external_source_connector = ExternalSourceConnector(self.topic_registry)
 
-        self.ext_sources = [n for n in self.flow.nodes if isinstance(n,nodes.ExternalSource)]
-        self.ext_sink = [n for n in self.flow.nodes if isinstance(n,nodes.ExternalSink)]
+        self.ext_sources = [n for n in self.flow.nodes if isinstance(n,ExternalSource)]
+        self.ext_sink = [n for n in self.flow.nodes if isinstance(n,ExternalSink)]
 
         for es in self.ext_sources:
             self.register_external_source(es)
@@ -153,11 +154,11 @@ class RobinsonFlowExecutor(FlowExecutor):
 
     def node_added(self, node):
         self.logger.info(f"node_added {node}")
-        if isinstance(node, nodes.ExternalSource):
+        if isinstance(node, ExternalSource):
             self.logger.info(f"node_added ExternalSource for node {node}")
             node.topic_changed.connect(self.register_external_source)
 
-        if isinstance(node, nodes.ExternalSink):
+        if isinstance(node, ExternalSink):
             self.logger.info(f"node_added ExternalSink for node {node}")
             node.topic_changed.connect(self.register_external_sink)
 
@@ -166,12 +167,12 @@ class RobinsonFlowExecutor(FlowExecutor):
             self.init_node(node)
 
     def node_removed(self, node):
-        if isinstance(node, nodes.ExternalSource):
+        if isinstance(node, ExternalSource):
             topic = node.get_topic()
             print("TODO unregister topic ", topic)
             return
 
-        if isinstance(node, nodes.ExternalSink):
+        if isinstance(node, ExternalSink):
             topic = node.get_topic()
             print("TODO unregister sink")
 

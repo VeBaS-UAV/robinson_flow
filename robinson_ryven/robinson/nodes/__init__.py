@@ -7,10 +7,10 @@ import ryvencore_qt as rc
 # to easily see something in action, we create one node generating random numbers, and one that prints them
 
 import vebas.config
+from robinson_ryven.robinson.nodes.external_sources_widgets import OpenCVNode_MainWidget, WebcamFeedWidget
 
 from robinson_ryven.robinson.utils import getNodeLogger
 
-from .external_sources import *
 from robinson_ryven.robinson.nodes.components import export_nodes as component_nodes
 
 # from robinson_ryven.robinson.nodes import RobinsonRyvenNode, RobinsonRyvenWrapper
@@ -67,7 +67,7 @@ class WebcamFeed(rc.Node):
     init_outputs = [
         NodeOutputBP(),
     ]
-    main_widget_class = external_sources.WebcamFeedWidget
+    main_widget_class = WebcamFeedWidget
 
     def video_picture_updated(self, frame):
         self.set_output_val(0, frame)
@@ -81,7 +81,7 @@ class OpenCVNodeBase(rc.Node):
     init_inputs = [
         NodeInputBP('img'),
     ]
-    main_widget_class = external_sources.OpenCVNode_MainWidget
+    main_widget_class = OpenCVNode_MainWidget
     main_widget_pos = 'below ports'
 
     def __init__(self, params):
@@ -151,8 +151,6 @@ def export_nodes():
     nodes.extend([
         RandNodeRyven,
         Args,
-        ExternalSource,
-        ExternalSink,
         WebcamFeed,
         OpenCVNodeBase
     ])
