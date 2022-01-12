@@ -3,6 +3,8 @@
 #import  ryvencore as rc
 import pydantic
 from pydantic.main import BaseModel
+import ryvencore
+import ryvencore.dtypes
 import ryvencore_qt as rc
 from functools import partial
 # from robinson_ryven import robinson
@@ -166,7 +168,23 @@ class RobinsonRyvenWrapper(RobinsonRyvenNode):
             if (isinstance(self.cls.config, pydantic.BaseModel)):
                 for name,v in self.cls.config.__dict__.items():
                     port_index = len(self.inputs)
-                    self.create_input(f"config_{name}")
+                    port_type = self.cls.config.__fields__[name].type_
+
+                    port_type_mapping = {}
+                    port_type_mapping[str] = ryvencore.dtypes.String
+                    port_type_mapping[int] = ryvencore.dtypes.Integer
+                    port_type_mapping[float] = ryvencore.dtypes.Float
+                    port_type_mapping[bool] = ryvencore.dtypes.Boolean
+                    port_type_mapping[None] = ryvencore.dtypes.Data
+
+
+                    dtype = ryvencore.dtypes.Data
+
+                    if port_type in port_type_mapping:
+                        dtype = port_type_mapping[port_type]
+
+                    self.create_input_dt(dtype(), f"config_{name}")
+                    # self.create_input(f"config_{name}")
                     self.input_wires.append(partial(self.ensure_connection, port_index, self.update_config, name))
             else:
                 cfg_parameter = inspect.signature(self.cls.config).parameters
@@ -183,7 +201,7 @@ class RobinsonRyvenWrapper(RobinsonRyvenNode):
             self.logger.error(e)
 
     def ensure_connection(self, port_index, func, *args, **kwargs):
-        if len(self.inputs[port_index].connections) > 0:
+        # if len(self.inputs[port_index].connections) > 0:
             func(*args, *kwargs)
 
     def update_init(self, key, value):
@@ -241,7 +259,9 @@ class RobinsonRyvenWrapper(RobinsonRyvenNode):
             self.init(**self.init_args)
         except Exception as e:
             self.logger.warn(f"Could not init component in set_state")
-            self.logger.erroor(e)
+            self.logger.error(e)
+
+        self.update_config(**self.config_args)
 
     def get_state(self) -> dict:
         data =  super().get_state()

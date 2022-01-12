@@ -10,5 +10,5 @@ from basic_operators import nodes as operator_nodes
 from control_structures import nodes as cs_nodes
 
 def export_nodes():
-    # return special_nodes + operator_nodes + cs_nodes
-    return special_nodes
+    return special_nodes + operator_nodes + cs_nodes
+    # return special_nodes

@@ -78,7 +78,6 @@ class PrintOutputComponent(Component):
 
     def config_update(self, **kwargs):
         self.logger.info(f"update_config called with args {kwargs}")
-
         self.config = PrintOutputComponent.Config(**{**self.config.dict(),**kwargs})
 
 
@@ -162,8 +161,8 @@ def export_nodes():
 
     component_list = []#[TestComponent, PrintOutputComponent, AddComponent, RGB2HSV, BGR2HSV, RGB2BRG, BGR2RGB, DetectionOverlay, ColoredCircleDetection, MyPartial]
 
-    # component_list.extend(load_components_from_module(vebas.tracking.components.cv))
-    # component_list.extend(load_components_from_module(vebas.tracking.components.control))
+    component_list.extend(load_components_from_module(vebas.tracking.components.cv))
+    component_list.extend(load_components_from_module(vebas.tracking.components.control))
     # component_list.extend(load_components_from_module(vebas.tracking.components.filter))
     # component_list.extend(load_components_from_module(vebas.tracking.components.transform))
     # component_list.extend(load_components_from_module(kf_ctl))
