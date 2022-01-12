@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 
 #import  ryvencore as rc
+from abc import abstractproperty
+from logging import Logger
 import pydantic
 from pydantic.main import BaseModel
 import ryvencore
@@ -30,43 +32,39 @@ class RobinsonRyvenNode(rc.Node):
     def update(self, inp=-1):
         return super().update(inp=inp)
 
-class RobinsonRyvenWrapper(RobinsonRyvenNode):
 
+class RobinsonWrapperMixin():
     input_name = "dataport_input"
     output_name = "dataport_output"
 
-    reinit_node = pyqtSignal(RobinsonRyvenNode)
-
-    def __init__(self, cls, params):
-        super().__init__(params)
-        self.logger.info(f"__init__ RyvenWrapper {self.name} with params {params}")
-        self.cls = cls
-        self.component:Component = None
-
-        self.input_wires = []
-        self.output_wires = []
-
-        self.create_component()
-
-        self.init_port_index = -1
-        self.config_port_index = -1
-        self.init_args = {}
-        self.config_args = {}
-
     def create_component(self):
-        self.logger.info(f"creating component {self.name}")
-        self.logger = robinson_ryven.robinson.utils.getNodeLogger(self)
-
+        self.logger.info(f"Creating component {self.cls} for node {self.name}")
         try:
-                self.component = self.cls(self.title)
+                self.component = self.cls(self.name)
         except Exception as e:
                 self.logger.error(f"error while setting up component {self.cls}")
                 self.logger.error(e)
                 self.component = None
 
+    def cl_input_ports(self, cl):
+        ports = [f for f in dir(cl) if f.startswith(self.input_name)]
+        return [(name, getattr(cl, name)) for name in ports]
 
-    def __del__(self):
-        self.logger.warn("DEL CALLED")
+    def cl_output_ports(self, cl):
+        ports = [f for f in dir(cl) if f.startswith(self.output_name)]
+        return [(name, getattr(cl, name)) for name in ports]
+
+    def extract_output_name(self, port_name):
+        base_name = port_name[len(self.output_name)+1:]
+        if len(base_name) == 0:
+            return "output"
+        return base_name
+
+    def extract_input_name(self, port_name):
+        base_name = port_name[len(self.input_name)+1:]
+        if len(base_name) == 0:
+            return "input"
+        return base_name
 
     def call_input_port_by_name(self, name, *args, **kw_args):
         # print("call_input_port_by_name", name, args, kw_args)
@@ -106,24 +104,30 @@ class RobinsonRyvenWrapper(RobinsonRyvenNode):
         else:
             self.outputs[index].set_val(args)
 
-    def cl_input_ports(self, cl):
-        ports = [f for f in dir(cl) if f.startswith(self.input_name)]
-        return ports
 
-    def cl_output_ports(self, cl):
-        return [f for f in dir(cl) if f.startswith(self.output_name)]
+class RobinsonRyvenWrapper(RobinsonRyvenNode, RobinsonWrapperMixin):
 
-    def extract_output_name(self, port_name):
-        base_name = port_name[len(self.output_name)+1:]
-        if len(base_name) == 0:
-            return "output"
-        return base_name
 
-    def extract_input_name(self, port_name):
-        base_name = port_name[len(self.input_name)+1:]
-        if len(base_name) == 0:
-            return "input"
-        return base_name
+    reinit_node = pyqtSignal(RobinsonRyvenNode)
+
+    def __init__(self, cls, params):
+        super().__init__(params)
+        self.logger.info(f"__init__ RyvenWrapper {self.name} with params {params}")
+        self.cls = cls
+        self.component:Component = None
+
+        self.input_wires = []
+        self.output_wires = []
+
+        self.create_component()
+
+        self.init_port_index = -1
+        self.config_port_index = -1
+        self.init_args = {}
+        self.config_args = {}
+
+    def __del__(self):
+        self.logger.warn("DEL CALLED")
 
     def setup_ports(self, inputs_data=None, outputs_data=None):
         # overwrite default port creation
@@ -137,14 +141,14 @@ class RobinsonRyvenWrapper(RobinsonRyvenNode):
             input_ports = self.cl_input_ports(self.component)
             output_ports = self.cl_output_ports(self.component)
 
-            for port_name in input_ports:
+            for port_name, port_callable in input_ports:
                 port_index = len(self.inputs)
                 self.create_input(self.extract_input_name(port_name))
                 # self.create_input(port_name[port_name.rfind("_")+1:])
                 # print("creating input port at index ", port_index)
                 self.input_wires.append(partial(self.call_input_port_by_name, port_name))
 
-            for output_port in output_ports:
+            for output_port, port_callable in output_ports:
                 port_index = len(self.outputs)
                 # print("create output wirde for index", port_index, output_port)
                 self.create_output(self.extract_output_name(output_port))

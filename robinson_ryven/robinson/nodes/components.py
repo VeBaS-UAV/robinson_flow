@@ -47,9 +47,11 @@ class PrintOutputComponent(Component):
 
     config:Config = Config()
 
+
     def __init__(self, name: str):
         super().__init__(name)
         self.msg = None
+        self.dataport_output_msg = DataPortOutput(self)
         # self.console_output = ""
         # self.console_counter = 0
 
@@ -60,17 +62,17 @@ class PrintOutputComponent(Component):
         #self.logger.info(f"received args {args}")
         self.msg = args
 
-    def dataport_input_kwargs(self, **kwargs):
-        #self.logger.info(f"received kwargs {kwargs}")
-        self.msg = kwargs
+    # def dataport_input_kwargs(self, **kwargs):
+    #     #self.logger.info(f"received kwargs {kwargs}")
+    #     self.msg = kwargs
 
     def dataport_input_args_kwargs(self, *args, **kwargs):
         #self.logger.info(f"received args_kwargs {args}, {kwargs}")
         self.msg = args, kwargs
 
-    def dataport_input_multi_args(self, arg1, arg2):
-        #self.logger.info(f"received multi args {arg1}, {arg2}")
-        self.msg = arg1, arg2
+    # def dataport_input_multi_args(self, arg1, arg2):
+    #     #self.logger.info(f"received multi args {arg1}, {arg2}")
+    #     self.msg = arg1, arg2
 
     def init(self, console_output, **kwargs):
         self.logger.info(f"Init called with args {kwargs}")
@@ -83,8 +85,10 @@ class PrintOutputComponent(Component):
 
     def update(self):
         if self.msg is not None:
-            self.logger.info(f"{self.config.console_output}: {self.msg} ({self.config.console_counter})")
+            msg = f"{self.config.console_output}: {self.msg} ({self.config.console_counter}"
+            self.logger.info(msg)
             self.config.console_counter += 1
+            self.dataport_output_msg(msg)
             self.msg = None
 
 class AddComponent(OutputPortComponent):
