@@ -82,7 +82,6 @@ class PrintOutputComponent(Component):
         self.logger.info(f"update_config called with args {kwargs}")
         self.config = PrintOutputComponent.Config(**{**self.config.dict(),**kwargs})
 
-
     def update(self):
         if self.msg is not None:
             msg = f"{self.config.console_output}: {self.msg} ({self.config.console_counter}"

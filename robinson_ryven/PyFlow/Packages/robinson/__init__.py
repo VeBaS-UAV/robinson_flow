@@ -11,7 +11,7 @@ from robinson_ryven.PyFlow.Packages.robinson.FunctionLibraries.DemoLib import De
 
 # Class based nodes
 # from robinson_ryven.PyFlow.Packages.robinson.Nodes.DemoNode import DemoNode
-from robinson_ryven.PyFlow.DemoNode import RobinsonPyFlowBase, TestNode as DemoNode
+from robinson_ryven.PyFlow.DemoNode import AddHelloComponent, RobinsonPyFlowBase, TestNode as DemoNode
 
 # Tools
 from robinson_ryven.PyFlow.Packages.robinson.Tools.DemoShelfTool import DemoShelfTool
@@ -87,13 +87,13 @@ def export_nodes():
 
     component_list = []#TestComponent, PrintOutputComponent, AddComponent, RGB2HSV, BGR2HSV, RGB2BRG, BGR2RGB, DetectionOverlay, ColoredCircleDetection, MyPartial]
 
-    component_list.extend(load_components_from_module(vebas.tracking.components.cv))
-    component_list.extend(load_components_from_module(vebas.tracking.components.control))
+    # component_list.extend(load_components_from_module(vebas.tracking.components.cv))
+    # component_list.extend(load_components_from_module(vebas.tracking.components.control))
     # component_list.extend(load_components_from_module(vebas.tracking.components.filter))
     # component_list.extend(load_components_from_module(vebas.tracking.components.transform))
     # component_list.extend(load_components_from_module(kf_ctl))
 
-
+    component_list.append(AddHelloComponent)
     component_list.append(TestComponent)
     component_list.append(PrintOutputComponent)
 

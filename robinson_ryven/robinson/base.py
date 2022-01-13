@@ -66,6 +66,21 @@ class RobinsonWrapperMixin():
             return "input"
         return base_name
 
+    def extract_init_items(self, cls):
+        init_parameters = inspect.signature(cls.init).parameters
+
+        if init_parameters is not None:
+            return [(name, p.annotation) for (name, p) in init_parameters.items() if name != "self"]
+
+        return []
+
+    def extract_config_items(self, cls):
+        if (isinstance(cls.config, pydantic.BaseModel)):
+            return [(name, cls.config.__fields__[name].type_) for (name, _) in cls.config.__dict__.items()]
+        else:
+            cfg_parameter = inspect.signature(cls.config).parameters
+            return [(name, p.annotation) for (name, p) in cfg_parameter.items() if name != "self"]
+
     def call_input_port_by_name(self, name, *args, **kw_args):
         # print("call_input_port_by_name", name, args, kw_args)
         func = getattr(self.component, name)
@@ -104,6 +119,15 @@ class RobinsonWrapperMixin():
         else:
             self.outputs[index].set_val(args)
 
+    def update_init(self, key, value):
+        self.logger.info(f"update_init {key}:{value}")
+        self.init_args[key] = value
+
+        try:
+            self.component.init(**self.init_args)
+        except Exception as e:
+            self.logger.warn(f"Could not init config")
+            self.logger.error(e)
 
 class RobinsonRyvenWrapper(RobinsonRyvenNode, RobinsonWrapperMixin):
 
@@ -137,7 +161,6 @@ class RobinsonRyvenWrapper(RobinsonRyvenNode, RobinsonWrapperMixin):
             return
 
         try:
-            print("setup ports")
             input_ports = self.cl_input_ports(self.component)
             output_ports = self.cl_output_ports(self.component)
 
@@ -159,15 +182,14 @@ class RobinsonRyvenWrapper(RobinsonRyvenNode, RobinsonWrapperMixin):
 
 
             # create init port
-            init_parameters = inspect.signature(self.cls.init).parameters
+            init_parameters = self.extract_init_items(self.cls)
 
-            if init_parameters is not None:
-                for name, p in init_parameters.items():
-                    if name == "self":
-                        continue
-                    port_index = len(self.inputs)
-                    self.create_input(f"init_{name}")
-                    self.input_wires.append(partial(self.ensure_connection, port_index, self.update_init, name))
+            for name, p in init_parameters:
+                if name == "self":
+                    continue
+                port_index = len(self.inputs)
+                self.create_input(f"init_{name}")
+                self.input_wires.append(partial(self.ensure_connection, port_index, self.update_init, name))
 
             if (isinstance(self.cls.config, pydantic.BaseModel)):
                 for name,v in self.cls.config.__dict__.items():
@@ -208,15 +230,6 @@ class RobinsonRyvenWrapper(RobinsonRyvenNode, RobinsonWrapperMixin):
         # if len(self.inputs[port_index].connections) > 0:
             func(*args, *kwargs)
 
-    def update_init(self, key, value):
-        self.logger.info(f"update_init {key}:{value}")
-        self.init_args[key] = value
-
-        try:
-            self.component.init(**self.init_args)
-        except Exception as e:
-            self.logger.warn(f"Could not init config")
-            self.logger.error(e)
 
     def update_config(self, key, value):
         self.logger.info(f"update_config {key}:{value}")

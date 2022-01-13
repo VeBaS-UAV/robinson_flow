@@ -1,16 +1,20 @@
+import PyFlow
 from PyFlow.Core import NodeBase
 from PyFlow.Core.NodeBase import NodePinsSuggestionsHelper
 from PyFlow.Core.Common import *
+import pydantic
 from robinson_ryven.robinson.base import RobinsonWrapperMixin
 from robinson_ryven.robinson.nodes.components import PrintOutputComponent
 
 from robinson_ryven.robinson.utils import getNodeLogger
 
-from robinson.components import Component
+from robinson.components import Component, InputOutputPortComponent
 
 from functools import partial
 
 class RobinsonPyFlowBase(NodeBase, RobinsonWrapperMixin):
+
+    _packageName = "robinson"
 
     def __init__(self, name, cls, uid=None):
         super().__init__(name, uid=uid)
@@ -37,8 +41,8 @@ class RobinsonPyFlowBase(NodeBase, RobinsonWrapperMixin):
             inp = self.createInputPin(short_name, "AnyPin",None)
             inp.enableOptions(PinOptions.AllowAny)
 
-            sig = inspect.signature(port_callable)
-            print("input infos", port_callable, sig)
+            # sig = inspect.signature(port_callable)
+            # print("input infos", port_callable, sig)
             self.input_pins[short_name] = (inp, port_callable)
 
 
@@ -51,14 +55,58 @@ class RobinsonPyFlowBase(NodeBase, RobinsonWrapperMixin):
 
             self.output_pins[short_name] = (outp, port_callable)
 
-    def port_callback(self, *args, **kwargs):
-        self.logger.info(f"port_callback {args}, {kwargs}")
+
+        # create init port
+        # create init port
+        init_parameters = self.extract_init_items(self.cls)
+
+        print("init parameters", init_parameters)
+        for parameter_name, parameter_type in init_parameters:
+            print("init input", parameter_name, parameter_type)
+            pin_type =self.map_type_to_port(parameter_type)
+
+            inp = self.createInputPin(f"init_{parameter_name}", pin_type,None)
+            inp.enableOptions(PinOptions.AllowAny)
+            self.input_pins[parameter_name] = (inp, partial(self.update_init, parameter_name))
+
+
+        # config
+
+        config_parameters = self.extract_config_items(self.cls)
+
+        print("Config parameters", config_parameters)
+        for parameter_name,parameter_type in config_parameters:
+            print("Config input", parameter_name, parameter_type)
+            pin_type =self.map_type_to_port(parameter_type)
+            inp = self.createInputPin(f"config_{parameter_name}", pin_type,None)
+            inp.enableOptions(PinOptions.AllowAny)
+            self.input_pins[parameter_name] = (inp, partial(self.update_init, parameter_name))
+
+
+    def map_type_to_port(self, typeclass):
+        port_type_mapping = {}
+        port_type_mapping[str] = "StringPin"
+        port_type_mapping[int] = "IntPin"
+        port_type_mapping[float] = "FloatPin"
+        port_type_mapping[bool] = "BoolPin"
+        port_type_mapping[None] = "AnyPin"
+
+        if typeclass in port_type_mapping:
+            return port_type_mapping[typeclass]
+
+        return "AnyPin"
 
     def compute(self, *args, **kwargs):
         # print("compute")
         # self.port_callback(self.inp.getData())
 
+        init_parameters = self.extract_init_items(self.cls)
+        config_parameters = self.extract_config_items(self.cls)
+
         try:
+            if self.isDirty() == False:
+                return
+
             for input_name in self.input_pins:
                 # self.logger.info(f"update port {input_name}")
                 inp, inp_callable = self.input_pins[input_name]
@@ -66,6 +114,10 @@ class RobinsonPyFlowBase(NodeBase, RobinsonWrapperMixin):
                 # if data is None:
                 # sig = inspect.signature(inp_callable)
                 # print(sig)
+                if type(data).__name__ == "MyImage":
+                    data = data.image
+
+                self.logger.info(f"Got input data for port {input_name} {data}")
                 # print(data)
                 inp_callable(data)
                 # print("####")
@@ -105,3 +157,23 @@ class TestNode(RobinsonPyFlowBase):
     def __init__(self, name, uid=None):
         super().__init__(name, cls=PrintOutputComponent, uid=uid)
 
+
+
+class AddHelloComponent(InputOutputPortComponent):
+
+    msg = None
+
+    def __init__(self, name):
+        super().__init__(name)
+        self.fstring = f"Hello {self.msg}"
+
+    def dataport_input(self, msg):
+
+        self.msg = msg
+
+    def init(self, fstring:str):
+        self.fstring = fstring
+
+    def update(self):
+        if self.msg is not None:
+            self.dataport_output(self.fstring)
