@@ -2,16 +2,14 @@ PACKAGE_NAME = 'robinson'
 
 from collections import OrderedDict
 from PyFlow.UI.UIInterfaces import IPackage
+from robinson_ryven.PyFlow.Packages.robinson.Factories.UINodeFactory import createUINode
 
 # Pins
 from robinson_ryven.PyFlow.Packages.robinson.Pins.DemoPin import DemoPin
 
 # Function based nodes
-from robinson_ryven.PyFlow.Packages.robinson.FunctionLibraries.DemoLib import DemoLib
+# from robinson_ryven.PyFlow.Packages.robinson.FunctionLibraries.DemoLib import DemoLib
 
-# Class based nodes
-# from robinson_ryven.PyFlow.Packages.robinson.Nodes.DemoNode import DemoNode
-from robinson_ryven.PyFlow.DemoNode import AddHelloComponent, RobinsonPyFlowBase, TestNode as DemoNode
 
 # Tools
 from robinson_ryven.PyFlow.Packages.robinson.Tools.DemoShelfTool import DemoShelfTool
@@ -28,6 +26,9 @@ from robinson_ryven.PyFlow.Packages.robinson.Factories.PinInputWidgetFactory imp
 from robinson_ryven.PyFlow.Packages.robinson.PrefsWidgets.DemoPrefs import DemoPrefs
 from robinson_ryven.robinson.nodes.components import PrintOutputComponent, TestComponent
 
+from robinson_ryven.PyFlow.Packages.robinson.Nodes.ExternalNodes import ExternalSource
+from robinson_ryven.PyFlow.Packages.robinson.Nodes.BaseNode import AddHelloComponent, RobinsonPyFlowBase
+
 _FOO_LIBS = {}
 _NODES = {}
 _PINS = {}
@@ -35,9 +36,7 @@ _TOOLS = OrderedDict()
 _PREFS_WIDGETS = OrderedDict()
 _EXPORTERS = OrderedDict()
 
-_FOO_LIBS[DemoLib.__name__] = DemoLib(PACKAGE_NAME)
-
-_NODES[DemoNode.__name__] = DemoNode
+# _FOO_LIBS[DemoLib.__name__] = DemoLib(PACKAGE_NAME)
 
 _PINS[DemoPin.__name__] = DemoPin
 
@@ -93,11 +92,17 @@ def export_nodes():
     # component_list.extend(load_components_from_module(vebas.tracking.components.transform))
     # component_list.extend(load_components_from_module(kf_ctl))
 
+    # component_list.append(ExternalSource)
     component_list.append(AddHelloComponent)
     component_list.append(TestComponent)
     component_list.append(PrintOutputComponent)
 
-    return {k:v for k,v in [factory(c) for c in component_list]}
+    rob_comps = {k:v for k,v in [factory(c) for c in component_list]}
+
+    other_comp = {}
+    other_comp["ExternalSource"] = ExternalSource
+
+    return {**rob_comps, **other_comp}
 
 class robinson(IPackage):
 	def __init__(self):
@@ -129,7 +134,7 @@ class robinson(IPackage):
 
 	@staticmethod
 	def UINodesFactory():
-		return None#createUINode
+		return createUINode
 
 	@staticmethod
 	def PinsInputWidgetFactory():

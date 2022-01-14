@@ -12,6 +12,7 @@ from robinson.components import Component, InputOutputPortComponent
 
 from functools import partial
 
+
 class RobinsonPyFlowBase(NodeBase, RobinsonWrapperMixin):
 
     _packageName = "robinson"
