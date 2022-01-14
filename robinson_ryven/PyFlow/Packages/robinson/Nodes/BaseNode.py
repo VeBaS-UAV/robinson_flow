@@ -3,10 +3,10 @@ from PyFlow.Core import NodeBase
 from PyFlow.Core.NodeBase import NodePinsSuggestionsHelper
 from PyFlow.Core.Common import *
 import pydantic
-from robinson_ryven.robinson.base import RobinsonWrapperMixin
-from robinson_ryven.robinson.nodes.components import PrintOutputComponent
+from robinson_ryven.ryven_nodes.base import RobinsonWrapperMixin
+from robinson_ryven.ryven_nodes.nodes.components import PrintOutputComponent
 
-from robinson_ryven.robinson.utils import getNodeLogger
+from robinson_ryven.ryven_nodes.utils import getNodeLogger
 
 from robinson.components import Component, InputOutputPortComponent
 

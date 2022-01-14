@@ -6,7 +6,7 @@ import sys
 import os
 
 from ryvencore_qt.src.core_wrapper.Session import Session
-from robinson_ryven.robinson import nodes
+from robinson_ryven.ryven_nodes import nodes
 import cv2
 for k, v in os.environ.items():
     if k.startswith("QT_") and "cv2" in v:
@@ -26,10 +26,10 @@ vebas.config.default_logging_settings()
 
 from ryvencore_qt.src.Design import FlowTheme_Blender as FlowTheme
 
-from robinson_ryven.robinson import nodes as nodes
-from robinson_ryven.robinson.nodes import export_nodes
-from robinson_ryven.robinson.std.nodes import export_nodes as std_export_nodes
-from robinson_ryven.robinson.executor import RobinsonFlowExecutor
+from robinson_ryven.ryven_nodes import nodes as nodes
+from robinson_ryven.ryven_nodes.nodes import export_nodes
+from robinson_ryven.ryven_nodes.std.nodes import export_nodes as std_export_nodes
+from robinson_ryven.ryven_nodes.executor import RobinsonFlowExecutor
 
 import vebas.config
 config = vebas.config.default_config()
@@ -136,10 +136,10 @@ class RobinsonMainWindow(QMainWindow):
 
     def reload(self):
         import importlib
-        import robinson_ryven.robinson.nodes.components
+        import robinson_ryven.ryven_nodes.nodes.components
         # import vebas.tracking.components.cv
         # importlib.reload(vebas.tracking.components.cv)
-        importlib.reload(robinson_ryven.robinson.nodes.components)
+        importlib.reload(robinson_ryven.ryven_nodes.nodes.components)
 
         for n in session.nodes:
             module = sys.modules[n.__module__]

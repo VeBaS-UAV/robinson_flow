@@ -12,7 +12,7 @@ from functools import partial
 # from robinson_ryven import robinson
 
 from robinson.components import Component
-import robinson_ryven.robinson.utils
+import robinson_ryven.ryven_nodes.utils
 import robinson_ryven
 
 import inspect
@@ -23,7 +23,7 @@ class RobinsonRyvenNode(rc.Node):
 
     def __init__(self, params):
         super().__init__(params)
-        self.logger = robinson_ryven.robinson.utils.getNodeLogger(self)
+        self.logger = robinson_ryven.ryven_nodes.utils.getNodeLogger(self)
 
     @property
     def name(self):

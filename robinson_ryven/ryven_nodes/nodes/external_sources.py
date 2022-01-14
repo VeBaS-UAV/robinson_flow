@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 
-from robinson_ryven.robinson.base import RobinsonRyvenNode
+from robinson_ryven.ryven_nodes.base import RobinsonRyvenNode
 from ryvencore.NodePortBP import NodeInputBP, NodeOutputBP
 
 from PyQt5.QtCore import pyqtSignal
 
-from robinson_ryven.robinson.nodes.external_sources_widgets import ExternalSinkWidget, ExternalSourceWidget
-from robinson_ryven.robinson.utils import getNodeLogger
+from robinson_ryven.ryven_nodes.nodes.external_sources_widgets import ExternalSinkWidget, ExternalSourceWidget
+from robinson_ryven.ryven_nodes.utils import getNodeLogger
 
 
 class ExternalSource(RobinsonRyvenNode):

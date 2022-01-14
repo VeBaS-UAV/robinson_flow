@@ -6,6 +6,6 @@
         :args ""
         :cwd "/home/matthias/src/robinson/robinson_ryven"
         :module "robinson_ryven"
-        ;; :program "/home/matthias/src/robinson/robinson_ryven/robinson_ryven/__main__.py"
+        ;; :program "/home/matthias/src/robinson/robinson_ryven.ryven_nodes_ryven/__main__.py"
         :request "launch"
         :name "robinson-ryven"))

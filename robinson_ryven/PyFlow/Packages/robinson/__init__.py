@@ -24,7 +24,7 @@ from robinson_ryven.PyFlow.Packages.robinson.Exporters.DemoExporter import DemoE
 from robinson_ryven.PyFlow.Packages.robinson.Factories.PinInputWidgetFactory import getInputWidget
 # Prefs widgets
 from robinson_ryven.PyFlow.Packages.robinson.PrefsWidgets.DemoPrefs import DemoPrefs
-from robinson_ryven.robinson.nodes.components import PrintOutputComponent, TestComponent
+from robinson_ryven.ryven_nodes.nodes.components import PrintOutputComponent, TestComponent
 
 from robinson_ryven.PyFlow.Packages.robinson.Nodes.ExternalNodes import ExternalSource
 from robinson_ryven.PyFlow.Packages.robinson.Nodes.BaseNode import AddHelloComponent, RobinsonPyFlowBase
