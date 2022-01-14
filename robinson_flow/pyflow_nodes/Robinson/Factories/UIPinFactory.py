@@ -1,6 +1,6 @@
 from PyFlow.UI.Canvas.UIPinBase import UIPinBase
-# from robinson_flow.pyflow_nodes.Pins.DemoPin import DemoPin
-# from robinson_flow.pyflow_nodes.UI.UIDemoPin import UIDemoPin
+# from robinson_flow.pyflow_nodes.robinson.Pins.DemoPin import DemoPin
+# from robinson_flow.pyflow_nodes.robinson.UI.UIDemoPin import UIDemoPin
 
 
 # def createUIPin(owningNode, raw_instance):
