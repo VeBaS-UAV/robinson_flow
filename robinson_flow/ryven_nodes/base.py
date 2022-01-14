@@ -129,6 +129,17 @@ class RobinsonWrapperMixin():
             self.logger.warn(f"Could not init config")
             self.logger.error(e)
 
+    def update_config(self, key, value):
+        self.logger.info(f"update_config {key}:{value}")
+        self.config_args[key] = value
+
+        try:
+            self.component.config_update(**self.config_args)
+        except Exception as e:
+            self.logger.warn(f"Could not update config")
+            self.logger.error(e)
+
+
 class RobinsonRyvenWrapper(RobinsonRyvenNode, RobinsonWrapperMixin):
 
 
@@ -229,17 +240,6 @@ class RobinsonRyvenWrapper(RobinsonRyvenNode, RobinsonWrapperMixin):
     def ensure_connection(self, port_index, func, *args, **kwargs):
         # if len(self.inputs[port_index].connections) > 0:
             func(*args, *kwargs)
-
-
-    def update_config(self, key, value):
-        self.logger.info(f"update_config {key}:{value}")
-        self.config_args[key] = value
-
-        try:
-            self.component.config_update(**self.config_args)
-        except Exception as e:
-            self.logger.warn(f"Could not update config")
-            self.logger.error(e)
 
     def update_event(self, inp=-1):
         # self.logger.info(f"update_event for node {self.name}, {inp}")

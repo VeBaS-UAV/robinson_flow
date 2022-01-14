@@ -15,12 +15,15 @@ from functools import partial
 
 class RobinsonPyFlowBase(NodeBase, RobinsonWrapperMixin):
 
-    _packageName = "robinson"
+    _packageName = "Robinson"
 
     def __init__(self, name, cls, uid=None):
         super().__init__(name, uid=uid)
         self.logger = getNodeLogger(self)
         self.cls = cls
+
+        self.config_args = {}
+        self.init_args = {}
 
         try:
             self.create_component()
@@ -41,6 +44,7 @@ class RobinsonPyFlowBase(NodeBase, RobinsonWrapperMixin):
             short_name = self.extract_input_name(port_name)
             inp = self.createInputPin(short_name, "AnyPin",None)
             inp.enableOptions(PinOptions.AllowAny)
+            inp.disableOptions(PinOptions.AlwaysPushDirty)
 
             # sig = inspect.signature(port_callable)
             # print("input infos", port_callable, sig)
@@ -51,6 +55,7 @@ class RobinsonPyFlowBase(NodeBase, RobinsonWrapperMixin):
             short_name = self.extract_output_name(port_name)
             outp = self.createOutputPin(short_name, "AnyPin", None)
             outp.enableOptions(PinOptions.AllowAny)
+            # .disableOptions(PinOptions.AlwaysPushDirty)
 
             getattr(self.component, port_name).connect(outp.setData)
 
@@ -68,6 +73,7 @@ class RobinsonPyFlowBase(NodeBase, RobinsonWrapperMixin):
 
             inp = self.createInputPin(f"init_{parameter_name}", pin_type,None)
             inp.enableOptions(PinOptions.AllowAny)
+            inp.disableOptions(PinOptions.AlwaysPushDirty)
             self.input_pins[parameter_name] = (inp, partial(self.update_init, parameter_name))
 
 
@@ -81,7 +87,8 @@ class RobinsonPyFlowBase(NodeBase, RobinsonWrapperMixin):
             pin_type =self.map_type_to_port(parameter_type)
             inp = self.createInputPin(f"config_{parameter_name}", pin_type,None)
             inp.enableOptions(PinOptions.AllowAny)
-            self.input_pins[parameter_name] = (inp, partial(self.update_init, parameter_name))
+            inp.disableOptions(PinOptions.AlwaysPushDirty)
+            self.input_pins[parameter_name] = (inp, partial(self.update_config, parameter_name))
 
 
     def map_type_to_port(self, typeclass):
@@ -101,8 +108,8 @@ class RobinsonPyFlowBase(NodeBase, RobinsonWrapperMixin):
         # print("compute")
         # self.port_callback(self.inp.getData())
 
-        init_parameters = self.extract_init_items(self.cls)
-        config_parameters = self.extract_config_items(self.cls)
+        # init_parameters = self.extract_init_items(self.cls)
+        # config_parameters = self.extract_config_items(self.cls)
 
         try:
             if self.isDirty() == False:
@@ -111,6 +118,8 @@ class RobinsonPyFlowBase(NodeBase, RobinsonWrapperMixin):
             for input_name in self.input_pins:
                 # self.logger.info(f"update port {input_name}")
                 inp, inp_callable = self.input_pins[input_name]
+                if inp.dirty == False:
+                    continue
                 data = inp.getData()
                 # if data is None:
                 # sig = inspect.signature(inp_callable)
@@ -121,6 +130,7 @@ class RobinsonPyFlowBase(NodeBase, RobinsonWrapperMixin):
                 self.logger.info(f"Got input data for port {input_name} {data}")
                 # print(data)
                 inp_callable(data)
+                inp.setClean()
                 # print("####")
         except Exception as e:
             self.logger.warn("Could not get all input data")

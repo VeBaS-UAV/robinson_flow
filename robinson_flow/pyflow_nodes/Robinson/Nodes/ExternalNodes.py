@@ -36,7 +36,7 @@ class ExternalSource(NodeBase):
         self.topic = "out"
 
         self.topic_reg = TopicRegistry()
-        self.mqtt = MQTTConnection("mqtt", config["mqtt"]["server_uri"])
+        self.mqtt = MQTTConnection("robinson.mqtt", config["mqtt"]["server_uri"])
         self.mqtt.init()
 
         self.outp = self.createOutputPin(self.topic, "AnyPin", None)
