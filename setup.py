@@ -2,7 +2,7 @@ import setuptools
 from distutils.extension import Extension
 
 setuptools.setup(
-    name="robinson-ryven",
+    name="robinson-flow",
     version="0.0.1",
     author="matthias fueller",
     author_email="matthias.fueller@fhdw.de",
