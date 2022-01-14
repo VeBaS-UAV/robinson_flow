@@ -25,7 +25,7 @@ from robinson_flow.pyflow_nodes.Robinson.Factories.PinInputWidgetFactory import 
 # Prefs widgets
 from robinson_flow.ryven_nodes.nodes.components import PrintOutputComponent, TestComponent
 
-from robinson_flow.pyflow_nodes.Robinson.Nodes.ExternalNodes import ExternalSource
+from robinson_flow.pyflow_nodes.Robinson.Nodes.ExternalNodes import ExternalSink, ExternalSource
 from robinson_flow.pyflow_nodes.Robinson.Nodes.BaseNode import AddHelloComponent, RobinsonPyFlowBase
 
 _FOO_LIBS = {}
@@ -100,6 +100,7 @@ def export_nodes():
 
     other_comp = {}
     other_comp["ExternalSource"] = ExternalSource
+    other_comp["ExternalSink"] = ExternalSink
 
     return {**rob_comps, **other_comp}
 

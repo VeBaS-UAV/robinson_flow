@@ -92,6 +92,80 @@ class ExternalSource(NodeBase):
     def description():
         return "Description in rst format."
 
+class ExternalSink(NodeBase):
+
+    _packageName = "robinson"
+
+    connections:dict = {}
+
+    def __init__(self, name, uid=None):
+        super().__init__(name, uid=uid)
+        self.logger = getNodeLogger(self)
+
+        self.topic = "in"
+
+        self.topic_reg = TopicRegistry()
+        self.mqtt = MQTTConnection("robinson.mqtt", config["mqtt"]["server_uri"])
+        self.mqtt.init()
+
+        self.inp = self.createInputPin(self.topic, "AnyPin", None)
+        self.inp.enableOptions(PinOptions.AllowAny)
+        self.inp.dataBeenSet.connect(self.compute)
+
+        self.output_port = None
+        self.init_ports()
+
+    def update_topic(self, topic):
+        self.topic = topic
+        self.inp.setName(topic, force=True)
+
+        self.init_ports()
+
+    def init_ports(self):
+
+        reg_item = self.topic_reg.find(self.topic)
+
+        mqtt_port = self.mqtt.mqtt_input(self.topic)
+
+        global_id = self.uid
+
+        if global_id in self.connections:
+            self.connections[global_id].cleanup()
+            del self.connections[global_id]
+
+        transformer = reg_item.create()
+        self.connections[global_id] = transformer
+
+        transformer.connect(mqtt_port)
+        # node.external_output.connect(transformer)
+        self.output_port = transformer.to_json
+
+    def compute(self, *args, **kwargs):
+
+        self.logger.warn("Compute called")
+
+        if self.inp.dirty == True and self.output_port is not None:
+            self.output_port(self.inp.getData())
+
+
+
+
+    @staticmethod
+    def pinTypeHints():
+        helper = NodePinsSuggestionsHelper()
+        return helper
+
+    @staticmethod
+    def category():
+        return 'extern'
+
+    @staticmethod
+    def keywords():
+        return []
+
+    @staticmethod
+    def description():
+        return "Description in rst format."
 
 # class graphOutputs(NodeBase):
 #     """Represents a group of output pins on compound node
