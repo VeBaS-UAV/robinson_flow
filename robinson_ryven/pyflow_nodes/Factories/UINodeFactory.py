@@ -1,5 +1,5 @@
-from robinson_ryven.PyFlow.Packages.robinson.Nodes.ExternalNodes import ExternalSource
-from robinson_ryven.PyFlow.Packages.robinson.UI.UIExternalNode import UIExternalSource
+from robinson_ryven.pyflow_nodes.Nodes.ExternalNodes import ExternalSource
+from robinson_ryven.pyflow_nodes.UI.UIExternalNode import UIExternalSource
 from PyFlow.UI.Canvas.UINodeBase import UINodeBase
 
 

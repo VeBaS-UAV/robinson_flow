@@ -2,32 +2,32 @@ PACKAGE_NAME = 'robinson'
 
 from collections import OrderedDict
 from PyFlow.UI.UIInterfaces import IPackage
-from robinson_ryven.PyFlow.Packages.robinson.Factories.UINodeFactory import createUINode
+from robinson_ryven.robinson_nodes.Exporters.DemoExporter import DemoExporter
+from robinson_ryven.pyflow_nodes.Factories.UINodeFactory import createUINode
 
 # Pins
-from robinson_ryven.PyFlow.Packages.robinson.Pins.DemoPin import DemoPin
+from robinson_ryven.pyflow_nodes.Pins.DemoPin import DemoPin
 
 # Function based nodes
-# from robinson_ryven.PyFlow.Packages.robinson.FunctionLibraries.DemoLib import DemoLib
+# from robinson_ryven.pyflow_nodes.FunctionLibraries.DemoLib import DemoLib
 
 
 # Tools
-from robinson_ryven.PyFlow.Packages.robinson.Tools.DemoShelfTool import DemoShelfTool
-from robinson_ryven.PyFlow.Packages.robinson.Tools.DemoDockTool import DemoDockTool
+from robinson_ryven.pyflow_nodes.Tools.DemoShelfTool import DemoShelfTool
+from robinson_ryven.pyflow_nodes.Tools.DemoDockTool import DemoDockTool
 
 # Exporters
-from robinson_ryven.PyFlow.Packages.robinson.Exporters.DemoExporter import DemoExporter
+# from robinson_ryven.pyflow_nodes.Exporters.DemoExporter import DemoExporter
 
 # Factories
-# from robinson_ryven.PyFlow.Packages.robinson.Factories.UIPinFactory import createUIPin
-# from robinson_ryven.PyFlow.Packages.robinson.Factories.UINodeFactory import createUINode
-from robinson_ryven.PyFlow.Packages.robinson.Factories.PinInputWidgetFactory import getInputWidget
+# from robinson_ryven.pyflow_nodes.Factories.UIPinFactory import createUIPin
+# from robinson_ryven.pyflow_nodes.Factories.UINodeFactory import createUINode
+# from robinson_ryven.pyflow_nodes.Factories.PinInputWidgetFactory import getInputWidget
 # Prefs widgets
-from robinson_ryven.PyFlow.Packages.robinson.PrefsWidgets.DemoPrefs import DemoPrefs
 from robinson_ryven.ryven_nodes.nodes.components import PrintOutputComponent, TestComponent
 
-from robinson_ryven.PyFlow.Packages.robinson.Nodes.ExternalNodes import ExternalSource
-from robinson_ryven.PyFlow.Packages.robinson.Nodes.BaseNode import AddHelloComponent, RobinsonPyFlowBase
+from robinson_ryven.pyflow_nodes.Nodes.ExternalNodes import ExternalSource
+from robinson_ryven.pyflow_nodes.Nodes.BaseNode import AddHelloComponent, RobinsonPyFlowBase
 
 _FOO_LIBS = {}
 _NODES = {}
