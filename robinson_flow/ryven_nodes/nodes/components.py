@@ -5,7 +5,7 @@ import inspect
 import sys
 from socket import MsgFlag
 from robinson.components import Component, DataPortOutput, InputOutputPortComponent, OutputPortComponent, Port
-from robinson_ryven.ryven_nodes.base import RobinsonRyvenWrapper
+from robinson_flow.ryven_nodes.base import RobinsonRyvenWrapper
 from pydantic import BaseModel
 
 class TestComponent(InputOutputPortComponent):

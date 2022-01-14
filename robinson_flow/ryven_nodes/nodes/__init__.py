@@ -7,13 +7,13 @@ import ryvencore_qt as rc
 # to easily see something in action, we create one node generating random numbers, and one that prints them
 
 import vebas.config
-from robinson_ryven.ryven_nodes.nodes.external_sources_widgets import OpenCVNode_MainWidget, WebcamFeedWidget
+from robinson_flow.ryven_nodes.nodes.external_sources_widgets import OpenCVNode_MainWidget, WebcamFeedWidget
 
-from robinson_ryven.ryven_nodes.utils import getNodeLogger
+from robinson_flow.ryven_nodes.utils import getNodeLogger
 
-from robinson_ryven.ryven_nodes.nodes.components import export_nodes as component_nodes
+from robinson_flow.ryven_nodes.nodes.components import export_nodes as component_nodes
 
-# from robinson_ryven.ryven_nodes.nodes import RobinsonRyvenNode, RobinsonRyvenWrapper
+# from robinson_flow.ryven_nodes.nodes import RobinsonRyvenNode, RobinsonRyvenWrapper
 vebas.config.default_logging_settings()
 
 from ryvencore_qt.src.flows.nodes.PortItemInputWidgets import Data_IW_M as Data_IW

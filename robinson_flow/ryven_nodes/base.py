@@ -9,11 +9,11 @@ import ryvencore
 import ryvencore.dtypes
 import ryvencore_qt as rc
 from functools import partial
-# from robinson_ryven import robinson
+# from robinson_flow import robinson
 
 from robinson.components import Component
-import robinson_ryven.ryven_nodes.utils
-import robinson_ryven
+import robinson_flow.ryven_nodes.utils
+import robinson_flow
 
 import inspect
 
@@ -23,7 +23,7 @@ class RobinsonRyvenNode(rc.Node):
 
     def __init__(self, params):
         super().__init__(params)
-        self.logger = robinson_ryven.ryven_nodes.utils.getNodeLogger(self)
+        self.logger = robinson_flow.ryven_nodes.utils.getNodeLogger(self)
 
     @property
     def name(self):

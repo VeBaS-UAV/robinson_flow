@@ -23,7 +23,7 @@ from PyFlow.UI.Utils.stylesheet import Colors
 from PyFlow.UI import RESOURCES_DIR
 from PyFlow.UI.Canvas.UICommon import *
 from Qt.QtWidgets import QTextEdit, QLineEdit
-from robinson_ryven.pyflow_nodes.Nodes.ExternalNodes import ExternalSource
+from robinson_flow.pyflow_nodes.Nodes.ExternalNodes import ExternalSource
 
 class UIExternalSource(UINodeBase):
 #     pinCreated = QtCore.Signal(object)

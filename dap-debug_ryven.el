@@ -5,7 +5,7 @@
   (list :type "python"
         :args ""
         :cwd "/home/matthias/src/robinson/robinson_flow"
-        :module "robinson_ryven"
-        ;; :program "/home/matthias/src/robinson/robinson_ryven.ryven_nodes_ryven/__main__.py"
+        :module "robinson_flow"
+        ;; :program "/home/matthias/src/robinson/robinson_flow.ryven_nodes_ryven/__main__.py"
         :request "launch"
         :name "robinson-flow"))
