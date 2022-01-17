@@ -74,6 +74,9 @@ class RobinsonPyFlowBase(NodeBase, RobinsonWrapperMixin):
             inp = self.createInputPin(f"init_{parameter_name}", pin_type,None)
             inp.enableOptions(PinOptions.AllowAny)
             inp.disableOptions(PinOptions.AlwaysPushDirty)
+            # inp.enableOptions(PinOptions.Dynamic)
+            # inp.enableOptions(PinOptions.Storable)
+            inp.dirty = False
             self.input_pins[parameter_name] = (inp, partial(self.update_init, parameter_name))
 
 
@@ -179,7 +182,6 @@ class AddHelloComponent(InputOutputPortComponent):
         self.fstring = f"Hello {self.msg}"
 
     def dataport_input(self, msg):
-
         self.msg = msg
 
     def init(self, fstring:str):
@@ -187,4 +189,4 @@ class AddHelloComponent(InputOutputPortComponent):
 
     def update(self):
         if self.msg is not None:
-            self.dataport_output(self.fstring)
+            self.dataport_output(self.fstring.format(**self.__dict__))

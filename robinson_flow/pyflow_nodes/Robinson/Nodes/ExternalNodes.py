@@ -23,30 +23,46 @@ import vebas.config
 config = vebas.config.default_config()
 vebas.config.default_logging_settings()
 
-class ExternalSource(NodeBase):
 
+class ExternalBase(NodeBase):
     _packageName = "robinson"
-
     connections:dict = {}
 
     def __init__(self, name, uid=None):
-        super().__init__(name, uid=uid)
+        super().__init__(name, uid)
         self.logger = getNodeLogger(self)
 
-        self.topic = "out"
+        self.topic = "topic_name"
 
         self.topic_reg = TopicRegistry()
         self.mqtt = MQTTConnection("robinson.mqtt", config["mqtt"]["server_uri"])
         self.mqtt.init()
 
+
+    def serialize(self):
+        data =  super().serialize()
+        data["topic"] = self.topic
+        self.logger.info(f"serialize {data}")
+        return data
+
+    def postCreate(self, jsonTemplate=None):
+        super().postCreate(jsonTemplate)
+
+        if "topic" in jsonTemplate:
+            self.update_topic(jsonTemplate["topic"])
+
+    def deserialize(self, jsonData):
+        return super().deserialize(jsonData)
+
+class ExternalSource(ExternalBase):
+
+    _packageName = "robinson"
+
+    def __init__(self, name, uid=None):
+        super().__init__(name, uid=uid)
+
         self.outp = self.createOutputPin(self.topic, "AnyPin", None)
         self.outp.enableOptions(PinOptions.AllowAny)
-
-        self.init_ports()
-
-    def update_topic(self, topic):
-        self.topic = topic
-        self.outp.setName(topic, force=True)
 
         self.init_ports()
 
@@ -71,9 +87,14 @@ class ExternalSource(NodeBase):
         self.connections[global_id] = transformer
         mqtt_port.connect(transformer)
 
+    def update_topic(self, topic):
+        self.topic = topic
+        self.outp.setName(topic, force=True)
+
+        self.init_ports()
+
     def compute(self, *args, **kwargs):
         pass
-
 
     @staticmethod
     def pinTypeHints():
@@ -92,33 +113,18 @@ class ExternalSource(NodeBase):
     def description():
         return "Description in rst format."
 
-class ExternalSink(NodeBase):
-
-    _packageName = "robinson"
-
-    connections:dict = {}
+class ExternalSink(ExternalBase):
 
     def __init__(self, name, uid=None):
         super().__init__(name, uid=uid)
-        self.logger = getNodeLogger(self)
 
         self.topic = "in"
-
-        self.topic_reg = TopicRegistry()
-        self.mqtt = MQTTConnection("robinson.mqtt", config["mqtt"]["server_uri"])
-        self.mqtt.init()
 
         self.inp = self.createInputPin(self.topic, "AnyPin", None)
         self.inp.enableOptions(PinOptions.AllowAny)
         self.inp.dataBeenSet.connect(self.compute)
 
         self.output_port = None
-        self.init_ports()
-
-    def update_topic(self, topic):
-        self.topic = topic
-        self.inp.setName(topic, force=True)
-
         self.init_ports()
 
     def init_ports(self):
@@ -140,15 +146,15 @@ class ExternalSink(NodeBase):
         # node.external_output.connect(transformer)
         self.output_port = transformer.to_json
 
+    def update_topic(self, topic):
+        self.topic = topic
+        self.inp.setName(topic, force=True)
+
+        self.init_ports()
+
     def compute(self, *args, **kwargs):
-
-        self.logger.warn("Compute called")
-
         if self.inp.dirty == True and self.output_port is not None:
             self.output_port(self.inp.getData())
-
-
-
 
     @staticmethod
     def pinTypeHints():

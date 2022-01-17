@@ -19,6 +19,10 @@ import inspect
 
 from PyQt5.QtCore import pyqtSignal
 
+import logging
+logging.getLogger().setLevel(logging.INFO)
+logging.getLogger("robinson.messaging.mqtt").setLevel(logging.INFO)
+
 class RobinsonRyvenNode(rc.Node):
 
     def __init__(self, params):
@@ -128,17 +132,6 @@ class RobinsonWrapperMixin():
         except Exception as e:
             self.logger.warn(f"Could not init config")
             self.logger.error(e)
-
-    def update_config(self, key, value):
-        self.logger.info(f"update_config {key}:{value}")
-        self.config_args[key] = value
-
-        try:
-            self.component.config_update(**self.config_args)
-        except Exception as e:
-            self.logger.warn(f"Could not update config")
-            self.logger.error(e)
-
 
 class RobinsonRyvenWrapper(RobinsonRyvenNode, RobinsonWrapperMixin):
 

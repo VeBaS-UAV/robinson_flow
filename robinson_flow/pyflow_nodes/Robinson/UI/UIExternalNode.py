@@ -48,6 +48,29 @@ class UIExternalSource(UINodeBase):
         print(f"topic_changed {args}")
         self.node.update_topic(self.topic_text.text())
 
+class UIExternalSink(UINodeBase):
+#     pinCreated = QtCore.Signal(object)
+
+    def __init__(self, raw_node):
+        super(UIExternalSink, self).__init__(raw_node)
+        self.node:ExternalSource = raw_node
+        print("UIExternalSink.__init__")
+
+    def createInputWidgets(self, inputsCategory, inGroup=None, pins=True):
+        preIndex = inputsCategory.Layout.count()
+        w = super().createInputWidgets(inputsCategory, inGroup, pins)
+
+        self.topic_text = QLineEdit()
+        self.topic_text.setText(self.node.topic)
+        self.topic_text.editingFinished.connect(self.topic_changed)
+
+        inputsCategory.insertWidget(preIndex, "Topic", self.topic_text, group=inGroup)
+
+    def topic_changed(self, *args):
+        print(f"topic_changed {args}")
+        self.node.update_topic(self.topic_text.text())
+
+
     # def createOutputWidgets(self, inputsCategory, headName="Outputs"):
         # print("createOutputWidget", inputsCategory, headName)
         # return super().createOutputWidgets(inputsCategory, headName)

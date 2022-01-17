@@ -5,7 +5,7 @@ from PyFlow.UI.UIInterfaces import IPackage
 from robinson_flow.pyflow_nodes.Robinson.Factories.UINodeFactory import createUINode
 
 # Pins
-from robinson_flow.pyflow_nodes.Robinson.Pins.DemoPin import DemoPin
+from robinson_flow.pyflow_nodes.Robinson.Pins.MavlinkPin import MavlinkPin
 
 # Function based nodes
 # from robinson_flow.pyflow_nodes.Robinson.FunctionLibraries.DemoLib import DemoLib
@@ -37,7 +37,7 @@ _EXPORTERS = OrderedDict()
 
 # _FOO_LIBS[DemoLib.__name__] = DemoLib(PACKAGE_NAME)
 
-_PINS[DemoPin.__name__] = DemoPin
+_PINS[MavlinkPin.__name__] = MavlinkPin
 
 _TOOLS[DemoShelfTool.__name__] = DemoShelfTool
 _TOOLS[DemoDockTool.__name__] = DemoDockTool
