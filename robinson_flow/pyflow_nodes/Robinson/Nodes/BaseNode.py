@@ -31,6 +31,8 @@ class RobinsonPyFlowBase(NodeBase, RobinsonWrapperMixin):
         except Exception as e:
             self.logger.error(e)
 
+        self.skip_first_update = True
+
     def create_ports(self):
         self.inExec = self.createInputPin(DEFAULT_IN_EXEC_NAME, 'ExecPin', None, self.compute)
         self.outExec = self.createOutputPin(DEFAULT_OUT_EXEC_NAME, 'ExecPin')
@@ -45,7 +47,8 @@ class RobinsonPyFlowBase(NodeBase, RobinsonWrapperMixin):
             inp = self.createInputPin(short_name, "AnyPin",None)
             inp.enableOptions(PinOptions.AllowAny)
             inp.disableOptions(PinOptions.AlwaysPushDirty)
-
+            inp.disableOptions(PinOptions.ChangeTypeOnConnection)
+            inp.dirty = False
             # sig = inspect.signature(port_callable)
             # print("input infos", port_callable, sig)
             self.input_pins[short_name] = (inp, port_callable)
@@ -55,6 +58,7 @@ class RobinsonPyFlowBase(NodeBase, RobinsonWrapperMixin):
             short_name = self.extract_output_name(port_name)
             outp = self.createOutputPin(short_name, "AnyPin", None)
             outp.enableOptions(PinOptions.AllowAny)
+            outp.disableOptions(PinOptions.ChangeTypeOnConnection)
             # .disableOptions(PinOptions.AlwaysPushDirty)
 
             getattr(self.component, port_name).connect(outp.setData)
@@ -66,9 +70,9 @@ class RobinsonPyFlowBase(NodeBase, RobinsonWrapperMixin):
         # create init port
         init_parameters = self.extract_init_items(self.cls)
 
-        print("init parameters", init_parameters)
+        # print("init parameters", init_parameters)
         for parameter_name, parameter_type in init_parameters:
-            print("init input", parameter_name, parameter_type)
+            # print("init input", parameter_name, parameter_type)
             pin_type =self.map_type_to_port(parameter_type)
 
             inp = self.createInputPin(f"init_{parameter_name}", pin_type,None)
@@ -84,15 +88,18 @@ class RobinsonPyFlowBase(NodeBase, RobinsonWrapperMixin):
 
         config_parameters = self.extract_config_items(self.cls)
 
-        print("Config parameters", config_parameters)
+        # print("Config parameters", config_parameters)
         for parameter_name,parameter_type in config_parameters:
-            print("Config input", parameter_name, parameter_type)
+            # print("Config input", parameter_name, parameter_type)
             pin_type =self.map_type_to_port(parameter_type)
             inp = self.createInputPin(f"config_{parameter_name}", pin_type,None)
             inp.enableOptions(PinOptions.AllowAny)
             inp.disableOptions(PinOptions.AlwaysPushDirty)
+            inp.dirty = False
             self.input_pins[parameter_name] = (inp, partial(self.update_config, parameter_name))
 
+
+        self.skip_first_update = True
 
     def map_type_to_port(self, typeclass):
         port_type_mapping = {}
@@ -115,29 +122,35 @@ class RobinsonPyFlowBase(NodeBase, RobinsonWrapperMixin):
         # config_parameters = self.extract_config_items(self.cls)
 
         try:
-            if self.isDirty() == False:
-                return
+            if self.isDirty():
 
-            for input_name in self.input_pins:
-                # self.logger.info(f"update port {input_name}")
-                inp, inp_callable = self.input_pins[input_name]
-                if inp.dirty == False:
-                    continue
-                data = inp.getData()
-                # if data is None:
-                # sig = inspect.signature(inp_callable)
-                # print(sig)
-                if type(data).__name__ == "MyImage":
-                    data = data.image
+                for input_name in self.input_pins:
+                    # self.logger.info(f"update port {input_name}")
+                    inp, inp_callable = self.input_pins[input_name]
+                    if inp.dirty == False:
+                        continue
 
-                self.logger.info(f"Got input data for port {input_name} {data}")
-                # print(data)
-                inp_callable(data)
-                inp.setClean()
-                # print("####")
+                    if self.skip_first_update:
+                        inp.setClean()
+                        continue
+                    data = inp.getData()
+                    # if data is None:
+                    # sig = inspect.signature(inp_callable)
+                    # print(sig)
+                    if type(data).__name__ == "MyImage":
+                        data = data.image
+
+                    # self.logger.info(f"Got input data for port {input_name} {data}")
+                    # print(data)
+
+                    inp_callable(data)
+                    inp.setClean()
+                    # print("####")
+                self.skip_first_update = False
         except Exception as e:
             self.logger.warn("Could not get all input data")
             self.logger.error(e)
+
 
         # self.logger.info(f"calling update on component")
         self.component.update()
@@ -156,7 +169,7 @@ class RobinsonPyFlowBase(NodeBase, RobinsonWrapperMixin):
 
     @staticmethod
     def category():
-        return 'test'
+        return "default"
 
     @staticmethod
     def keywords():

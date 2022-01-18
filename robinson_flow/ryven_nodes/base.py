@@ -79,11 +79,16 @@ class RobinsonWrapperMixin():
         return []
 
     def extract_config_items(self, cls):
-        if (isinstance(cls.config, pydantic.BaseModel)):
-            return [(name, cls.config.__fields__[name].type_) for (name, _) in cls.config.__dict__.items()]
-        else:
-            cfg_parameter = inspect.signature(cls.config).parameters
-            return [(name, p.annotation) for (name, p) in cfg_parameter.items() if name != "self"]
+        try:
+            if (isinstance(cls.config, pydantic.BaseModel)):
+                return [(name, cls.config.__fields__[name].type_) for (name, _) in cls.config.__dict__.items()]
+            else:
+                cfg_parameter = inspect.signature(cls.config).parameters
+                return [(name, p.annotation) for (name, p) in cfg_parameter.items() if name != "self"]
+        except Exception as e:
+            print("Error in extract_config_item")
+            print(e)
+            return []
 
     def call_input_port_by_name(self, name, *args, **kw_args):
         # print("call_input_port_by_name", name, args, kw_args)

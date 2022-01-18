@@ -1,6 +1,11 @@
+from vebas.tracking.components.cv import ImageView
 from robinson_flow.pyflow_nodes.Robinson.Nodes.ExternalNodes import ExternalSink, ExternalSource
+from robinson_flow.pyflow_nodes.Robinson.Nodes.OpenCV import FrameView
 from robinson_flow.pyflow_nodes.Robinson.UI.UIExternalNode import UIExternalSink, UIExternalSource
 from PyFlow.UI.Canvas.UINodeBase import UINodeBase
+
+from robinson_flow.pyflow_nodes.Robinson.UI.UIOpenCV import UIFrameView
+
 
 
 def createUINode(raw_instance):
@@ -10,5 +15,7 @@ def createUINode(raw_instance):
         return UIExternalSource(raw_instance)
     if isinstance(raw_instance, ExternalSink):
         return UIExternalSink(raw_instance)
+    if isinstance(raw_instance, FrameView):
+        return UIFrameView(raw_instance)
 
     return UINodeBase(raw_instance)

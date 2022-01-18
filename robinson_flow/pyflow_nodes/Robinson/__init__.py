@@ -3,6 +3,7 @@ PACKAGE_NAME = 'Robinson'
 from collections import OrderedDict
 from PyFlow.UI.UIInterfaces import IPackage
 from robinson_flow.pyflow_nodes.Robinson.Factories.UINodeFactory import createUINode
+from robinson_flow.pyflow_nodes.Robinson.Nodes.OpenCV import FrameView
 
 # Pins
 from robinson_flow.pyflow_nodes.Robinson.Pins.MavlinkPin import MavlinkPin
@@ -55,10 +56,14 @@ def factory(cls):
     if name.endswith("Component"):
         name = name[:-len("Component")]
 
-    print(f"generate component {name}:{cls}")
+    # print(f"generate component {name}:{cls}")
     class PyflowTemplateNode(RobinsonPyFlowBase):
         def __init__(self, name, uid=None):
             super().__init__(name, cls=cls, uid=uid)
+
+        @staticmethod
+        def category():
+            return cls.__module__
 
     cl =  PyflowTemplateNode
     cl.__name__ = name
@@ -85,10 +90,10 @@ def export_nodes():
 
     component_list = []#TestComponent, PrintOutputComponent, AddComponent, RGB2HSV, BGR2HSV, RGB2BRG, BGR2RGB, DetectionOverlay, ColoredCircleDetection, MyPartial]
 
-    # component_list.extend(load_components_from_module(vebas.tracking.components.cv))
-    # component_list.extend(load_components_from_module(vebas.tracking.components.control))
-    # component_list.extend(load_components_from_module(vebas.tracking.components.filter))
-    # component_list.extend(load_components_from_module(vebas.tracking.components.transform))
+    component_list.extend(load_components_from_module(vebas.tracking.components.cv))
+    component_list.extend(load_components_from_module(vebas.tracking.components.control))
+    component_list.extend(load_components_from_module(vebas.tracking.components.filter))
+    component_list.extend(load_components_from_module(vebas.tracking.components.transform))
     # component_list.extend(load_components_from_module(kf_ctl))
 
     # component_list.append(ExternalSource)
@@ -101,6 +106,7 @@ def export_nodes():
     other_comp = {}
     other_comp["ExternalSource"] = ExternalSource
     other_comp["ExternalSink"] = ExternalSink
+    other_comp["FrameView"] = FrameView
 
     return {**rob_comps, **other_comp}
 
