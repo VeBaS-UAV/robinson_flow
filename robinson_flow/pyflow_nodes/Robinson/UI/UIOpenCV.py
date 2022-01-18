@@ -25,8 +25,8 @@ class UIFrameView(UINodeBase):
         self.resizable = True
 
         self.image_label = QLabel()
-        self.image_label.setText("hello")
-
+        self.image_label.setText("waiting for image")
+        self.image_label.resize(30,30)
         self.addWidget(self.image_label)
         # self.updateSize()
 

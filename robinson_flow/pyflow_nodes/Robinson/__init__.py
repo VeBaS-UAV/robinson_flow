@@ -4,6 +4,7 @@ from collections import OrderedDict
 from PyFlow.UI.UIInterfaces import IPackage
 from robinson_flow.pyflow_nodes.Robinson.Factories.UINodeFactory import createUINode
 from robinson_flow.pyflow_nodes.Robinson.Nodes.OpenCV import FrameView
+from robinson_flow.pyflow_nodes.Robinson.Nodes.utils import LambdaNode, LoggingView
 
 # Pins
 from robinson_flow.pyflow_nodes.Robinson.Pins.MavlinkPin import MavlinkPin
@@ -27,7 +28,7 @@ from robinson_flow.pyflow_nodes.Robinson.Factories.PinInputWidgetFactory import 
 from robinson_flow.ryven_nodes.nodes.components import PrintOutputComponent, TestComponent
 
 from robinson_flow.pyflow_nodes.Robinson.Nodes.ExternalNodes import ExternalSink, ExternalSource
-from robinson_flow.pyflow_nodes.Robinson.Nodes.BaseNode import AddHelloComponent, RobinsonPyFlowBase
+from robinson_flow.pyflow_nodes.Robinson.Nodes.BaseNode import AddHelloComponent, RobinsonPyFlowBase, RobinsonPyFlowFunc
 
 _FOO_LIBS = {}
 _NODES = {}
@@ -51,6 +52,8 @@ import inspect
 from robinson.components import Component
 import sys
 
+from vebas.utils import latlon2tuple
+
 def factory(cls):
     name = cls.__name__
     if name.endswith("Component"):
@@ -66,6 +69,23 @@ def factory(cls):
             return cls.__module__
 
     cl =  PyflowTemplateNode
+    cl.__name__ = name
+
+    return name, cl
+
+def factory_function(cb):
+    name = cb.__name__
+
+    # print(f"generate component {name}:{cls}")
+    class RobinsonPyFlowFunctionWrapperFactory(RobinsonPyFlowFunc):
+        def __init__(self, name, uid=None):
+            super().__init__(name, cb=cb, uid=uid)
+
+        @staticmethod
+        def category():
+            return cb.__module__
+
+    cl =  RobinsonPyFlowFunctionWrapperFactory
     cl.__name__ = name
 
     return name, cl
@@ -94,7 +114,7 @@ def export_nodes():
     component_list.extend(load_components_from_module(vebas.tracking.components.control))
     component_list.extend(load_components_from_module(vebas.tracking.components.filter))
     component_list.extend(load_components_from_module(vebas.tracking.components.transform))
-    # component_list.extend(load_components_from_module(kf_ctl))
+    component_list.extend(load_components_from_module(kf_ctl))
 
     # component_list.append(ExternalSource)
     component_list.append(AddHelloComponent)
@@ -103,12 +123,20 @@ def export_nodes():
 
     rob_comps = {k:v for k,v in [factory(c) for c in component_list]}
 
+    function_list = []
+    function_list.append(latlon2tuple)
+
+    func_comps = {k:v for k,v in [factory_function(f) for f in function_list]}
+
+
     other_comp = {}
     other_comp["ExternalSource"] = ExternalSource
     other_comp["ExternalSink"] = ExternalSink
     other_comp["FrameView"] = FrameView
+    other_comp["LambdaNode"] = LambdaNode
+    other_comp["LoggingView"] = LoggingView
 
-    return {**rob_comps, **other_comp}
+    return {**rob_comps, **func_comps, **other_comp}
 
 class Robinson(IPackage):
 	def __init__(self):

@@ -20,6 +20,7 @@ from PyFlow.Core import NodeBase
 from PyFlow.Core.Common import *
 import vebas.config
 
+
 config = vebas.config.default_config()
 vebas.config.default_logging_settings()
 
@@ -42,7 +43,7 @@ class ExternalBase(NodeBase):
     def serialize(self):
         data =  super().serialize()
         data["topic"] = self.topic
-        self.logger.info(f"serialize {data}")
+        # self.logger.info(f"serialize {data}")
         return data
 
     def postCreate(self, jsonTemplate=None):
@@ -67,6 +68,8 @@ class ExternalSource(ExternalBase):
         self.init_ports()
 
     def receive_msg(self, msg):
+        tp = type(msg)
+        # self.logger.info(f"reveive_msg {msg}"[:20])
         self.outp.setData(msg)
 
     def init_ports(self):

@@ -14,6 +14,8 @@ for k, v in os.environ.items():
 # os.environ['QT_API'] = 'pyside2'  # tells QtPy to use PySide2
 os.environ['QT_API'] = 'pyqt5'  # tells QtPy to use PySide2
 # from qtpy.QtWidgets import QMainWindow, QApplication, QMenuBar, QToolbar
+os.environ["VEBAS_CONFIG"] = "pre75"
+
 
 from PyQt5.QtWidgets import QMainWindow, QApplication, QToolBar, QMenuBar, QAction
 
@@ -30,6 +32,7 @@ from robinson_flow.ryven_nodes import nodes as nodes
 from robinson_flow.ryven_nodes.nodes import export_nodes
 from robinson_flow.ryven_nodes.std.nodes import export_nodes as std_export_nodes
 from robinson_flow.ryven_nodes.executor import RobinsonFlowExecutor
+
 
 import vebas.config
 config = vebas.config.default_config()

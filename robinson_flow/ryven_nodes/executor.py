@@ -5,7 +5,7 @@ import threading
 import time
 from pymavlink.dialects.v20.ardupilotmega import MAVLink_message
 from ryvencore.FlowExecutor import FlowExecutor
-from robinson.messaging.mqtt.serializer import JsonTransform
+from robinson.messaging.mqtt.serializer import Image, JsonTransform
 
 from robinson_flow.ryven_nodes.base import RobinsonRyvenNode, RobinsonRyvenWrapper
 from robinson_flow.ryven_nodes import base
@@ -40,8 +40,9 @@ class TopicRegistry():
     def __init__(self) -> None:
 
         self.registry["mavlink/*"] = TopicRegistryItem(MAVLink_message, JsonTransform, MAVLink_message)
+        self.registry['vebas/uav/camera/image'] = TopicRegistryItem(Image, JsonTransform, Image)
         self.registry["*"] = TopicRegistryItem(dict, JsonTransform)
-        self.registry["default"] = TopicRegistryItem(dict, JsonTransform)
+        # self.registry["default"] = TopicRegistryItem(dict, JsonTransform)
 
     def find(self, topic:str) -> TopicRegistryItem:
         import fnmatch

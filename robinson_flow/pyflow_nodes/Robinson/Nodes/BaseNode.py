@@ -1,3 +1,4 @@
+from typing import Callable
 import PyFlow
 from PyFlow.Core import NodeBase
 from PyFlow.Core.NodeBase import NodePinsSuggestionsHelper
@@ -11,6 +12,49 @@ from robinson_flow.ryven_nodes.utils import getNodeLogger
 from robinson.components import Component, InputOutputPortComponent
 
 from functools import partial
+
+
+class RobinsonPyFlowFunc(NodeBase):
+    _packageName = "Robinson"
+
+    def __init__(self, name, cb:Callable, uid=None):
+        super().__init__(name, uid)
+        self.logger = getNodeLogger(self)
+        self.cb = cb
+        # self.inExec = self.createInputPin(DEFAULT_IN_EXEC_NAME, 'ExecPin', None, self.compute)
+        # self.outExec = self.createOutputPin(DEFAULT_OUT_EXEC_NAME, 'ExecPin')
+
+        input_parameters = inspect.signature(self.cb).parameters
+
+        if input_parameters is not None:
+
+            inp_parameter =  [name for (name, p) in input_parameters.items()]
+            print("input pa", inp_parameter)
+            for name in input_parameters:
+                inp = self.createInputPin(name, "AnyPin",None)
+                inp.enableOptions(PinOptions.AllowAny)
+                inp.disableOptions(PinOptions.AlwaysPushDirty)
+                inp.disableOptions(PinOptions.ChangeTypeOnConnection)
+                inp.dirty = False
+                inp.dataBeenSet.connect(self.compute)
+
+        self.outp = self.createOutputPin("out", "AnyPin", None)
+        self.outp.enableOptions(PinOptions.AllowAny)
+        self.outp.disableOptions(PinOptions.ChangeTypeOnConnection)
+
+    def compute(self, *args, **kwargs):
+
+        if self.isDirty():
+            try:
+                args = [d.getData() for d in self.inputs.values()]
+
+                ret = self.cb(*args)
+
+                self.outp.setData(ret)
+            except Exception as e:
+                self.logger.warn("Could call function succefully")
+                self.logger.error(e)
+
 
 
 class RobinsonPyFlowBase(NodeBase, RobinsonWrapperMixin):
