@@ -21,6 +21,9 @@ import queue
 
 from robinson_flow.ryven_nodes.utils import getLogger
 
+from vebas.taskplanner.types import Seedling, SeedlingsList
+
+
 class TopicRegistryItem():
 
     def __init__(self, msg_type, transformer, *args, **kwargs) -> None:
@@ -41,6 +44,8 @@ class TopicRegistry():
 
         self.registry["mavlink/*"] = TopicRegistryItem(MAVLink_message, JsonTransform, MAVLink_message)
         self.registry['vebas/uav/camera/image'] = TopicRegistryItem(Image, JsonTransform, Image)
+        self.registry['vebas/**/image'] = TopicRegistryItem(Image, JsonTransform, Image)
+        self.registry['vebas/taskplanner/seedlings'] = TopicRegistryItem(SeedlingsList, JsonTransform, SeedlingsList)
         self.registry["*"] = TopicRegistryItem(dict, JsonTransform)
         # self.registry["default"] = TopicRegistryItem(dict, JsonTransform)
 

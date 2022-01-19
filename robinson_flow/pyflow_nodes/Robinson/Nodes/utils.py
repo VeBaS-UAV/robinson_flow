@@ -5,6 +5,10 @@ from robinson_flow.ryven_nodes.utils import getNodeLogger
 
 from PyQt5.QtCore import pyqtSignal, QObject
 
+import numpy
+import numpy as np
+import pandas
+import pandas as pd
 
 class LoggingView(NodeBase, QObject):
 
@@ -41,6 +45,7 @@ class LambdaNode(NodeBase, QObject):
         self.logger = getNodeLogger(self)
 
         self.inp = self.createInputPin("m", "AnyPin", None)
+        self.inp.enableOptions(PinOptions.AllowAny)
         self.inp.disableOptions(PinOptions.ChangeTypeOnConnection)
         self.inp.dataBeenSet.connect(self.call_lambda)
 

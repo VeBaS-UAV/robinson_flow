@@ -28,7 +28,7 @@ from robinson_flow.pyflow_nodes.Robinson.Factories.PinInputWidgetFactory import 
 from robinson_flow.ryven_nodes.nodes.components import PrintOutputComponent, TestComponent
 
 from robinson_flow.pyflow_nodes.Robinson.Nodes.ExternalNodes import ExternalSink, ExternalSource
-from robinson_flow.pyflow_nodes.Robinson.Nodes.BaseNode import AddHelloComponent, RobinsonPyFlowBase, RobinsonPyFlowFunc
+from robinson_flow.pyflow_nodes.Robinson.Nodes.BaseNode import AddHelloComponent, RobinsonPyFlowBase, RobinsonPyFlowFunc, RobinsonTicker
 
 _FOO_LIBS = {}
 _NODES = {}
@@ -135,6 +135,7 @@ def export_nodes():
     other_comp["FrameView"] = FrameView
     other_comp["LambdaNode"] = LambdaNode
     other_comp["LoggingView"] = LoggingView
+    other_comp["RobinsonTicker"] = RobinsonTicker
 
     return {**rob_comps, **func_comps, **other_comp}
 

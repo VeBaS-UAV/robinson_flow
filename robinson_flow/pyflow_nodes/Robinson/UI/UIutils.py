@@ -6,9 +6,10 @@ from PyFlow.UI.Utils.stylesheet import Colors
 from PyFlow.UI import RESOURCES_DIR
 from PyFlow.UI.Canvas.UICommon import *
 from vebas.tracking.components.cv import ImageView
-from Qt.QtWidgets import QTextEdit, QLineEdit, QLabel, QPlainTextEdit, QTextEdit
+from Qt.QtWidgets import QTextEdit, QLineEdit, QLabel, QPlainTextEdit, QTextEdit, QPushButton
 from Qt.QtGui import QImage, QPixmap, QFont
 from Qt.QtCore import Qt
+from robinson_flow.pyflow_nodes.Robinson.Nodes.BaseNode import RobinsonTicker
 from robinson_flow.pyflow_nodes.Robinson.Nodes.ExternalNodes import ExternalSource
 from robinson_flow.pyflow_nodes.Robinson.Nodes.OpenCV import FrameView
 import cv2
@@ -105,3 +106,18 @@ class UILambdaView(UINodeBase):
             self.eval_msg.setText("")
         except Exception as e:
             self.eval_msg.setText(str(e))
+
+class UIRobinsonTickerView(UINodeBase):
+#     pinCreated = QtCore.Signal(object)
+
+    def __init__(self, raw_node):
+        super(UIRobinsonTickerView, self).__init__(raw_node)
+        self.node:RobinsonTicker = raw_node
+        self.resizable = True
+
+        self.lambdawidget = QPushButton()
+        self.lambdawidget.setText("Toggle")
+        self.lambdawidget.clicked.connect(self.node.toggle)
+        # self.lambdawidget.setLineWrapMode(QPlainTextEdit.NoWrap)
+
+        self.addWidget(self.lambdawidget)

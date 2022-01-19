@@ -1,3 +1,4 @@
+from threading import Thread
 from typing import Callable
 import PyFlow
 from PyFlow.Core import NodeBase
@@ -12,6 +13,10 @@ from robinson_flow.ryven_nodes.utils import getNodeLogger
 from robinson.components import Component, InputOutputPortComponent
 
 from functools import partial
+
+import cProfile
+import pstats
+
 
 
 class RobinsonPyFlowFunc(NodeBase):
@@ -55,7 +60,70 @@ class RobinsonPyFlowFunc(NodeBase):
                 self.logger.warn("Could call function succefully")
                 self.logger.error(e)
 
+class RobinsonTicker(NodeBase):
+    _packageName = "Robinson"
 
+    def __init__(self, name, uid=None):
+        super().__init__(name, uid)
+        self.logger = getNodeLogger(self)
+        # self.inExec = self.createInputPin(DEFAULT_IN_EXEC_NAME, 'ExecPin', None, self.compute)
+        self.outExec = self.createOutputPin(DEFAULT_OUT_EXEC_NAME, 'ExecPin')
+
+        self.thread = None
+        self.running = False
+
+        self.profile = cProfile.Profile()
+        self.outp = self.createOutputPin("stats", "AnyPin", None)
+        self.outp.enableOptions(PinOptions.AllowAny)
+        self.outp.disableOptions(PinOptions.ChangeTypeOnConnection)
+
+    def toggle(self):
+        if self.running:
+            self.stop()
+        else:
+            self.start()
+
+    def stop(self):
+        self.running = False
+
+        stats = pstats.Stats(self.profile)
+
+        stats.dump_stats("profile.dump")
+
+        self.outp.setData(stats)
+
+    def start(self):
+        # if self.thread is not None:
+        #     self.running=False
+        #     try:
+        #         self.thread.join()
+        #     except Exception as e:
+        #         self.logger.warn(e)
+
+        # self.thread = Thread(target=self.run)
+        # self.thread.start()
+        self.running = True
+
+    def Tick(self, delta):
+        super(RobinsonTicker, self).Tick(delta)
+        bEnabled = self.running
+        if bEnabled:
+            self.profile.enable()
+            self.outExec.call()
+            self.profile.disable()
+
+    # def run(self):
+    #     self.running = True
+
+    #     self.logger.info("Running...")
+    #     while self.running:
+    #         self.outExec.call()
+    #         time.sleep(0.02)
+    #     self.logger.info("Stop running")
+
+    @staticmethod
+    def category():
+        return "utils"
 
 class RobinsonPyFlowBase(NodeBase, RobinsonWrapperMixin):
 

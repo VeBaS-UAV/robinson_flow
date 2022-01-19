@@ -21,6 +21,8 @@ from PyFlow.Core.Common import *
 import vebas.config
 
 
+from PyQt5.QtCore import pyqtSignal, QObject
+
 config = vebas.config.default_config()
 vebas.config.default_logging_settings()
 
@@ -55,9 +57,11 @@ class ExternalBase(NodeBase):
     def deserialize(self, jsonData):
         return super().deserialize(jsonData)
 
-class ExternalSource(ExternalBase):
+class ExternalSource(ExternalBase,QObject):
 
     _packageName = "robinson"
+
+    # msg_signal = pyqtSignal(object)
 
     def __init__(self, name, uid=None):
         super().__init__(name, uid=uid)
@@ -66,6 +70,8 @@ class ExternalSource(ExternalBase):
         self.outp.enableOptions(PinOptions.AllowAny)
 
         self.init_ports()
+
+        # self.msg_signal.connect(self.receive_msg)
 
     def receive_msg(self, msg):
         tp = type(msg)
@@ -85,6 +91,7 @@ class ExternalSource(ExternalBase):
         reg_item = self.topic_reg.find(self.topic)
 
         transformer = reg_item.create()
+        # transformer.connect(self.msg_signal.emit)
         transformer.connect(self.receive_msg)
 
         self.connections[global_id] = transformer
