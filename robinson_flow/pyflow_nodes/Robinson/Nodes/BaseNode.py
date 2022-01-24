@@ -4,6 +4,7 @@ import PyFlow
 from PyFlow.Core import NodeBase
 from PyFlow.Core.NodeBase import NodePinsSuggestionsHelper
 from PyFlow.Core.Common import *
+from blinker.base import Signal
 import pydantic
 from robinson_flow.ryven_nodes.base import RobinsonWrapperMixin
 from robinson_flow.ryven_nodes.nodes.components import PrintOutputComponent
@@ -200,9 +201,9 @@ class RobinsonPyFlowBase(NodeBase, RobinsonWrapperMixin):
 
         config_parameters = self.extract_config_items(self.cls)
 
-        # print("Config parameters", config_parameters)
+        print("Config parameters", config_parameters)
         for parameter_name,parameter_type in config_parameters:
-            # print("Config input", parameter_name, parameter_type)
+            print("Config input", parameter_name, parameter_type)
             pin_type =self.map_type_to_port(parameter_type)
             inp = self.createInputPin(f"config_{parameter_name}", pin_type,None)
             inp.enableOptions(PinOptions.AllowAny)
@@ -247,6 +248,11 @@ class RobinsonPyFlowBase(NodeBase, RobinsonWrapperMixin):
                         continue
                     data = inp.getData()
                     # if data is None:
+                    if data is None:
+                        continue
+
+                    if isinstance(data, str):
+                        pass
                     # sig = inspect.signature(inp_callable)
                     # print(sig)
                     if type(data).__name__ == "MyImage":
@@ -298,9 +304,11 @@ class TestNode(RobinsonPyFlowBase):
 
 
 
-class AddHelloComponent(InputOutputPortComponent):
+class AddHelloComponent(Component):
 
     msg = None
+
+    dataport_output = Signal(str)
 
     def __init__(self, name):
         super().__init__(name)
@@ -314,4 +322,6 @@ class AddHelloComponent(InputOutputPortComponent):
 
     def update(self):
         if self.msg is not None:
-            self.dataport_output(self.fstring.format(**self.__dict__))
+            msg = self.fstring.format(**self.__dict__)
+            self.dataport_output.send(msg)
+            # self.dataport_output(k))

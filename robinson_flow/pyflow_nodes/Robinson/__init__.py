@@ -2,9 +2,10 @@ PACKAGE_NAME = 'Robinson'
 
 from collections import OrderedDict
 from PyFlow.UI.UIInterfaces import IPackage
+from robinson_flow.pyflow_nodes.Robinson.Exporters.DemoExporter import DemoExporter
 from robinson_flow.pyflow_nodes.Robinson.Factories.UINodeFactory import createUINode
 from robinson_flow.pyflow_nodes.Robinson.Nodes.OpenCV import FrameView
-from robinson_flow.pyflow_nodes.Robinson.Nodes.utils import LambdaNode, LoggingView
+from robinson_flow.pyflow_nodes.Robinson.Nodes.utils import EvalNode, LambdaNode, LoggingView, OnMessageExec, PlotView
 
 # Pins
 from robinson_flow.pyflow_nodes.Robinson.Pins.MavlinkPin import MavlinkPin
@@ -44,7 +45,7 @@ _PINS[MavlinkPin.__name__] = MavlinkPin
 _TOOLS[DemoShelfTool.__name__] = DemoShelfTool
 _TOOLS[DemoDockTool.__name__] = DemoDockTool
 
-# _EXPORTERS[DemoExporter.__name__] = DemoExporter
+_EXPORTERS[DemoExporter.__name__] = DemoExporter
 
 # _PREFS_WIDGETS["Demo"] = DemoPrefs
 
@@ -59,6 +60,7 @@ def factory(cls):
     if name.endswith("Component"):
         name = name[:-len("Component")]
 
+    name = name.strip("_/-")
     # print(f"generate component {name}:{cls}")
     class PyflowTemplateNode(RobinsonPyFlowBase):
         def __init__(self, name, uid=None):
@@ -136,6 +138,9 @@ def export_nodes():
     other_comp["LambdaNode"] = LambdaNode
     other_comp["LoggingView"] = LoggingView
     other_comp["RobinsonTicker"] = RobinsonTicker
+    other_comp["OnMessageExec"] = OnMessageExec
+    other_comp["EvalNode"] = EvalNode
+    other_comp["PlotView"] = PlotView
 
     return {**rob_comps, **func_comps, **other_comp}
 

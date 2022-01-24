@@ -42,6 +42,7 @@ class TopicRegistry():
 
     def __init__(self) -> None:
 
+        self.registry["mavlink"] = TopicRegistryItem(MAVLink_message, JsonTransform, MAVLink_message)
         self.registry["mavlink/*"] = TopicRegistryItem(MAVLink_message, JsonTransform, MAVLink_message)
         self.registry['vebas/uav/camera/image'] = TopicRegistryItem(Image, JsonTransform, Image)
         self.registry['vebas/**/image'] = TopicRegistryItem(Image, JsonTransform, Image)

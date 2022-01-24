@@ -1,4 +1,4 @@
-from PyFlow.Core.Common import PinOptions
+from PyFlow.Core.Common import DEFAULT_OUT_EXEC_NAME, PinOptions
 from PyFlow.Core.NodeBase import NodeBase
 
 from robinson_flow.ryven_nodes.utils import getNodeLogger
@@ -9,6 +9,33 @@ import numpy
 import numpy as np
 import pandas
 import pandas as pd
+
+class OnMessageExec(NodeBase, QObject):
+
+    _packageName = "Robinson"
+
+    def __init__(self, name, uid=None):
+        super().__init__(name, uid)
+        self.logger = getNodeLogger(self)
+
+        self.msg_received = False
+        self.outExec = self.createOutputPin(DEFAULT_OUT_EXEC_NAME, 'ExecPin')
+
+        self.inp = self.createInputPin("msg", "AnyPin", None)
+        self.inp.enableOptions(PinOptions.AllowAny)
+        self.inp.dataBeenSet.connect(self.msg_callback)
+
+    def msg_callback(self, msg):
+        self.msg_received = True
+
+    def Tick(self, delta):
+        if self.msg_received:
+            self.outExec.call()
+            self.msg_received = False
+
+    @staticmethod
+    def category():
+        return "utils"
 
 class LoggingView(NodeBase, QObject):
 
@@ -98,6 +125,77 @@ class LambdaNode(NodeBase, QObject):
         if "lambda_code" in jsonTemplate:
             self.update_lambda(jsonTemplate["lambda_code"])
 
+
+    @staticmethod
+    def category():
+        return "utils"
+
+class EvalNode(NodeBase, QObject):
+
+    _packageName = "Robinson"
+
+    code_changed = pyqtSignal(str)
+    code_eval_msg = pyqtSignal(str)
+    code_call_msg = pyqtSignal(str)
+
+    def __init__(self, name, uid=None):
+        super().__init__(name, uid)
+        self.logger = getNodeLogger(self)
+
+        self.outp = self.createOutputPin("out", "AnyPin", None)
+        self.outp.disableOptions(PinOptions.ChangeTypeOnConnection)
+
+        self.code = ""
+
+        self.update_code(self.code)
+
+    def update_code(self, code):
+        if self.code == code:
+            return
+
+        self.code = code
+        try:
+            self.result = eval(self.code)
+            self.outp.setData(self.result)
+        except Exception as e:
+            self.code_eval_msg.emit(str(e))
+            raise e
+        self.code_changed.emit(self.code)
+
+    def serialize(self):
+        data =  super().serialize()
+        data["code"] = self.code
+        # self.logger.info(f"serialize {data}")
+        return data
+
+    def postCreate(self, jsonTemplate=None):
+        super().postCreate(jsonTemplate)
+
+        if "code" in jsonTemplate:
+            self.update_code(jsonTemplate["code"])
+
+
+    @staticmethod
+    def category():
+        return "utils"
+
+class PlotView(NodeBase, QObject):
+
+    _packageName = "Robinson"
+    connections:dict = {}
+
+    msg_received = pyqtSignal(object)
+
+    def __init__(self, name, uid=None):
+        super().__init__(name, uid)
+        self.logger = getNodeLogger(self)
+
+        self.inp = self.createInputPin("msg", "AnyPin", None)
+        self.inp.enableOptions(PinOptions.AllowAny)
+        self.inp.dataBeenSet.connect(self.img_received_callback)
+
+    def img_received_callback(self, msg):
+        self.msg_received.emit(self.inp.getData())
 
     @staticmethod
     def category():
