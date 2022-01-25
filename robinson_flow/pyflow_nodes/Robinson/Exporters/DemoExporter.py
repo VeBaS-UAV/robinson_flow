@@ -36,3 +36,17 @@ class DemoExporter(IDataExporter):
     @staticmethod
     def doExport(pyFlowInstance):
         print("DemoExporter export!")
+        import json
+        import pickle
+        import toml
+        import yaml
+
+        data = pyFlowInstance.graphManager.man.serialize()
+
+        try:
+            json.dump(data,open("graph_export.json","w"))
+            pickle.dump(data, open("graph_export.pickle","wb"))
+            yaml.dump(data, open("graph_export.yaml","w"))
+            toml.dump(data, open("graph_export.toml","w"))
+        except Exception as e:
+            print(e)

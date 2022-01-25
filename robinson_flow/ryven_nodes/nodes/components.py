@@ -74,9 +74,10 @@ class PrintOutputComponent(Component):
     #     #self.logger.info(f"received multi args {arg1}, {arg2}")
     #     self.msg = arg1, arg2
 
-    def init(self, console_output, **kwargs):
+    def init(self, console_output=None, **kwargs):
         self.logger.info(f"Init called with args {kwargs}")
-        self.console_output = console_output
+        if console_output is not None:
+            self.console_output = console_output
 
     def config_update(self, **kwargs):
         self.logger.info(f"update_config called with args {kwargs}")

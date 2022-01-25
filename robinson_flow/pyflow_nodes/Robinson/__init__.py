@@ -29,7 +29,7 @@ from robinson_flow.pyflow_nodes.Robinson.Factories.PinInputWidgetFactory import 
 from robinson_flow.ryven_nodes.nodes.components import PrintOutputComponent, TestComponent
 
 from robinson_flow.pyflow_nodes.Robinson.Nodes.ExternalNodes import ExternalSink, ExternalSource
-from robinson_flow.pyflow_nodes.Robinson.Nodes.BaseNode import AddHelloComponent, RobinsonPyFlowBase, RobinsonPyFlowFunc, RobinsonTicker
+from robinson_flow.pyflow_nodes.Robinson.Nodes.BaseNode import AddHelloComponent, OutputNameComponent, RobinsonPyFlowBase, RobinsonPyFlowFunc, RobinsonTicker
 
 _FOO_LIBS = {}
 _NODES = {}
@@ -119,6 +119,7 @@ def export_nodes():
     component_list.extend(load_components_from_module(kf_ctl))
 
     # component_list.append(ExternalSource)
+    component_list.append(OutputNameComponent)
     component_list.append(AddHelloComponent)
     component_list.append(TestComponent)
     component_list.append(PrintOutputComponent)

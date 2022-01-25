@@ -11,7 +11,7 @@ from robinson_flow.ryven_nodes.nodes.components import PrintOutputComponent
 
 from robinson_flow.ryven_nodes.utils import getNodeLogger
 
-from robinson.components import Component, InputOutputPortComponent
+from robinson.components import Component, InputOutputPortComponent, OutputPortComponent
 
 from functools import partial
 
@@ -164,7 +164,7 @@ class RobinsonPyFlowBase(NodeBase, RobinsonWrapperMixin):
             inp.dirty = False
             # sig = inspect.signature(port_callable)
             # print("input infos", port_callable, sig)
-            self.input_pins[short_name] = (inp, port_callable)
+            self.input_pins[port_name] = (inp, port_callable)
 
 
         for port_name, port_callable in output_ports:
@@ -176,7 +176,7 @@ class RobinsonPyFlowBase(NodeBase, RobinsonWrapperMixin):
 
             getattr(self.component, port_name).connect(outp.setData)
 
-            self.output_pins[short_name] = (outp, port_callable)
+            self.output_pins[port_name] = (outp, port_callable)
 
 
         # create init port
@@ -275,7 +275,20 @@ class RobinsonPyFlowBase(NodeBase, RobinsonWrapperMixin):
 
 
         self.outExec.call()
-    
+
+    def serialize(self):
+        data =  super().serialize()
+
+        rob = {}
+        rob["input_names"] = list(self.input_pins.keys())
+        rob["output_names"] = list(self.output_pins.keys())
+        rob["class"] = self.cls.__name__
+        rob["module"] = self.cls.__module__
+
+        data["robinson"] = rob
+
+        return data
+
     @staticmethod
     def pinTypeHints():
         helper = NodePinsSuggestionsHelper()
@@ -297,12 +310,20 @@ class RobinsonPyFlowBase(NodeBase, RobinsonWrapperMixin):
     def description():
         return "Description in rst format."
 
+
+
 class TestNode(RobinsonPyFlowBase):
 
     def __init__(self, name, uid=None):
         super().__init__(name, cls=PrintOutputComponent, uid=uid)
 
+class OutputNameComponent(OutputPortComponent):
 
+    def __init__(self, name: str):
+        super().__init__(name)
+
+    def update(self):
+        self.dataport_output(self.name)
 
 class AddHelloComponent(Component):
 
@@ -317,8 +338,9 @@ class AddHelloComponent(Component):
     def dataport_input(self, msg):
         self.msg = msg
 
-    def init(self, fstring:str):
-        self.fstring = fstring
+    def init(self, fstring:str=None):
+        if fstring is not None:
+            self.fstring = fstring
 
     def update(self):
         if self.msg is not None:
