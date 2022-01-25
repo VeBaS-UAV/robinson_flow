@@ -55,14 +55,14 @@ class CDir(BaseModel):
 
     def from_name(self):
         try:
-            return self.from_node["name"]
+            return self.from_node.name
         except Exception as e:
             print(e, self.from_node)
             return "ERROR_from_name"
 
     def to_name(self):
         try:
-            return self.to_node["name"]
+            return self.to_node.name
         except Exception as e:
             print(e, self.to_node)
             return "ERROR_to_name"
@@ -111,6 +111,9 @@ class NodeDefinition():
             return list(self.data)[key]
 
         return self.data[key]
+
+    def name(self):
+        return self.data["name"]
 
     def is_robinson(self,n):
         return "robinson" in n
@@ -253,18 +256,30 @@ class GraphInputDefinition(NodeDefinition):
 
 
     def input_portname_by_index(self, idx):
-        return f"GraphInput_Input_{idx}"
+        return f"NOT_IMPLEMENTED_GraphInput_Input_{idx}"
 
     def output_portname_by_index(self, idx):
-        return f"GraphOutput_Output_{idx}"
+        r = [n["name"] for n in self.data["outputs"] if n["pinIndex"] == idx]
+
+        if len(r) > 0:
+            return r[0]
+
+        return f"NOT_FOUND_GraphInput_output_{idx}"
 
 class GraphOutputDefinition(NodeDefinition):
 
     def input_portname_by_index(self, idx):
+        # pprint(self.data)
+        r = [n["name"] for n in self.data["inputs"] if n["pinIndex"] == idx]
+
+        if len(r) > 0:
+            return r[0]
+
         return f"GraphOutput_input_{idx}"
 
     def output_portname_by_index(self, idx):
-        return f"GraphOuput_output_{idx}"
+        # pprint(self.data)
+        return f"NOT_IMPLEMENTED_GraphOuput_output_{idx}"
 
 
 
@@ -378,10 +393,21 @@ cd.update_codelines()
 
 cd.connections
 
+cd.outputs()
+cd.inputs()
+
+list(cd.nodes().values())[0].outputs()
 
 ccd = list(cd.compound_nodes().values())[0]
 ccd.update_codelines()
+ccd.inputs()
+ccd.outputs()
 ccd.connections
+
+
+#TODO connection between composite and graphinput/graphoutput
+#TODO graphinput/output name should be composite name
+#
 # %%
 #
 from io import StringIO
@@ -392,7 +418,10 @@ for uuid, c in cd.compound_nodes().items():
 
     buf.write("\n")
     for uuid, child in c.computation_nodes().items():
-        buf.write(f"   {child['name']} = {child['name']}(\"{child['name']}\")\n")
+        var_name = child["name"].lower()
+        class_name = child["name"]
+        comp_name = var_name
+        buf.write(f"   {var_name} = {class_name}(\"{comp_name}\")\n")
 
     buf.write("\n")
     for uuid, child in c.graph_outputs().items():
@@ -407,7 +436,8 @@ for uuid, c in cd.compound_nodes().items():
             buf.write(f"def dataport_input_{name}(self, msg):\n")
 
             for link in graph_input["linkedTo"]:
-                buf.write(f"    self.{link['rhsNodeName']}\n")
+                var_name = link["rhsNodeName"].lower()
+                buf.write(f"    self.{var_name}.dataport_input(msg)\n")
 
 c.connections
 
