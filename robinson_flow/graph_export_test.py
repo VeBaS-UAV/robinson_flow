@@ -339,9 +339,6 @@ class CompositeDefinition(NodeDefinition):
     def __init__(self, name, data):
         self._name = name
         self.data = data
-        self.import_modules = {}
-        self.components_init = {}
-        self.connections:List[CDir] = []
 
     def __getitem__(self, key):
         # print("__getitem__", key)
@@ -380,12 +377,9 @@ class CompositeDefinition(NodeDefinition):
         return f'UNKNOWN_{idx}'
 
 
-    def update_codelines(self):
+    def import_modules(self):
 
-        self.import_modules = {}
-        self.components_init = {}
-        self.connections:List[CDir] = []
-
+        import_modules = {}
         nodes = self.nodes()
 
         for uuid,n in nodes.items():
@@ -397,8 +391,7 @@ class CompositeDefinition(NodeDefinition):
                 classname = n.classname()
                 fqn = f"{module}.{classname}"
 
-                self.import_modules[component_name] = module, classname
-                self.components_init[component_name] = module, classname
+                import_modules[component_name] = module, classname
 
             if self.is_compound(n):
                 print("Compound Node", n["name"])
@@ -407,6 +400,11 @@ class CompositeDefinition(NodeDefinition):
                 print("External Node", n["name"])
                 pass
 
+        return import_modules
+
+    def connections(self):
+        nodes = self.nodes()
+        connections = []
         for uuid,n in nodes.items():
             out = n.outputs()
 
@@ -416,7 +414,6 @@ class CompositeDefinition(NodeDefinition):
                     continue
 
                 for link in output_links:
-                    # print(n["name"], link)
 
                     from_node = n
                     from_idx = link["outPinId"]
@@ -426,38 +423,40 @@ class CompositeDefinition(NodeDefinition):
                     to_idx = link['inPinId']
                     # try:
                     to_node = nodes[to_uuid]
-                    print("to_node", to_node)
-                    # except:
-                        # to_node = to_uuid
-                    self.connections.append(CDir(from_node=from_node, from_idx=from_idx, to_node=to_node, to_idx=to_idx))
-                    # if "robinson" in to_node:
-                        # to_port = n_to["robinson"]["input_names"][to_idx-2]
-                    # else:
-                        # print("Could not identify node {to_name}")
+                    # print("to_node", to_node)
+                    connections.append(CDir(from_node=from_node, from_idx=from_idx, to_node=to_node, to_idx=to_idx))
+
+        return connections
 
 
 
 cd = CompositeDefinition("test",data)
 
-cd.update_codelines()
+cd.import_modules()
 
-cd.connections
+cd.connections()
+cd.input_ports()
+cd.output_ports()
+
+
+# %%
 
 cd.outputs()
 cd.inputs()
 
 list(cd.nodes().values())[0].output_ports()
 
+cca = list(cd.nodes().values())[0]
+cca
+cca.input_ports()
+cca.output_ports()
+
 ccd = list(cd.compound_nodes().values())[0]
-ccd.update_codelines()
+type(ccd)
 ccd.inputs()
 ccd.outputs()
-ccd.connections
+ccd.connections()
 
-ccd
-#TODO connection between composite and graphinput/graphoutput
-#TODO graphinput/output name should be composite name
-#
 ccd.input_ports()
 ccd.output_ports()
 
@@ -465,6 +464,7 @@ cd.input_ports()
 cd.output_ports()
 
 cd
+
 # %%
 #
 from io import StringIO
@@ -478,42 +478,26 @@ for uuid, c in cd.compound_nodes().items():
         var_name = child["name"].lower()
         class_name = child["name"]
         comp_name = var_name
-        buf.write(f"   {var_name} = {class_name}(\"{comp_name}\")\n")
+        buf.write(f"    {var_name} = {class_name}(\"{comp_name}\")\n")
 
-    # buf.write("\n")
-    # for uuid, child in c.graph_outputs().items():
-    #     for graph_input in child.inputs():
-    #         name = graph_input["name"]
-    #         buf.write(f"   dataport_output_{name} = DataPortOutput('{name}')\n")
+    buf.write("\n")
+    for port in c.output_ports():
+        name = port.name
+        buf.write(f"    dataport_output_{name} = DataPortOutput('{name}')\n")
 
-    # buf.write("\n")
-    # for uuid, child in c.graph_inputs().items():
-    #     for graph_input in child.outputs():
-    #         name = graph_input["name"]
-    #         buf.write(f"def dataport_input_{name}(self, msg):\n")
+    buf.write("\n")
+    for port in c.input_ports():
+        name = port.name
+        buf.write(f"    dataport_input_{name} = DataPort('{name}'):\n")
+
 
     #         for link in graph_input["linkedTo"]:
     #             var_name = link["rhsNodeName"].lower()
     #             buf.write(f"    self.{var_name}.dataport_input(msg)\n")
-c
-c.update_codelines()
 
-# %%
+c.output_ports()
 
-
-input_ports(c)
-output_ports(c)
-# port.connections()
-
-
-# %%
-
-c.outputs()
-c.connections
-list(c.graph_inputs().values())[0].outputs()
-
-
-child.outputs()
+child.output_ports()
 print(buf.getvalue())
 
 
