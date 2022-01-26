@@ -9,6 +9,7 @@ from pprint import pprint
 from pydantic import BaseModel
 from typing import Any, List
 import traceback
+import ipdb
     # def export_to_python(self):
 
     #     from io import StringIO
@@ -55,14 +56,14 @@ class CDir(BaseModel):
 
     def from_name(self):
         try:
-            return self.from_node.name
+            return self.from_node.name()
         except Exception as e:
             print(e, self.from_node)
             return "ERROR_from_name"
 
     def to_name(self):
         try:
-            return self.to_node.name
+            return self.to_node.name()
         except Exception as e:
             print(e, self.to_node)
             return "ERROR_to_name"
@@ -102,7 +103,7 @@ data = yaml.load(open("/home/matthias/src/pyflow/PyFlow/graph_export.yaml"), Loa
 class NodeDefinition():
 
     def __init__(self, name, data) -> None:
-        self.name = name
+        self._name = name
         self.data = data
 
     def __getitem__(self, key):
@@ -113,7 +114,7 @@ class NodeDefinition():
         return self.data[key]
 
     def name(self):
-        return self.data["name"]
+        return self._name
 
     def is_robinson(self,n):
         return "robinson" in n
@@ -159,12 +160,14 @@ class NodeDefinition():
 
     def graph_outputs(self):
         nodes = [n for n in self._nodes() if self.is_graph_output(n)]
-        nodes = {n["uuid"]:GraphOutputDefinition(n['name'],n) for n in nodes}
+        # ipdb.set_trace()
+        nodes = {n["uuid"]:GraphOutputDefinition(n['name'],self,n) for n in nodes}
         return nodes
 
     def graph_inputs(self):
         nodes = [n for n in self._nodes() if self.is_graph_input(n)]
-        nodes = {n["uuid"]:GraphInputDefinition(n['name'],n) for n in nodes}
+        # ipdb.set_trace()
+        nodes = {n["uuid"]:GraphInputDefinition(n['name'],self,n) for n in nodes}
         return nodes
 
     def compound_nodes(self):
@@ -221,13 +224,9 @@ class NodeDefinition():
         return self.robinson_def()["output_names"][idx - 2]
 
     def __repr__(self) -> str:
-        return f"<Node {self.name}>"
+        return f"<Node {self.name()}>"
 
 class ExternalSourceDefinition(NodeDefinition):
-
-    def __init__(self, name, data) -> None:
-        self.name = name
-        self.data = data
 
     def topic(self):
         return self.data["topic"]
@@ -240,9 +239,6 @@ class ExternalSourceDefinition(NodeDefinition):
 
 class ExternalSinkDefinition(NodeDefinition):
 
-    def __init__(self, name, data) -> None:
-        self.name = name
-        self.data = data
     def topic(self):
         return self.data["topic"]
 
@@ -255,6 +251,11 @@ class ExternalSinkDefinition(NodeDefinition):
 class GraphInputDefinition(NodeDefinition):
 
 
+    def __init__(self, name, compound, data) -> None:
+        self._name = name
+        self.compound = compound
+        self.data = data
+
     def input_portname_by_index(self, idx):
         return f"NOT_IMPLEMENTED_GraphInput_Input_{idx}"
 
@@ -266,12 +267,22 @@ class GraphInputDefinition(NodeDefinition):
 
         return f"NOT_FOUND_GraphInput_output_{idx}"
 
+    def name(self):
+        # ipdb.set_trace()
+        return self.compound.name()
+
 class GraphOutputDefinition(NodeDefinition):
+
+    def __init__(self, name, compound, data) -> None:
+        self._name = name
+        self.compound = compound
+        self.data = data
 
     def input_portname_by_index(self, idx):
         # pprint(self.data)
         r = [n["name"] for n in self.data["inputs"] if n["pinIndex"] == idx]
 
+        # ipdb.set_trace()
         if len(r) > 0:
             return r[0]
 
@@ -281,13 +292,15 @@ class GraphOutputDefinition(NodeDefinition):
         # pprint(self.data)
         return f"NOT_IMPLEMENTED_GraphOuput_output_{idx}"
 
-
+    def name(self):
+        # ipdb.set_trace()
+        return self.compound.name()
 
 
 class CompositeDefinition(NodeDefinition):
 
     def __init__(self, name, data):
-        self.name = name
+        self._name = name
         self.data = data
         self.import_modules = {}
         self.components_init = {}
