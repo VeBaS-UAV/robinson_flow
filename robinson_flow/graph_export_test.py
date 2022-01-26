@@ -89,6 +89,7 @@ class CDir(BaseModel):
 
 
     def __repr__(self):
+        # ipdb.set_trace()
         return f"Connection({self.from_name()}.{self.from_port()} -> {self.to_name()}.{self.to_port()})"
 
 
@@ -100,6 +101,28 @@ class CDir(BaseModel):
 
 data = yaml.load(open("/home/matthias/src/pyflow/PyFlow/graph_export.yaml"), Loader=yaml.CLoader)
 # %%
+
+
+class PortDefinition():
+
+    def __init__(self, name, data):
+        self.name = name
+        self.data = data
+
+    def __repr__(self):
+        return f"<Port  {self.name}>"
+
+class InputPortDefinition(PortDefinition):
+
+    def __repr__(self):
+        return f"<InputPort  {self.name}>"
+
+class OutputPortDefinition(PortDefinition):
+
+    def __repr__(self):
+        return f"<OutputPort  {self.name}>"
+
+
 class NodeDefinition():
 
     def __init__(self, name, data) -> None:
@@ -205,6 +228,20 @@ class NodeDefinition():
         if "inputs" in self.data:
             return self.data["inputs"]
         return []
+
+    def input_ports(self):
+        ports = []
+        for p in self.inputs():
+            ports.append(InputPortDefinition(p["name"], p))
+
+        return ports
+
+    def output_ports(self):
+        ports = []
+        for p in self.outputs():
+            ports.append(OutputPortDefinition(p["name"], p))
+
+        return ports
 
     def robinson_def(self):
         if "robinson" in self.data:
@@ -409,7 +446,7 @@ cd.connections
 cd.outputs()
 cd.inputs()
 
-list(cd.nodes().values())[0].outputs()
+list(cd.nodes().values())[0].output_ports()
 
 ccd = list(cd.compound_nodes().values())[0]
 ccd.update_codelines()
@@ -417,10 +454,17 @@ ccd.inputs()
 ccd.outputs()
 ccd.connections
 
-
+ccd
 #TODO connection between composite and graphinput/graphoutput
 #TODO graphinput/output name should be composite name
 #
+ccd.input_ports()
+ccd.output_ports()
+
+cd.input_ports()
+cd.output_ports()
+
+cd
 # %%
 #
 from io import StringIO
@@ -436,23 +480,38 @@ for uuid, c in cd.compound_nodes().items():
         comp_name = var_name
         buf.write(f"   {var_name} = {class_name}(\"{comp_name}\")\n")
 
-    buf.write("\n")
-    for uuid, child in c.graph_outputs().items():
-        for graph_input in child.inputs():
-            name = graph_input["name"]
-            buf.write(f"   dataport_output_{name} = DataPortOutput('{name}')\n")
+    # buf.write("\n")
+    # for uuid, child in c.graph_outputs().items():
+    #     for graph_input in child.inputs():
+    #         name = graph_input["name"]
+    #         buf.write(f"   dataport_output_{name} = DataPortOutput('{name}')\n")
 
-    buf.write("\n")
-    for uuid, child in c.graph_inputs().items():
-        for graph_input in child.outputs():
-            name = graph_input["name"]
-            buf.write(f"def dataport_input_{name}(self, msg):\n")
+    # buf.write("\n")
+    # for uuid, child in c.graph_inputs().items():
+    #     for graph_input in child.outputs():
+    #         name = graph_input["name"]
+    #         buf.write(f"def dataport_input_{name}(self, msg):\n")
 
-            for link in graph_input["linkedTo"]:
-                var_name = link["rhsNodeName"].lower()
-                buf.write(f"    self.{var_name}.dataport_input(msg)\n")
+    #         for link in graph_input["linkedTo"]:
+    #             var_name = link["rhsNodeName"].lower()
+    #             buf.write(f"    self.{var_name}.dataport_input(msg)\n")
+c
+c.update_codelines()
 
+# %%
+
+
+input_ports(c)
+output_ports(c)
+# port.connections()
+
+
+# %%
+
+c.outputs()
 c.connections
+list(c.graph_inputs().values())[0].outputs()
+
 
 child.outputs()
 print(buf.getvalue())
