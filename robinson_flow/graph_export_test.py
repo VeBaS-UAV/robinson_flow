@@ -394,10 +394,10 @@ class CompositeDefinition(NodeDefinition):
                 import_modules[component_name] = module, classname
 
             if self.is_compound(n):
-                print("Compound Node", n["name"])
+                # print("Compound Node", n["name"])
                 pass
             if self.is_external(n):
-                print("External Node", n["name"])
+                # print("External Node", n["name"])
                 pass
 
         return import_modules
@@ -470,68 +470,58 @@ cd
 from io import StringIO
 buf = StringIO()
 
-for uuid, c in cd.compound_nodes().items():
-    buf.write(f"class Composite_{c['name']}(Composite):\n")
 
-    buf.write("\n")
-    for uuid, child in c.computation_nodes().items():
-        var_name = child["name"].lower()
-        class_name = child["name"]
-        comp_name = var_name
-        buf.write(f"    {var_name} = {class_name}(\"{comp_name}\")\n")
+# %%
+import mako
 
-    buf.write("\n")
-    for port in c.output_ports():
-        name = port.name
-        buf.write(f"    dataport_output_{name} = DataPortOutput('{name}')\n")
+from mako.template import Template
+from mako.lookup import TemplateLookup
 
-    buf.write("\n")
-    for port in c.input_ports():
-        name = port.name
-        buf.write(f"    dataport_input_{name} = DataPort('{name}'):\n")
+tmp = Template(filename="composite_def.py.tpl")
+
+for c in cd.compound_nodes().values():
+    print(tmp.render(base=c))
+
+# print(tmp.render(base=cd))
+
+# %%
+tmp = Template(filename="composite_init.py.tpl")
+
+print(tmp.render(base=cd))
 
 
-    #         for link in graph_input["linkedTo"]:
-    #             var_name = link["rhsNodeName"].lower()
-    #             buf.write(f"    self.{var_name}.dataport_input(msg)\n")
+# %%
 
-c.output_ports()
+tmp = Template(filename="components_import.py.tpl")
 
-child.output_ports()
-print(buf.getvalue())
+cd.nodes()
+print(tmp.render(base=cd))
 
 
 # %%
 
 
-buf.write("#!/usr/bin/env python3\n")
-buf.write("\n")
-buf.write("from robinson.components import ComponentRunner\n")
-buf.write("\n")
+tmp = Template(filename="components_init.py.tpl")
 
-for name, (module, classname) in self.import_modules.items():
-    buf.write(f"from {module} import {classname} as {name}_component\n")
+cd.nodes()
+print(tmp.render(base=cd))
 
-buf.write("\n")
-for name, (module, classname) in self.components_init.items():
-    buf.write(f"{name} = {name}_component('{name}')\n")
+# %%
+tmp = Template(filename="connections_init.py.tpl")
 
-buf.write("\n")
+print(tmp.render(base=cd))
 
-for c in self.connections:
-    buf.write(f"{c.from_name()}.{c.from_port()}.connect({c.to_name()}.{c.to_port()})\n")
+# cd.connections()
+
+# %%
+
+tmp = Template(filename="runner_init.py.tpl")
+
+print(tmp.render(base=cd))
 
 
-buf.write("\n")
-buf.write("\n")
+# %%
+mylookup = TemplateLookup(directories=["."])
+tmp = mylookup.get_template("main.py.tpl")
 
-buf.write("runner = ComponentRunner('runner')\n")
-for name, fqn in self.components_init.items():
-    buf.write(f"runner += {name}\n")
-
-buf.write("\n")
-buf.write(f"runner.run()\n")
-# print(buf.getvalue())
-
-# with open('testrun.py', mode='w') as f:
-    # print(buf.getvalue(), file=f)
+print(tmp.render(base=cd))
