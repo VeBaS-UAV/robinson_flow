@@ -10,42 +10,6 @@ from pydantic import BaseModel
 from typing import Any, List
 import traceback
 import ipdb
-    # def export_to_python(self):
-
-    #     from io import StringIO
-    #     buf = StringIO()
-
-    #     buf.write("#!/usr/bin/env python3\n")
-    #     buf.write("\n")
-    #     buf.write("from robinson.components import ComponentRunner\n")
-    #     buf.write("\n")
-
-    #     for name, (module, classname) in self.import_modules.items():
-    #         buf.write(f"from {module} import {classname} as {name}_component\n")
-
-    #     buf.write("\n")
-    #     for name, (module, classname) in self.components_init.items():
-    #         buf.write(f"{name} = {name}_component('{name}')\n")
-
-    #     buf.write("\n")
-
-    #     for c in self.connections:
-    #         buf.write(f"{c.from_name()}.{c.from_port()}.connect({c.to_name()}.{c.to_port()})\n")
-
-
-    #     buf.write("\n")
-    #     buf.write("\n")
-
-    #     buf.write("runner = ComponentRunner('runner')\n")
-    #     for name, fqn in self.components_init.items():
-    #         buf.write(f"runner += {name}\n")
-
-    #     buf.write("\n")
-    #     buf.write(f"runner.run()\n")
-    #     # print(buf.getvalue())
-
-    #     # with open('testrun.py', mode='w') as f:
-    #         # print(buf.getvalue(), file=f)
 
 class CDir(BaseModel):
     from_node:Any = None
@@ -59,14 +23,14 @@ class CDir(BaseModel):
             return self.from_node.name()
         except Exception as e:
             print(e, self.from_node)
-            return "ERROR_from_name"
+            return str(self.from_node)
 
     def to_name(self):
         try:
             return self.to_node.name()
         except Exception as e:
             print(e, self.to_node)
-            return "ERROR_to_name"
+            return str(self.to_node)
 
     def from_port(self):
         try:
@@ -75,7 +39,7 @@ class CDir(BaseModel):
         except Exception as e:
             print("Error from_port", e, self.from_node, self.from_idx)
             print(traceback.format_exc())
-            return "ERROR"
+            return str(self.from_idx)
 
     def to_port(self):
         try:
@@ -85,7 +49,7 @@ class CDir(BaseModel):
         except Exception as e:
             print("Error to_port", e, self.to_node, self.to_idx)
             print(traceback.format_exc())
-            return "ERROR"
+            return str(self.to_idx)
 
 
     def __repr__(self):
@@ -139,70 +103,80 @@ class NodeDefinition():
     def name(self):
         return self._name
 
-    def is_robinson(self,n):
-        return "robinson" in n
+    def is_robinson(self):
+        return "robinson" in self.data
 
-    def is_compound(self, n):
-        return "graphData" in n
+    def is_compound(self):
+        return "graphData" in self.data
 
-    def is_external_source(self, n):
-        return "type" in n and n["type"] == "ExternalSource"
+    def is_external_source(self):
+        return "type" in self.data and self.data["type"] == "ExternalSource"
 
-    def is_external_sink(self, n):
-        return "type" in n and n["type"] == "ExternalSink"
+    def is_external_sink(self):
+        return "type" in self.data and self.data["type"] == "ExternalSink"
 
-    def is_external(self, n):
-        return self.is_external_sink(n) or self.is_external_source(n)
+    def is_external(self):
+        return self.is_external_sink() or self.is_external_source()
 
-    def is_graph_input(self, n):
-        return "type" in n and n["type"] == "graphInputs"
+    def is_graph_input(self):
+        return "type" in self.data and self.data["type"] == "graphInputs"
 
-    def is_graph_output(self, n):
-        return "type" in n and n["type"] == "graphOutputs"
+    def is_graph_output(self):
+        return "type" in self.data and self.data["type"] == "graphOutputs"
 
-    def is_graph_port(self, n):
-        return self.is_graph_input(n) or self.is_graph_output(n)
+    def is_graph_port(self):
+        return self.is_graph_input() or self.is_graph_output()
 
     def _nodes(self):
-        return self.data["nodes"]
+        if "nodes" in self.data:
+            nodes = self.data["nodes"]
+            nodes = {n["uuid"]:NodeDefinition(n['name'],n) for n in nodes}
+            return nodes
+        return {}
 
     def robinson_nodes(self):
-        nodes = [n for n in self._nodes() if self.is_robinson(n)]
+        nodes = [n for n in self._nodes().values() if n.is_robinson()]
         nodes = {n["uuid"]:NodeDefinition(n['name'],n) for n in nodes}
         return nodes
 
     def robinson_external_sources(self):
-        nodes = [n for n in self._nodes() if self.is_external_source(n)]
+        nodes = [n for n in self._nodes().values() if n.is_external_source()]
         nodes = {n["uuid"]:ExternalSourceDefinition(n['name'],n) for n in nodes}
         return nodes
 
     def robinson_external_sinks(self):
-        nodes = [n for n in self._nodes() if self.is_external_sink(n)]
+        nodes = [n for n in self._nodes().values() if n.is_external_sink()]
         nodes = {n["uuid"]:ExternalSinkDefinition(n['name'],n) for n in nodes}
         return nodes
 
     def graph_outputs(self):
-        nodes = [n for n in self._nodes() if self.is_graph_output(n)]
+        nodes = [n for n in self._nodes().values() if n.is_graph_output()]
         # ipdb.set_trace()
         nodes = {n["uuid"]:GraphOutputDefinition(n['name'],self,n) for n in nodes}
         return nodes
 
     def graph_inputs(self):
-        nodes = [n for n in self._nodes() if self.is_graph_input(n)]
+        nodes = [n for n in self._nodes().values() if n.is_graph_input()]
         # ipdb.set_trace()
         nodes = {n["uuid"]:GraphInputDefinition(n['name'],self,n) for n in nodes}
         return nodes
 
     def compound_nodes(self):
-        compounds = [n for n in self._nodes() if self.is_compound(n)]
+        compounds = [n for n in self._nodes().values() if n.is_compound()]
         compounds = {n["uuid"]:CompositeDefinition(n["name"], n) for n in compounds}
+        return compounds
+
+    def compound_nodes_recursive(self):
+        compounds = self.compound_nodes()
+
+        for c in compounds.values():
+            childs = c.compound_nodes()
+            compounds = {**compounds, **childs}
+
         return compounds
 
     def computation_nodes(self):
         return {**self.robinson_nodes(), **self.compound_nodes()}
-
-    # def external_nodes(self):
-        # return {**self.robinson_nodes(), **self.compound_nodes()}
 
     def nodes(self):
         nodes = self.robinson_nodes()
@@ -218,6 +192,15 @@ class NodeDefinition():
         nodes = {**nodes, **external_sources, **external_sinks, **graph_inputs, **graph_outputs, **compounds}
 
         return nodes
+
+    def nodes_recursive(self, filter=lambda m:True):
+        nodes = self.nodes()
+
+        for c in nodes.values():
+            childs = c.nodes()
+            nodes = {**nodes, **childs}
+
+        return {k:v for k,v in nodes.items() if filter(v)}
 
     def outputs(self):
         if "outputs" in self.data:
@@ -306,7 +289,8 @@ class GraphInputDefinition(NodeDefinition):
 
     def name(self):
         # ipdb.set_trace()
-        return self.compound.name()
+        # return self.compound.name()
+        return super().name()
 
 class GraphOutputDefinition(NodeDefinition):
 
@@ -330,8 +314,9 @@ class GraphOutputDefinition(NodeDefinition):
         return f"NOT_IMPLEMENTED_GraphOuput_output_{idx}"
 
     def name(self):
+        return super().name()
         # ipdb.set_trace()
-        return self.compound.name()
+        # return self.compound.name()
 
 
 class CompositeDefinition(NodeDefinition):
@@ -348,11 +333,15 @@ class CompositeDefinition(NodeDefinition):
         return self.data[key]
 
     def _nodes(self):
-
-        try:
-            return self.data["nodes"]
-        except Exception as e:
-            return self.data["graphData"]["nodes"]
+        # ipdb.set_trace()
+        if "graphData" in self.data:
+            nodes = self.data["graphData"]["nodes"]
+            nodes = {n["uuid"]:NodeDefinition(n['name'],n) for n in nodes}
+            return nodes
+        if "nodes" in self.data:
+            nodes = self.data["nodes"]
+            nodes = {n["uuid"]:NodeDefinition(n['name'],n) for n in nodes}
+            return nodes
 
     def module(self):
         return "composite_module"
@@ -385,7 +374,7 @@ class CompositeDefinition(NodeDefinition):
         for uuid,n in nodes.items():
             component_name = n["name"]
 
-            if self.is_robinson(n):
+            if n.is_robinson():
                 # rob = n.robinson_def()
                 module = n.module()
                 classname = n.classname()
@@ -393,10 +382,10 @@ class CompositeDefinition(NodeDefinition):
 
                 import_modules[component_name] = module, classname
 
-            if self.is_compound(n):
+            if n.is_compound():
                 # print("Compound Node", n["name"])
                 pass
-            if self.is_external(n):
+            if n.is_external():
                 # print("External Node", n["name"])
                 pass
 
@@ -404,6 +393,7 @@ class CompositeDefinition(NodeDefinition):
 
     def connections(self):
         nodes = self.nodes()
+        print(nodes)
         connections = []
         for uuid,n in nodes.items():
             out = n.outputs()
@@ -422,7 +412,7 @@ class CompositeDefinition(NodeDefinition):
                     to_uuid = link["rhsNodeUid"]
                     to_idx = link['inPinId']
                     # try:
-                    to_node = nodes[to_uuid]
+                    to_node = nodes[to_uuid] if to_uuid in nodes else uuid
                     # print("to_node", to_node)
                     connections.append(CDir(from_node=from_node, from_idx=from_idx, to_node=to_node, to_idx=to_idx))
 
@@ -434,10 +424,30 @@ cd = CompositeDefinition("test",data)
 
 cd.import_modules()
 
+cd.compound_nodes()
+
+[n["name"] for n in cd.data["nodes"]]
+cd.data["nodes"][2]["graphData"]
+
+cd.nodes()
+cd.compound_nodes()
+
+n = list(cd._nodes().values())[2]
+n
+n.is_compound()
+
+cd.compound_nodes()
+
+cd.nodes()
 cd.connections()
 cd.input_ports()
 cd.output_ports()
 
+cd.compound_nodes_recursive()
+
+cd.nodes_recursive(filter=lambda m:m.is_compound()==False and m.is_graph_port()==False)
+# cd.nodes_recursive(filter=lambda m:m.is_graph_port(m)==False)
+cd.nodes_recursive()
 
 # %%
 
@@ -470,19 +480,20 @@ cd
 from io import StringIO
 buf = StringIO()
 
-
 # %%
 import mako
 
 from mako.template import Template
 from mako.lookup import TemplateLookup
 
-tmp = Template(filename="composite_def.py.tpl")
+tmp = Template(filename="composite_class.py.tpl")
 
-for c in cd.compound_nodes().values():
+for c in cd.compound_nodes_recursive().values():
     print(tmp.render(base=c))
 
-# print(tmp.render(base=cd))
+c
+c._nodes()
+c.connections()
 
 # %%
 tmp = Template(filename="composite_init.py.tpl")
@@ -525,3 +536,4 @@ mylookup = TemplateLookup(directories=["."])
 tmp = mylookup.get_template("main.py.tpl")
 
 print(tmp.render(base=cd))
+
