@@ -27,13 +27,13 @@ class ${composite.name().capitalize()}Composite(Composite):
 
         % for c in composite.connections():
         <%
-            from_component = c.from_name().lower()
+            from_component = f"self.{c.from_name().lower()}"
             if c.from_node.is_graph_port():
                from_component = "self"
             from_port = c.from_port()
             from_statement = f"{from_component}.{from_port}"
 
-            to_component = c.to_name().lower()
+            to_component = f"self.{c.to_name().lower()}"
             if c.to_node.is_graph_port():
                to_component = "self"
             to_port = c.to_port()

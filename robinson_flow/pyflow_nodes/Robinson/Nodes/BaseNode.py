@@ -181,35 +181,35 @@ class RobinsonPyFlowBase(NodeBase, RobinsonWrapperMixin):
 
         # create init port
         # create init port
-        init_parameters = self.extract_init_items(self.cls)
+        # init_parameters = self.extract_init_items(self.cls)
 
-        # print("init parameters", init_parameters)
-        for parameter_name, parameter_type in init_parameters:
-            # print("init input", parameter_name, parameter_type)
-            pin_type =self.map_type_to_port(parameter_type)
+        # # print("init parameters", init_parameters)
+        # for parameter_name, parameter_type in init_parameters:
+        #     # print("init input", parameter_name, parameter_type)
+        #     pin_type =self.map_type_to_port(parameter_type)
 
-            inp = self.createInputPin(f"init_{parameter_name}", pin_type,None)
-            inp.enableOptions(PinOptions.AllowAny)
-            inp.disableOptions(PinOptions.AlwaysPushDirty)
-            # inp.enableOptions(PinOptions.Dynamic)
-            # inp.enableOptions(PinOptions.Storable)
-            inp.dirty = False
-            self.input_pins[parameter_name] = (inp, partial(self.update_init, parameter_name))
+        #     inp = self.createInputPin(f"init_{parameter_name}", pin_type,None)
+        #     inp.enableOptions(PinOptions.AllowAny)
+        #     inp.disableOptions(PinOptions.AlwaysPushDirty)
+        #     # inp.enableOptions(PinOptions.Dynamic)
+        #     # inp.enableOptions(PinOptions.Storable)
+        #     inp.dirty = False
+        #     self.input_pins[parameter_name] = (inp, partial(self.update_init, parameter_name))
 
 
-        # config
+        # # config
 
-        config_parameters = self.extract_config_items(self.cls)
+        # config_parameters = self.extract_config_items(self.cls)
 
-        print("Config parameters", config_parameters)
-        for parameter_name,parameter_type in config_parameters:
-            print("Config input", parameter_name, parameter_type)
-            pin_type =self.map_type_to_port(parameter_type)
-            inp = self.createInputPin(f"config_{parameter_name}", pin_type,None)
-            inp.enableOptions(PinOptions.AllowAny)
-            inp.disableOptions(PinOptions.AlwaysPushDirty)
-            inp.dirty = False
-            self.input_pins[parameter_name] = (inp, partial(self.update_config, parameter_name))
+        # print("Config parameters", config_parameters)
+        # for parameter_name,parameter_type in config_parameters:
+        #     print("Config input", parameter_name, parameter_type)
+        #     pin_type =self.map_type_to_port(parameter_type)
+        #     inp = self.createInputPin(f"config_{parameter_name}", pin_type,None)
+        #     inp.enableOptions(PinOptions.AllowAny)
+        #     inp.disableOptions(PinOptions.AlwaysPushDirty)
+        #     inp.dirty = False
+        #     self.input_pins[parameter_name] = (inp, partial(self.update_config, parameter_name))
 
 
         self.skip_first_update = True

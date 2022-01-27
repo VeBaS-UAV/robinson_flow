@@ -491,9 +491,6 @@ tmp = Template(filename="composite_class.py.tpl")
 for c in cd.compound_nodes_recursive().values():
     print(tmp.render(base=c))
 
-c
-c._nodes()
-c.connections()
 
 # %%
 tmp = Template(filename="composite_init.py.tpl")
@@ -537,3 +534,17 @@ tmp = mylookup.get_template("main.py.tpl")
 
 print(tmp.render(base=cd))
 
+buf = StringIO()
+
+buf.write(tmp.render(base=cd))
+
+with open("test_export.py","w") as fh:
+    fh.write(buf.getvalue())
+
+# %%
+cd.compound_nodes_recursive()
+cd.computation_nodes()
+ccd.computation_nodes()
+
+cd.compound_nodes()
+cd.compound_nodes_recursive()
