@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import json
+from robinson.messaging.mqtt import MQTTConnection
 import yaml
 import pickle
 
@@ -10,6 +11,13 @@ from pydantic import BaseModel
 from typing import Any, List
 import traceback
 import ipdb
+
+from robinson_flow.ryven_nodes.executor import TopicRegistry
+from robinson.messaging.mqtt import MQTTConnection
+import vebas.config
+config = vebas.config.default_config()
+vebas.config.default_logging_settings()
+
 
 class CDir(BaseModel):
     from_node:Any = None
@@ -252,10 +260,16 @@ class ExternalSourceDefinition(NodeDefinition):
         return self.data["topic"]
 
     def input_portname_by_index(self, idx):
-        return f"ExternalSourceInput_{idx}"
+        # return f"ExternalSourceInput_{idx}"
+        return self.topic()
 
     def output_portname_by_index(self, idx):
-        return f"ExternalSourceOutput_{idx}"
+        # return f"ExternalSourceOutput_{idx}"
+        return self.topic()
+
+    def name(self):
+        return "mqtt"
+
 
 class ExternalSinkDefinition(NodeDefinition):
 
@@ -263,10 +277,15 @@ class ExternalSinkDefinition(NodeDefinition):
         return self.data["topic"]
 
     def input_portname_by_index(self, idx):
-        return f"ExternalSinkInput_{idx}"
+        # return f"ExternalSinkInput_{idx}"
+        return self.topic()
 
     def output_portname_by_index(self, idx):
-        return f"ExternalSinkOutput_{idx}"
+        # return f"ExternalSinkOutput_{idx}"
+        return self.topic()
+
+    def name(self):
+        return "mqtt"
 
 class GraphInputDefinition(NodeDefinition):
 
@@ -392,8 +411,9 @@ class CompositeDefinition(NodeDefinition):
         return import_modules
 
     def connections(self):
+        # nodes = {u:c for u,c in self.nodes().items() if c.is_external() == False}
         nodes = self.nodes()
-        print(nodes)
+
         connections = []
         for uuid,n in nodes.items():
             out = n.outputs()
@@ -412,12 +432,45 @@ class CompositeDefinition(NodeDefinition):
                     to_uuid = link["rhsNodeUid"]
                     to_idx = link['inPinId']
                     # try:
-                    to_node = nodes[to_uuid] if to_uuid in nodes else uuid
+                    to_node = nodes[to_uuid]# if to_uuid in nodes else uuid
                     # print("to_node", to_node)
+                    #
+                    if from_node.is_external() or to_node.is_external():
+                        continue
                     connections.append(CDir(from_node=from_node, from_idx=from_idx, to_node=to_node, to_idx=to_idx))
 
         return connections
 
+    def connections_extern(self):
+        # nodes = {u:c for u,c in self.nodes().items() if c.is_external() == False}
+        nodes = self.nodes()
+
+        connections = []
+        for uuid,n in nodes.items():
+            out = n.outputs()
+
+            for o in out:
+                output_links = o["linkedTo"]
+                if len(output_links) == 0:
+                    continue
+
+                for link in output_links:
+
+                    from_node = n
+                    from_idx = link["outPinId"]
+                    # from_name = n["name"]
+                    # from_port = rob["output_names"][from_idx - 2]
+                    to_uuid = link["rhsNodeUid"]
+                    to_idx = link['inPinId']
+                    # try:
+                    to_node = nodes[to_uuid]# if to_uuid in nodes else uuid
+                    # print("to_node", to_node)
+                    #
+                    if from_node.is_external() == False and to_node.is_external() == False:
+                        continue
+                    connections.append(CDir(from_node=from_node, from_idx=from_idx, to_node=to_node, to_idx=to_idx))
+
+        return connections
 
 
 cd = CompositeDefinition("test",data)
@@ -440,14 +493,14 @@ cd.compound_nodes()
 
 cd.nodes()
 cd.connections()
-cd.input_ports()
-cd.output_ports()
+# cd.input_ports()
+# cd.output_ports()
 
-cd.compound_nodes_recursive()
+# cd.compound_nodes_recursive()
 
-cd.nodes_recursive(filter=lambda m:m.is_compound()==False and m.is_graph_port()==False)
+# cd.nodes_recursive(filter=lambda m:m.is_compound()==False and m.is_graph_port()==False)
 # cd.nodes_recursive(filter=lambda m:m.is_graph_port(m)==False)
-cd.nodes_recursive()
+# cd.nodes_recursive()
 
 # %%
 
@@ -489,13 +542,13 @@ from mako.lookup import TemplateLookup
 tmp = Template(filename="composite_class.py.tpl")
 
 for c in cd.compound_nodes_recursive().values():
-    print(tmp.render(base=c))
+    print(tmp.render(composite=c))
 
 
 # %%
 tmp = Template(filename="composite_init.py.tpl")
 
-print(tmp.render(base=cd))
+print(tmp.render(composite=cd))
 
 
 # %%
@@ -517,8 +570,32 @@ print(tmp.render(base=cd))
 # %%
 tmp = Template(filename="connections_init.py.tpl")
 
+
+class ExternalConnectionHandler():
+
+    def __init__(self) -> None:
+       self.topic_registry = TopicRegistry()
+       self.mqtt = MQTTConnection("robinson.mqtt", config["mqtt"]["server_uri"])
+
+
+    def external_source(self, topic):
+        mqtt_port = self.mqtt.mqtt_output(topic)
+        reg_item = self.topic_registry.find(topic)
+        transformer = reg_item.create()
+        mqtt_port.connect(transformer)
+        return transformer
+
+    def external_sink(self, topic):
+        mqtt_port = self.mqtt.mqtt_input(topic)
+        reg_item = self.topic_registry.find(topic)
+        transformer = reg_item.create()
+        transformer.connect(mqtt_port)
+        return transformer
+
+
 print(tmp.render(base=cd))
 
+        print(con.from_node)
 # cd.connections()
 
 # %%
@@ -532,11 +609,13 @@ print(tmp.render(base=cd))
 mylookup = TemplateLookup(directories=["."])
 tmp = mylookup.get_template("main.py.tpl")
 
-print(tmp.render(base=cd))
-
 buf = StringIO()
 
 buf.write(tmp.render(base=cd))
+
+print(buf.getvalue())
+
+# %%
 
 with open("test_export.py","w") as fh:
     fh.write(buf.getvalue())
@@ -548,3 +627,5 @@ ccd.computation_nodes()
 
 cd.compound_nodes()
 cd.compound_nodes_recursive()
+i
+cd.nodes_recursive()

@@ -7,14 +7,14 @@ class ${composite.name().capitalize()}Composite(Composite):
 %>\
     ${var_name} = ${class_name}('${var_name}')
 % endfor
-\
+
 % for port in composite.output_ports():
 <%
     name = port.name
 %>\
     ${name} = DataPortOutput('${name}')
 % endfor
-\
+
 % for port in composite.input_ports():
 <%
     name = port.name
@@ -23,8 +23,8 @@ class ${composite.name().capitalize()}Composite(Composite):
 % endfor
 
     def __init__(self, name):
-        super(Composite).__init__(name)
-
+        super().__init__(name)
+\
         % for c in composite.connections():
         <%
             from_component = f"self.{c.from_name().lower()}"
