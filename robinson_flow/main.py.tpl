@@ -3,11 +3,12 @@
 from robinson.components import Composite
 
 % for c in base.compound_nodes_recursive().values():
-${c}
-<%include file="composite_class.py.tpl" kwargs="base='${c}'"/>
+<%include file="composite_class.py.tpl" args="composite=c"/>
 % endfor
 
-<%include file="composite_init.py.tpl"/>
+% for c in base.compound_nodes_recursive().values():
+<%include file="composite_init.py.tpl" args="composite=c"/>
+% endfor
 
 <%include file="components_init.py.tpl"/>
 

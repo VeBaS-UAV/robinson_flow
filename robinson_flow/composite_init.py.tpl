@@ -1,2 +1,3 @@
+<%page args="composite"/>
 
-${base.name().lower()} = ${base.name().capitalize()}Composite('${base.name().lower()}')
+${composite.name().lower()} = ${composite.name().capitalize()}Composite('${composite.name().lower()}')

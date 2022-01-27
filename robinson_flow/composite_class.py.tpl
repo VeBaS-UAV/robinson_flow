@@ -1,7 +1,6 @@
-${base}
-class ${base.name().capitalize()}Composite(Composite):
-
-% for uuid, child in base.computation_nodes().items():
+<%page args="composite"/>
+class ${composite.name().capitalize()}Composite(Composite):
+% for uuid, child in composite.computation_nodes().items():
 <%
     var_name = child["name"].lower()
     class_name = child["name"]
@@ -9,14 +8,14 @@ class ${base.name().capitalize()}Composite(Composite):
     ${var_name} = ${class_name}('${var_name}')
 % endfor
 \
-% for port in base.output_ports():
+% for port in composite.output_ports():
 <%
     name = port.name
 %>\
     ${name} = DataPortOutput('${name}')
 % endfor
 \
-% for port in base.input_ports():
+% for port in composite.input_ports():
 <%
     name = port.name
 %>\
@@ -26,7 +25,7 @@ class ${base.name().capitalize()}Composite(Composite):
     def __init__(self, name):
         super(Composite).__init__(name)
 
-        % for c in base.connections():
+        % for c in composite.connections():
         <%
             from_component = c.from_name().lower()
             if c.from_node.is_graph_port():
@@ -43,6 +42,6 @@ class ${base.name().capitalize()}Composite(Composite):
         ${from_statement}.connect(${to_statement})
         % endfor
 
-% for name, (module, classname) in base.import_modules().items():
+% for name, (module, classname) in composite.import_modules().items():
         self += self.${name.lower()}
 % endfor
