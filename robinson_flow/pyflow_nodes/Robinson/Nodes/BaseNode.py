@@ -11,7 +11,7 @@ from robinson_flow.ryven_nodes.nodes.components import PrintOutputComponent
 
 from robinson_flow.ryven_nodes.utils import getNodeLogger
 
-from robinson.components import Component, InputOutputPortComponent, OutputPortComponent
+from robinson.components import Component, InputOutputPortComponent, OutputPortComponent, DataPortOutput
 
 from functools import partial
 
@@ -329,7 +329,7 @@ class AddHelloComponent(Component):
 
     msg = None
 
-    dataport_output = Signal(str)
+    dataport_output = DataPortOutput("out")
 
     def __init__(self, name):
         super().__init__(name)
@@ -345,5 +345,6 @@ class AddHelloComponent(Component):
     def update(self):
         if self.msg is not None:
             msg = self.fstring.format(**self.__dict__)
-            self.dataport_output.send(msg)
+            self.dataport_output(msg)
+            self.msg = None
             # self.dataport_output(k))
