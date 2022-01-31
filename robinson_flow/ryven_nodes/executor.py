@@ -15,7 +15,8 @@ from . import nodes
 import vebas.config
 
 from robinson.messaging.mqtt import MQTTConnection
-config = vebas.config.default_config()
+from robinson_flow.config import settings
+# config = vebas.config.default_config()
 vebas.config.default_logging_settings()
 import queue
 
@@ -71,7 +72,7 @@ class ExternalSourceConnector():
         self.logger = getLogger(self)
 
         self.topic_reg = topic_registry
-        self.mqtt = MQTTConnection("mqtt", config["mqtt"]["server_uri"])
+        self.mqtt = MQTTConnection("mqtt", settings.environment.mqtt.server)
         self.mqtt.init()
 
     def connect_topic_to_node(self, topic, node:RobinsonRyvenNode):

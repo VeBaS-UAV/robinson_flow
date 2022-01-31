@@ -15,9 +15,7 @@ from robinson_flow.exporter import ExternalConnectionHandler
 
 from robinson_flow.ryven_nodes.executor import TopicRegistry
 from robinson.messaging.mqtt import MQTTConnection
-import vebas.config
-config = vebas.config.default_config()
-vebas.config.default_logging_settings()
+default_logging_settings()
 
 
 class CDir(BaseModel):

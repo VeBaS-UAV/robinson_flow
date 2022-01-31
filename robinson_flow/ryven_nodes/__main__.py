@@ -35,7 +35,6 @@ from robinson_flow.ryven_nodes.executor import RobinsonFlowExecutor
 
 
 import vebas.config
-config = vebas.config.default_config()
 
 import yaml
 

@@ -12,3 +12,13 @@ modules = [
 functions = [
 "vebas.utils.latlon2tuple"
 ]
+
+[environment]
+    [environment.mqtt]
+    server = "192.168.67.134"
+
+[AddHello]
+fstring = "Hello Config {msg}"
+
+[AddHello1]
+fstring = "Hello 1 {msg}"

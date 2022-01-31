@@ -23,7 +23,8 @@ import vebas.config
 
 from PyQt5.QtCore import pyqtSignal, QObject
 
-config = vebas.config.default_config()
+from robinson_flow.config import settings
+# config = vebas.config.default_config()
 vebas.config.default_logging_settings()
 
 
@@ -38,7 +39,7 @@ class ExternalBase(NodeBase):
         self.topic = "topic_name"
 
         self.topic_reg = TopicRegistry()
-        self.mqtt = MQTTConnection("robinson.mqtt", config["mqtt"]["server_uri"])
+        self.mqtt = MQTTConnection("robinson.mqtt", settings.environment.mqtt.server)
         self.mqtt.init()
 
 
