@@ -18,6 +18,8 @@ from functools import partial
 import cProfile
 import pstats
 
+from robinson_flow.config import settings
+
 
 
 class RobinsonPyFlowFunc(NodeBase):
@@ -199,9 +201,12 @@ class RobinsonPyFlowBase(NodeBase, RobinsonWrapperMixin):
 
         # # config
 
+
         # config_parameters = self.extract_config_items(self.cls)
 
-        # print("Config parameters", config_parameters)
+        self.update_settings()
+
+        # print("C
         # for parameter_name,parameter_type in config_parameters:
         #     print("Config input", parameter_name, parameter_type)
         #     pin_type =self.map_type_to_port(parameter_type)
@@ -213,6 +218,25 @@ class RobinsonPyFlowBase(NodeBase, RobinsonWrapperMixin):
 
 
         self.skip_first_update = True
+
+    def update_settings(self):
+        if self.component is None:
+            return
+
+        if self.name in settings:
+
+            cfg = settings[self.name]
+            try:
+                self.component.config_update(**{k:v for (k,v) in cfg.items()})
+            except Exception as e:
+                self.logger.error(f"Could not set config for {self.name}")
+                self.logger.error(e)
+
+
+    def setName(self, name):
+        super().setName(name)
+        self.update_settings()
+
 
     def map_type_to_port(self, typeclass):
         port_type_mapping = {}
