@@ -333,7 +333,7 @@ class AddHelloComponent(Component):
 
     def __init__(self, name):
         super().__init__(name)
-        self.fstring = f"Hello {self.msg}"
+        self.fstring = "Hello {msg}"
 
     def dataport_input(self, msg):
         self.msg = msg
