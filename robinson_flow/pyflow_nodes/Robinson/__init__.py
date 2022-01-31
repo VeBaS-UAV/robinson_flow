@@ -1,35 +1,39 @@
 PACKAGE_NAME = 'Robinson'
 
+from robinson.components import Component
 from collections import OrderedDict
+
 from PyFlow.UI.UIInterfaces import IPackage
-from robinson_flow.pyflow_nodes.Robinson.Exporters.RobinsonExporter import RobinsonExporter
+import robinson_flow
+from robinson_flow.pyflow_nodes.Robinson.Factories.PinInputWidgetFactory import getInputWidget
 from robinson_flow.pyflow_nodes.Robinson.Factories.UINodeFactory import createUINode
+from robinson_flow.pyflow_nodes.Robinson.Nodes.BaseNode import AddHelloComponent, RobinsonPyFlowBase, RobinsonPyFlowFunc, RobinsonTicker
+from robinson_flow.pyflow_nodes.Robinson.Nodes.ExternalNodes import ExternalSink, ExternalSource
 from robinson_flow.pyflow_nodes.Robinson.Nodes.OpenCV import FrameView
 from robinson_flow.pyflow_nodes.Robinson.Nodes.utils import EvalNode, LambdaNode, LoggingView, OnMessageExec, PlotView
 
-# Pins
+# # Pins
 from robinson_flow.pyflow_nodes.Robinson.Pins.MavlinkPin import MavlinkPin
 
-# Function based nodes
-# from robinson_flow.pyflow_nodes.Robinson.FunctionLibraries.DemoLib import DemoLib
+# # Function based nodes
+# # from robinson_flow.pyflow_nodes.Robinson.FunctionLibraries.DemoLib import DemoLib
 
+# # Tools
+# from robinson_flow.pyflow_nodes.Robinson.Tools.DemoShelfTool import DemoShelfTool
+# from robinson_flow.pyflow_nodes.Robinson.Tools.DemoDockTool import DemoDockTool
 
-# Tools
-from robinson_flow.pyflow_nodes.Robinson.Tools.DemoShelfTool import DemoShelfTool
-from robinson_flow.pyflow_nodes.Robinson.Tools.DemoDockTool import DemoDockTool
+# # Exporters
+# # from robinson_flow.pyflow_nodes.Robinson.Exporters.DemoExporter import DemoExporter
 
-# Exporters
-# from robinson_flow.pyflow_nodes.Robinson.Exporters.DemoExporter import DemoExporter
+# # Factories
+# # from robinson_flow.pyflow_nodes.Robinson.Factories.UIPinFactory import createUIPin
+# # from robinson_flow.pyflow_nodes.Robinson.Factories.UINodeFactory import createUINode
+# from robinson_flow.pyflow_nodes.Robinson.Factories.PinInputWidgetFactory import getInputWidget
+# # Prefs widgets
+# from robinson_flow.ryven_nodes.nodes.components import PrintOutputComponent, TestComponent
 
-# Factories
-# from robinson_flow.pyflow_nodes.Robinson.Factories.UIPinFactory import createUIPin
-# from robinson_flow.pyflow_nodes.Robinson.Factories.UINodeFactory import createUINode
-from robinson_flow.pyflow_nodes.Robinson.Factories.PinInputWidgetFactory import getInputWidget
-# Prefs widgets
-from robinson_flow.ryven_nodes.nodes.components import PrintOutputComponent, TestComponent
-
-from robinson_flow.pyflow_nodes.Robinson.Nodes.ExternalNodes import ExternalSink, ExternalSource
-from robinson_flow.pyflow_nodes.Robinson.Nodes.BaseNode import AddHelloComponent, OutputNameComponent, RobinsonPyFlowBase, RobinsonPyFlowFunc, RobinsonTicker
+# from robinson_flow.pyflow_nodes.Robinson.Nodes.ExternalNodes import ExternalSink, ExternalSource
+# from robinson_flow.pyflow_nodes.Robinson.Nodes.BaseNode import AddHelloComponent, OutputNameComponent, RobinsonPyFlowBase, RobinsonPyFlowFunc, RobinsonTicker
 
 _FOO_LIBS = {}
 _NODES = {}
@@ -42,18 +46,16 @@ _EXPORTERS = OrderedDict()
 
 _PINS[MavlinkPin.__name__] = MavlinkPin
 
-_TOOLS[DemoShelfTool.__name__] = DemoShelfTool
-_TOOLS[DemoDockTool.__name__] = DemoDockTool
+# _TOOLS[DemoShelfTool.__name__] = DemoShelfTool
+# _TOOLS[DemoDockTool.__name__] = DemoDockTool
 
-_EXPORTERS[RobinsonExporter.__name__] = RobinsonExporter
+# _EXPORTERS[RobinsonExporter.__name__] = RobinsonExporter
 
 # _PREFS_WIDGETS["Demo"] = DemoPrefs
 
-import inspect
-from robinson.components import Component
-import sys
+# import inspect
+# import sys
 
-from vebas.utils import latlon2tuple
 
 def factory(cls):
     name = cls.__name__
@@ -68,7 +70,7 @@ def factory(cls):
 
         @staticmethod
         def category():
-            return cls.__module__
+            return cls.__module__.replace(".","|")
 
     cl =  PyflowTemplateNode
     cl.__name__ = name
@@ -85,7 +87,8 @@ def factory_function(cb):
 
         @staticmethod
         def category():
-            return cb.__module__
+            return cb.__module__.replace(".","|")
+
 
     cl =  RobinsonPyFlowFunctionWrapperFactory
     cl.__name__ = name
@@ -94,6 +97,8 @@ def factory_function(cb):
 
 
 def load_components_from_module(module):
+    import inspect
+    import sys
     results =  []
     for name, obj in inspect.getmembers(module):
         if inspect.isclass(obj):
@@ -103,31 +108,35 @@ def load_components_from_module(module):
     return results
 
 def export_nodes():
+    import importlib
 
-    import vebas.tracking.components.cv #import CVVideoInput, RGB2HSV, BGR2HSV, RGB2BRG, BGR2RGB, ColoredCircleDetection, ImageView, DetectionOverlay, CV_HSVMask_View
-    import vebas.tracking.components.control
-    import vebas.tracking.components.filter
-    import vebas.tracking.components.transform
-    import vebas.tracking.kf_ctl_loop.components as kf_ctl
+    robinson_packages = []
+    robinson_packages.append("vebas.tracking.components.cv")
+    robinson_packages.append("vebas.tracking.components.control")
+    robinson_packages.append("vebas.tracking.components.filter")
+    robinson_packages.append("vebas.tracking.components.transform")
+    robinson_packages.append("vebas.tracking.kf_ctl_loop.components")
+    robinson_packages.append("robinson_flow.pyflow_nodes.Robinson.Nodes.BaseNode")
 
-    component_list = []#TestComponent, PrintOutputComponent, AddComponent, RGB2HSV, BGR2HSV, RGB2BRG, BGR2RGB, DetectionOverlay, ColoredCircleDetection, MyPartial]
+    component_list = []
 
-    component_list.extend(load_components_from_module(vebas.tracking.components.cv))
-    component_list.extend(load_components_from_module(vebas.tracking.components.control))
-    component_list.extend(load_components_from_module(vebas.tracking.components.filter))
-    component_list.extend(load_components_from_module(vebas.tracking.components.transform))
-    component_list.extend(load_components_from_module(kf_ctl))
-
-    # component_list.append(ExternalSource)
-    component_list.append(OutputNameComponent)
-    component_list.append(AddHelloComponent)
-    component_list.append(TestComponent)
-    component_list.append(PrintOutputComponent)
+    for rob_pkg in robinson_packages:
+        module = importlib.import_module(rob_pkg)
+        component_list.extend(load_components_from_module(module))
+        pass
 
     rob_comps = {k:v for k,v in [factory(c) for c in component_list]}
 
+    function_names = []
+    function_names.append("vebas.utils.latlon2tuple")
+
     function_list = []
-    function_list.append(latlon2tuple)
+    for rob_pkg in function_names:
+        module = ".".join(rob_pkg.split(".")[:-1])
+        name = rob_pkg.split(".")[-1]
+        module = importlib.import_module(module)
+        func = getattr(module, name)
+        function_list.append(func)
 
     func_comps = {k:v for k,v in [factory_function(f) for f in function_list]}
 
