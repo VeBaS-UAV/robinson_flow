@@ -116,7 +116,8 @@ def export_nodes():
     robinson_packages.append("vebas.tracking.components.filter")
     robinson_packages.append("vebas.tracking.components.transform")
     robinson_packages.append("vebas.tracking.kf_ctl_loop.components")
-    robinson_packages.append("robinson_flow.pyflow_nodes.Robinson.Nodes.BaseNode")
+    robinson_packages.append("robinson_flow.pyflow_nodes.Robinson.Nodes.Misc")
+    robinson_packages.append("robinson_flow.pyflow_nodes.Robinson.Nodes.OpenCV")
 
     component_list = []
 
