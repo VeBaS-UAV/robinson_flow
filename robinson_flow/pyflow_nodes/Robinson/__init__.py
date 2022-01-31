@@ -2,7 +2,7 @@ PACKAGE_NAME = 'Robinson'
 
 from collections import OrderedDict
 from PyFlow.UI.UIInterfaces import IPackage
-from robinson_flow.pyflow_nodes.Robinson.Exporters.DemoExporter import DemoExporter
+from robinson_flow.pyflow_nodes.Robinson.Exporters.RobinsonExporter import RobinsonExporter
 from robinson_flow.pyflow_nodes.Robinson.Factories.UINodeFactory import createUINode
 from robinson_flow.pyflow_nodes.Robinson.Nodes.OpenCV import FrameView
 from robinson_flow.pyflow_nodes.Robinson.Nodes.utils import EvalNode, LambdaNode, LoggingView, OnMessageExec, PlotView
@@ -45,7 +45,7 @@ _PINS[MavlinkPin.__name__] = MavlinkPin
 _TOOLS[DemoShelfTool.__name__] = DemoShelfTool
 _TOOLS[DemoDockTool.__name__] = DemoDockTool
 
-_EXPORTERS[DemoExporter.__name__] = DemoExporter
+_EXPORTERS[RobinsonExporter.__name__] = RobinsonExporter
 
 # _PREFS_WIDGETS["Demo"] = DemoPrefs
 

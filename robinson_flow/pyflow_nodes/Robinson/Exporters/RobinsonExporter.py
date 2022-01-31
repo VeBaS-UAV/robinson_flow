@@ -1,13 +1,15 @@
+import traceback
 from datetime import datetime
 from PyFlow.UI.UIInterfaces import IDataExporter
 from PyFlow.Core.version import Version
 
+from robinson_flow.pyflow_nodes.Robinson.Exporters.python_exporter import CompositeDefinition
 
-class DemoExporter(IDataExporter):
+class RobinsonExporter(IDataExporter):
     """docstring for DemoExporter."""
 
     def __init__(self):
-        super(DemoExporter, self).__init__()
+        super(RobinsonExporter, self).__init__()
 
     @staticmethod
     def createImporterMenu():
@@ -23,30 +25,47 @@ class DemoExporter(IDataExporter):
 
     @staticmethod
     def toolTip():
-        return "Demo Export/Import."
+        return "Robinson Export/Import."
 
     @staticmethod
     def displayName():
-        return "Demo exporter"
+        return "Robinson exporter"
 
     @staticmethod
     def doImport(pyFlowInstance):
-        print("DemoExporter import!")
+        pass
 
     @staticmethod
-    def doExport(pyFlowInstance):
-        print("DemoExporter export!")
-        import json
-        import pickle
-        import toml
-        import yaml
-
-        data = pyFlowInstance.graphManager.man.serialize()
+    def doExport(instance):
+        from io import StringIO
+        from mako.lookup import TemplateLookup
+        import pathlib
+        import inspect
 
         try:
-            json.dump(data,open("graph_export.json","w"))
-            pickle.dump(data, open("graph_export.pickle","wb"))
-            yaml.dump(data, open("graph_export.yaml","w"))
-            toml.dump(data, open("graph_export.toml","w"))
+            data = instance.graphManager.man.serialize()
+
+
+            filename = f"{instance._currentFileName}.py"
+            pf = pathlib.Path(filename)
+
+            name = pf.name[:pf.name.rfind('.')]
+            base = CompositeDefinition(name, data)
+
+
+            this_folder = pathlib.Path(inspect.getfile(RobinsonExporter)).parent
+            template_folder = this_folder / "templates"
+
+            mylookup = TemplateLookup(directories=[template_folder])
+            tmp = mylookup.get_template("main.py.tpl")
+
+            buf = StringIO()
+
+            buf.write(tmp.render(base=base))
+
+            with open(filename,"w") as fh:
+                fh.write(buf.getvalue())
+
         except Exception as e:
-            print(e)
+            print("Error while exporting graph")
+            print(traceback.format_exception(e))
