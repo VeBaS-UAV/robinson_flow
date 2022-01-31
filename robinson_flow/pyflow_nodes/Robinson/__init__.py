@@ -7,7 +7,7 @@ from PyFlow.UI.UIInterfaces import IPackage
 import robinson_flow
 from robinson_flow.pyflow_nodes.Robinson.Factories.PinInputWidgetFactory import getInputWidget
 from robinson_flow.pyflow_nodes.Robinson.Factories.UINodeFactory import createUINode
-from robinson_flow.pyflow_nodes.Robinson.Nodes.BaseNode import AddHelloComponent, RobinsonPyFlowBase, RobinsonPyFlowFunc, RobinsonTicker
+from robinson_flow.pyflow_nodes.Robinson.Nodes.BaseNode import RobinsonPyFlowBase, RobinsonPyFlowFunc, RobinsonTicker
 from robinson_flow.pyflow_nodes.Robinson.Nodes.ExternalNodes import ExternalSink, ExternalSource
 from robinson_flow.pyflow_nodes.Robinson.Nodes.OpenCV import FrameView
 from robinson_flow.pyflow_nodes.Robinson.Nodes.utils import EvalNode, LambdaNode, LoggingView, OnMessageExec, PlotView
@@ -109,40 +109,49 @@ def load_components_from_module(module):
 
 def export_nodes():
     import importlib
+    from robinson_flow.config import settings
 
     robinson_packages = []
-    robinson_packages.append("vebas.tracking.components.cv")
-    robinson_packages.append("vebas.tracking.components.control")
-    robinson_packages.append("vebas.tracking.components.filter")
-    robinson_packages.append("vebas.tracking.components.transform")
-    robinson_packages.append("vebas.tracking.kf_ctl_loop.components")
-    robinson_packages.append("robinson_flow.pyflow_nodes.Robinson.Nodes.Misc")
-    robinson_packages.append("robinson_flow.pyflow_nodes.Robinson.Nodes.OpenCV")
-
     component_list = []
+    function_list = []
 
-    for rob_pkg in robinson_packages:
-        module = importlib.import_module(rob_pkg)
-        component_list.extend(load_components_from_module(module))
-        pass
+    try:
+        robinson_packages = settings.robinson.modules
+
+
+        for rob_pkg in robinson_packages:
+            try:
+                module = importlib.import_module(rob_pkg)
+                component_list.extend(load_components_from_module(module))
+            except Exception as e:
+                print("Could not load module")
+                print(e)
+
+    except Exception as e:
+        print("Could not load robinson components from config")
+        print(e)
+
 
     rob_comps = {k:v for k,v in [factory(c) for c in component_list]}
 
     function_names = []
-    function_names.append("vebas.utils.latlon2tuple")
+    try:
+        function_names = settings.robinson.functions #.append("")
 
-    function_list = []
-    for rob_pkg in function_names:
-        module = ".".join(rob_pkg.split(".")[:-1])
-        name = rob_pkg.split(".")[-1]
-        module = importlib.import_module(module)
-        func = getattr(module, name)
-        function_list.append(func)
+        for rob_pkg in function_names:
+            module = ".".join(rob_pkg.split(".")[:-1])
+            name = rob_pkg.split(".")[-1]
+            module = importlib.import_module(module)
+            func = getattr(module, name)
+            function_list.append(func)
+    except Exception as e:
+        print("Could not load function from module")
+        print(e)
 
     func_comps = {k:v for k,v in [factory_function(f) for f in function_list]}
 
-
     other_comp = {}
+
     other_comp["ExternalSource"] = ExternalSource
     other_comp["ExternalSink"] = ExternalSink
     other_comp["FrameView"] = FrameView

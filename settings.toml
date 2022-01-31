@@ -1,0 +1,14 @@
+[robinson]
+modules = [
+"vebas.tracking.components.cv",
+"vebas.tracking.components.control",
+"vebas.tracking.components.filter",
+"vebas.tracking.components.transform",
+"vebas.tracking.kf_ctl_loop.components",
+"robinson_flow.pyflow_nodes.Robinson.Nodes.Misc",
+"robinson_flow.pyflow_nodes.Robinson.Nodes.OpenCV",
+]
+
+functions = [
+"vebas.utils.latlon2tuple"
+]
