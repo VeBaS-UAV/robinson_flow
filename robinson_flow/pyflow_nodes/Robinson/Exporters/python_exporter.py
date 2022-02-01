@@ -15,7 +15,6 @@ from robinson_flow.exporter import ExternalConnectionHandler
 
 from robinson_flow.ryven_nodes.executor import TopicRegistry
 from robinson.messaging.mqtt import MQTTConnection
-default_logging_settings()
 
 
 class CDir(BaseModel):
@@ -199,6 +198,13 @@ class NodeDefinition():
 
         return {k:v for k,v in nodes.items() if filter(v)}
 
+    def config(self):
+        if "robinson" in self.data:
+            rob = self.data["robinson"]
+            if "config" in rob:
+                return rob["config"]
+        return {}
+
     def outputs(self):
         if "outputs" in self.data:
             return self.data["outputs"]
@@ -356,6 +362,17 @@ class CompositeDefinition(NodeDefinition):
 
     def classname(self):
         return "CompositeClass"
+
+    def config(self):
+        cfg = {}
+
+        for uid, node in self.nodes().items():
+            c = node.config()
+
+            if len(c)>0:
+                cfg[node.name()] = c
+
+        return cfg
 
     def input_portname_by_index(self, idx):
         r = [n["name"] for n in self.data["inputs"] if n["pinIndex"] == idx]

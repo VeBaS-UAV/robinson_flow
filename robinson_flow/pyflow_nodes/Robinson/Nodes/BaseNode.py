@@ -64,6 +64,7 @@ class RobinsonPyFlowFunc(NodeBase):
                 self.logger.error(e)
 
 class RobinsonTicker(NodeBase):
+
     _packageName = "Robinson"
 
     def __init__(self, name, uid=None):
@@ -181,61 +182,26 @@ class RobinsonPyFlowBase(NodeBase, RobinsonWrapperMixin):
             self.output_pins[port_name] = (outp, port_callable)
 
 
-        # create init port
-        # create init port
-        # init_parameters = self.extract_init_items(self.cls)
-
-        # # print("init parameters", init_parameters)
-        # for parameter_name, parameter_type in init_parameters:
-        #     # print("init input", parameter_name, parameter_type)
-        #     pin_type =self.map_type_to_port(parameter_type)
-
-        #     inp = self.createInputPin(f"init_{parameter_name}", pin_type,None)
-        #     inp.enableOptions(PinOptions.AllowAny)
-        #     inp.disableOptions(PinOptions.AlwaysPushDirty)
-        #     # inp.enableOptions(PinOptions.Dynamic)
-        #     # inp.enableOptions(PinOptions.Storable)
-        #     inp.dirty = False
-        #     self.input_pins[parameter_name] = (inp, partial(self.update_init, parameter_name))
-
-
-        # # config
-
-
-        # config_parameters = self.extract_config_items(self.cls)
-
         self.update_settings()
-
-        # print("C
-        # for parameter_name,parameter_type in config_parameters:
-        #     print("Config input", parameter_name, parameter_type)
-        #     pin_type =self.map_type_to_port(parameter_type)
-        #     inp = self.createInputPin(f"config_{parameter_name}", pin_type,None)
-        #     inp.enableOptions(PinOptions.AllowAny)
-        #     inp.disableOptions(PinOptions.AlwaysPushDirty)
-        #     inp.dirty = False
-        #     self.input_pins[parameter_name] = (inp, partial(self.update_config, parameter_name))
-
 
         self.skip_first_update = True
 
-    def update_settings(self):
-        if self.component is None:
-            return
+    # def update_settings(self):
+    #     if self.component is None:
+    #         return
 
-        if self.name in settings:
+    #     if self.name in settings:
 
-            cfg = settings[self.name]
-            try:
-                self.component.config_update(**{k:v for (k,v) in cfg.items()})
-            except Exception as e:
-                self.logger.error(f"Could not set config for {self.name}")
-                self.logger.error(e)
-
+    #         cfg = settings[self.name]
+    #         try:
+    #             self.component.config_update(**{k:v for (k,v) in cfg.items()})
+    #         except Exception as e:
+    #             self.logger.error(f"Could not set config for {self.name}")
+    #             self.logger.error(e)
 
     def setName(self, name):
         super().setName(name)
-        self.update_settings()
+        # self.update_settings()
 
 
     def map_type_to_port(self, typeclass):
@@ -309,9 +275,23 @@ class RobinsonPyFlowBase(NodeBase, RobinsonWrapperMixin):
         rob["class"] = self.cls.__name__
         rob["module"] = self.cls.__module__
 
+        rob["config"] = self.component.config_get()
+
         data["robinson"] = rob
 
         return data
+
+    def postCreate(self, jsonTemplate=None):
+        super().postCreate(jsonTemplate)
+
+        if "robinson" in jsonTemplate:
+            rob = jsonTemplate["robinson"]
+            if "config" in rob:
+                    try:
+                        self.component.config_update(**rob["config"])
+                    except Exception as e:
+                        self.logger.error(f"Could not set config for {self.name}")
+                        self.logger.error(e)
 
     @staticmethod
     def pinTypeHints():

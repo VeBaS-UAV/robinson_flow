@@ -48,3 +48,8 @@ class AddHelloComponent(Component):
     def config_update(self, **kwargs):
         print("config update")
         self.config = AddHelloComponent.Config(**{**self.config.dict(), **kwargs})
+
+    def config_get(self, key=None):
+        if key is None:
+            return self.config.dict()
+        return self.config["key"]

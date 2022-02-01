@@ -5,6 +5,7 @@ from collections import OrderedDict
 
 from PyFlow.UI.UIInterfaces import IPackage
 import robinson_flow
+from robinson_flow.pyflow_nodes.Robinson.Exporters.RobinsonExporter import RobinsonExporter
 from robinson_flow.pyflow_nodes.Robinson.Factories.PinInputWidgetFactory import getInputWidget
 from robinson_flow.pyflow_nodes.Robinson.Factories.UINodeFactory import createUINode
 from robinson_flow.pyflow_nodes.Robinson.Nodes.BaseNode import RobinsonPyFlowBase, RobinsonPyFlowFunc, RobinsonTicker
@@ -14,6 +15,7 @@ from robinson_flow.pyflow_nodes.Robinson.Nodes.utils import EvalNode, LambdaNode
 
 # # Pins
 from robinson_flow.pyflow_nodes.Robinson.Pins.MavlinkPin import MavlinkPin
+from robinson_flow.pyflow_nodes.Robinson.Tools.ConfigDockTool import ConfigDockTool
 
 # # Function based nodes
 # # from robinson_flow.pyflow_nodes.Robinson.FunctionLibraries.DemoLib import DemoLib
@@ -47,9 +49,9 @@ _EXPORTERS = OrderedDict()
 _PINS[MavlinkPin.__name__] = MavlinkPin
 
 # _TOOLS[DemoShelfTool.__name__] = DemoShelfTool
-# _TOOLS[DemoDockTool.__name__] = DemoDockTool
+_TOOLS[ConfigDockTool.__name__] = ConfigDockTool
 
-# _EXPORTERS[RobinsonExporter.__name__] = RobinsonExporter
+_EXPORTERS[RobinsonExporter.__name__] = RobinsonExporter
 
 # _PREFS_WIDGETS["Demo"] = DemoPrefs
 
