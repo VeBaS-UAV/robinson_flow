@@ -4,6 +4,8 @@ from robinson.components import ComponentRunner
 from robinson_flow.exporter import ExternalConnectionHandler
 from robinson.components import DataPortOutput, DataPort, DataPortInput
 
+<%include file="config_init.py.tpl"/> \
+
 <%include file="components_import.py.tpl"/> \
 
 % for c in base.compound_nodes_recursive().values():
@@ -15,6 +17,8 @@ from robinson.components import DataPortOutput, DataPort, DataPortInput
 % endfor
 \
 <%include file="components_init.py.tpl"/> \
+
+<%include file="environment_init.py.tpl"/> \
 
 <%include file="connections_init.py.tpl"/> \
 

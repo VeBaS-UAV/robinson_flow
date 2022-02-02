@@ -82,12 +82,19 @@ class RobinsonExporter(IDataExporter):
                 if len(cfg) > 0:
                     node_configs[node.name()] = cfg
 
-            project_cfg = {}
+            tmp = mylookup.get_template("config.toml.tpl")
+            buf = StringIO()
 
-            project_cfg["components"] = node_configs
+            project_config= {}
+            project_config["components"] = node_configs
+
+            toml_str = toml.dumps(project_config)
+
+            buf.write(tmp.render(component_config=toml_str))
 
             cfg_filename = f"{instance._currentFileName}.toml"
-            toml.dump(project_cfg, open(cfg_filename, "w"))
+            with open(cfg_filename,"w") as fh:
+                fh.write(buf.getvalue())
 
         except Exception as e:
             print("Error while exporting graph")

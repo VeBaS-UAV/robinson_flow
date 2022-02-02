@@ -1,5 +1,3 @@
-external = ExternalConnectionHandler()
-
 % for c in base.connections():
 ${c.from_name().lower()|pyname}.${c.from_port()|pyname}.connect(${c.to_name().lower()|pyname}.${c.to_port()|pyname})
 % endfor
