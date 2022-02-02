@@ -416,7 +416,7 @@ class CompositeDefinition(NodeDefinition):
 
         return import_modules
 
-    def connections(self):
+    def connections(self, include_exec=False):
         # nodes = {u:c for u,c in self.nodes().items() if c.is_external() == False}
         nodes = self.nodes()
 
@@ -428,6 +428,9 @@ class CompositeDefinition(NodeDefinition):
                 output_links = o["linkedTo"]
                 if len(output_links) == 0:
                     continue
+                if include_exec is False:
+                    if o["dataType"] == "ExecPin":
+                        continue
 
                 for link in output_links:
 
