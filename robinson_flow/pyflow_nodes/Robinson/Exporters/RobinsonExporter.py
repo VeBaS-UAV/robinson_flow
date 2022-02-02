@@ -10,6 +10,10 @@ import pathlib
 import inspect
 import toml
 
+
+def pyname(name):
+    return name.replace("-","_")
+
 class RobinsonExporter(IDataExporter):
     """docstring for DemoExporter."""
 
@@ -42,6 +46,7 @@ class RobinsonExporter(IDataExporter):
 
     @staticmethod
     def doExport(instance):
+        pyname_filter = "from robinson_flow.pyflow_nodes.Robinson.Exporters.RobinsonExporter import pyname"
 
         try:
             data = instance.graphManager.man.serialize()
@@ -55,7 +60,7 @@ class RobinsonExporter(IDataExporter):
             this_folder = pathlib.Path(inspect.getfile(RobinsonExporter)).parent
             template_folder = this_folder / "templates"
 
-            mylookup = TemplateLookup(directories=[template_folder])
+            mylookup = TemplateLookup(directories=[template_folder], imports=[f"{pyname_filter}"])
             tmp = mylookup.get_template("main.py.tpl")
 
             buf = StringIO()

@@ -1,11 +1,11 @@
 <%page args="composite"/>
-class ${composite.name().capitalize()}Composite(Composite):
+class ${composite.name().capitalize()|pyname}_Composite(Composite):
 % for uuid, child in composite.computation_nodes().items():
 <%
-    var_name = child["name"].lower()
-    class_name = child["name"]
+    var_name = child.name().lower()
+    class_name = child.name()
 %>\
-    ${var_name} = ${class_name}('${var_name}')
+    ${var_name|pyname} = ${class_name|pyname}('${var_name}')
 % endfor
 
 % for port in composite.output_ports():
