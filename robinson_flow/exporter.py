@@ -9,10 +9,11 @@ import vebas.config
 
 class ExternalConnectionHandler():
 
-    def __init__(self, mqtt_server) -> None:
+    def __init__(self, settings) -> None:
         self.logger = vebas.config.getLogger(self)
+        self.config = settings
         self.topic_registry = TopicRegistry()
-        self.mqtt = MQTTConnection("robinson.mqtt", mqtt_server)
+        self.mqtt = MQTTConnection("robinson.mqtt", self.config.mqtt.server)
 
         self.mqtt.init()
 
