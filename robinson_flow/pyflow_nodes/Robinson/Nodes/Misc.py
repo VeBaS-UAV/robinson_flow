@@ -26,14 +26,12 @@ class AddHelloComponent(Component):
         fstring:str = "Hello {msg}"
 
 
-    config = Config()
-
-    msg = None
-
-    dataport_output = DataPortOutput("out")
-
     def __init__(self, name):
         super().__init__(name)
+
+        self.config = AddHelloComponent.Config()
+        self.msg = None
+        self.dataport_output = DataPortOutput("out")
 
     def dataport_input(self, msg):
         self.msg = msg
@@ -41,6 +39,7 @@ class AddHelloComponent(Component):
     def update(self):
         if self.msg is not None:
             msg = self.config.fstring.format(**self.__dict__)
+            print("dataport_output_hex", hex(id(self)),hex(id(self.dataport_output)))
             self.dataport_output(msg)
             self.msg = None
             # self.dataport_output(k))
