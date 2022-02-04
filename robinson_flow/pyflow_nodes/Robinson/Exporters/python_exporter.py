@@ -13,7 +13,6 @@ import traceback
 import ipdb
 from robinson_flow.exporter import ExternalConnectionHandler
 
-from robinson_flow.ryven_nodes.executor import TopicRegistry
 from robinson.messaging.mqtt import MQTTConnection
 
 

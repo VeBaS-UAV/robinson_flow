@@ -6,6 +6,7 @@ import time
 from pymavlink.dialects.v20.ardupilotmega import MAVLink_message
 from ryvencore.FlowExecutor import FlowExecutor
 from robinson.messaging.mqtt.serializer import Image, JsonTransform
+from robinson_flow.exporter import TopicRegistry
 
 from robinson_flow.ryven_nodes.base import RobinsonRyvenNode, RobinsonRyvenWrapper
 from robinson_flow.ryven_nodes import base
@@ -25,43 +26,6 @@ from robinson_flow.ryven_nodes.utils import getLogger
 from vebas.taskplanner.types import Seedling, SeedlingsList
 
 
-class TopicRegistryItem():
-
-    def __init__(self, msg_type, transformer, *args, **kwargs) -> None:
-        self.msg_type = msg_type
-        self.transformer = transformer
-        self.args = args
-        self.kwargs = kwargs
-
-    def create(self):
-        return self.transformer(*self.args, **self.kwargs)
-
-
-class TopicRegistry():
-
-    registry = {}
-
-    def __init__(self) -> None:
-
-        self.registry["mavlink"] = TopicRegistryItem(MAVLink_message, JsonTransform, MAVLink_message)
-        self.registry["mavlink/*"] = TopicRegistryItem(MAVLink_message, JsonTransform, MAVLink_message)
-        self.registry['vebas/uav/camera/image'] = TopicRegistryItem(Image, JsonTransform, Image)
-        self.registry['vebas/**/image'] = TopicRegistryItem(Image, JsonTransform, Image)
-        self.registry['vebas/taskplanner/seedlings'] = TopicRegistryItem(SeedlingsList, JsonTransform, SeedlingsList)
-        self.registry["*"] = TopicRegistryItem(dict, JsonTransform)
-        # self.registry["default"] = TopicRegistryItem(dict, JsonTransform)
-
-    def find(self, topic:str) -> TopicRegistryItem:
-        import fnmatch
-
-        for key, item in self.registry.items():
-            if fnmatch.fnmatch(topic, key):
-                return item
-
-        return self.registry["default"]
-
-    def is_valid_topic(self, topic):
-        return True if topic is not None and len(topic) > 0 else False
 
 class ExternalSourceConnector():
 

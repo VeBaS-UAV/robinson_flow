@@ -8,8 +8,9 @@ from io import StringIO
 from mako.lookup import TemplateLookup
 import pathlib
 import inspect
-import toml
-
+# import toml as serializer
+# import yaml as serializer
+import yaml
 
 def pyname(name):
     return name.replace("-","_")
@@ -82,17 +83,17 @@ class RobinsonExporter(IDataExporter):
                 if len(cfg) > 0:
                     node_configs[node.name()] = cfg
 
-            tmp = mylookup.get_template("config.toml.tpl")
+            tmp = mylookup.get_template("config.yaml.tpl")
             buf = StringIO()
 
             project_config= {}
             project_config["components"] = node_configs
 
-            toml_str = toml.dumps(project_config)
+            yaml_str = yaml.dump(project_config)
 
-            buf.write(tmp.render(component_config=toml_str))
+            buf.write(tmp.render(component_config=yaml_str))
 
-            cfg_filename = f"{instance._currentFileName}.toml"
+            cfg_filename = f"{instance._currentFileName}.yaml"
             with open(cfg_filename,"w") as fh:
                 fh.write(buf.getvalue())
 
