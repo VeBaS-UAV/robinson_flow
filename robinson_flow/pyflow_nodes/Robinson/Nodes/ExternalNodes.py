@@ -6,7 +6,7 @@ import pydantic
 from robinson.messaging.mqtt import MQTTConnection
 from robinson_flow.ryven_nodes.base import RobinsonWrapperMixin
 from robinson_flow.ryven_nodes.nodes.components import PrintOutputComponent
-from robinson_flow.exporter import TopicRegistry, TopicRegistryItem
+from robinson_flow.connector import TopicRegistry, TopicRegistryItem
 
 from robinson_flow.ryven_nodes.utils import getNodeLogger
 
