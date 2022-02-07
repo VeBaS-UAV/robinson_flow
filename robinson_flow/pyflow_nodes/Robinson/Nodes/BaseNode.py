@@ -4,14 +4,6 @@ import PyFlow
 from PyFlow.Core import NodeBase
 from PyFlow.Core.NodeBase import NodePinsSuggestionsHelper
 from PyFlow.Core.Common import *
-from blinker.base import Signal
-import pydantic
-from robinson_flow.ryven_nodes.base import RobinsonWrapperMixin
-from robinson_flow.ryven_nodes.nodes.components import PrintOutputComponent
-
-from robinson_flow.ryven_nodes.utils import getNodeLogger
-
-from robinson.components import Component, InputOutputPortComponent, OutputPortComponent, DataPortOutput
 
 from functools import partial
 
@@ -19,8 +11,9 @@ import cProfile
 import pstats
 
 from robinson_flow.config import settings
+from robinson_flow.logger import getNodeLogger
 
-
+from robinson_flow.base import RobinsonWrapperMixin
 
 class RobinsonPyFlowFunc(NodeBase):
     _packageName = "Robinson"

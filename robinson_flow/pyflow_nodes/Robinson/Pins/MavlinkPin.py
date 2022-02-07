@@ -3,8 +3,6 @@ from PyFlow.Core import PinBase
 
 from pymavlink.dialects.v20.ardupilotmega import MAVLink_message
 
-from robinson_flow.ryven_nodes.utils import getLogger
-
 class MAVlink_pyflow_dummy(MAVLink_message):
     def __init__(self, msgId=-1, name='pyflow_dummy'):
         super().__init__(msgId, name)

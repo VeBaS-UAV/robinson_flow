@@ -1,9 +1,9 @@
 from PyFlow.Core.Common import PinOptions
 from PyFlow.Core.NodeBase import NodeBase
 
-from robinson_flow.ryven_nodes.utils import getNodeLogger
-
 from PyQt5.QtCore import pyqtSignal, QObject
+
+from robinson_flow.logger import getNodeLogger
 
 
 class FrameView(NodeBase, QObject):

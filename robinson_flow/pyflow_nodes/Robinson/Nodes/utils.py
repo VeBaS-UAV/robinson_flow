@@ -1,14 +1,14 @@
 from PyFlow.Core.Common import DEFAULT_OUT_EXEC_NAME, PinOptions
 from PyFlow.Core.NodeBase import NodeBase
 
-from robinson_flow.ryven_nodes.utils import getNodeLogger
-
 from PyQt5.QtCore import pyqtSignal, QObject
 
 import numpy
 import numpy as np
 import pandas
 import pandas as pd
+
+from robinson_flow.logger import getNodeLogger
 
 class OnMessageExec(NodeBase, QObject):
 

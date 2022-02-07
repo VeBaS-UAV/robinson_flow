@@ -4,13 +4,6 @@ from pydantic.main import BaseModel
 from robinson.components import Component, DataPortOutput, OutputPortComponent
 from robinson_flow import config
 from robinson_flow.pyflow_nodes.Robinson.Nodes.BaseNode import RobinsonPyFlowBase
-from robinson_flow.ryven_nodes.nodes.components import PrintOutputComponent
-
-
-class TestNode(RobinsonPyFlowBase):
-
-    def __init__(self, name, uid=None):
-        super().__init__(name, cls=PrintOutputComponent, uid=uid)
 
 class OutputNameComponent(OutputPortComponent):
 

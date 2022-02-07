@@ -4,11 +4,7 @@ from PyFlow.Core.NodeBase import NodePinsSuggestionsHelper
 from PyFlow.Core.Common import *
 import pydantic
 from robinson.messaging.mqtt import MQTTConnection
-from robinson_flow.ryven_nodes.base import RobinsonWrapperMixin
-from robinson_flow.ryven_nodes.nodes.components import PrintOutputComponent
 from robinson_flow.connector import TopicRegistry, TopicRegistryItem
-
-from robinson_flow.ryven_nodes.utils import getNodeLogger
 
 from robinson.components import Component, InputOutputPortComponent
 
@@ -24,6 +20,7 @@ import vebas.config
 from PyQt5.QtCore import pyqtSignal, QObject
 
 from robinson_flow.config import settings
+from robinson_flow.logger import getNodeLogger
 # config = vebas.config.default_config()
 vebas.config.default_logging_settings()
 
