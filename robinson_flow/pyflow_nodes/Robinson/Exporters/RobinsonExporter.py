@@ -3,7 +3,6 @@ from datetime import datetime
 from PyFlow.UI.UIInterfaces import IDataExporter
 from PyFlow.Core.version import Version
 
-from robinson_flow.pyflow_nodes.Robinson.Exporters.python_exporter import CompositeDefinition
 from io import StringIO
 from mako.lookup import TemplateLookup
 import pathlib
@@ -11,6 +10,8 @@ import inspect
 # import toml as serializer
 # import yaml as serializer
 import yaml
+
+from robinson_flow.pyflow_nodes.Robinson.Exporters.parser_classes import CompositeDefinition
 
 def pyname(name):
     return name.replace("-","_")
@@ -70,10 +71,6 @@ class RobinsonExporter(IDataExporter):
             with open(python_filename,"w") as fh:
                 fh.write(buf.getvalue())
 
-
-            #TODO read robinson data
-            # with open(cfg_filename,"w") as fh:
-                # fh.write(buf.getvalue())
 
             node_configs = {}
 
