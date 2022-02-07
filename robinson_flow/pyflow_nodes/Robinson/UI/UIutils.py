@@ -9,7 +9,7 @@ from vebas.tracking.components.cv import ImageView
 from Qt.QtWidgets import QTextEdit, QLineEdit, QLabel, QPlainTextEdit, QTextEdit, QPushButton
 from Qt.QtGui import QImage, QPixmap, QFont
 from Qt.QtCore import Qt
-from robinson_flow.pyflow_nodes.Robinson.Nodes.BaseNode import RobinsonTicker
+from robinson_flow.pyflow_nodes.Robinson.Nodes.BaseNode import RobinsonProfiler
 from robinson_flow.pyflow_nodes.Robinson.Nodes.ExternalNodes import ExternalSource
 from robinson_flow.pyflow_nodes.Robinson.Nodes.OpenCV import FrameView
 import cv2
@@ -155,12 +155,12 @@ class UILambdaView(UINodeBase):
         except Exception as e:
             self.eval_msg.setText(str(e))
 
-class UIRobinsonTickerView(UINodeBase):
+class UIRobinsonProfilerView(UINodeBase):
 #     pinCreated = QtCore.Signal(object)
 
     def __init__(self, raw_node):
-        super(UIRobinsonTickerView, self).__init__(raw_node)
-        self.node:RobinsonTicker = raw_node
+        super(UIRobinsonProfilerView, self).__init__(raw_node)
+        self.node:RobinsonProfiler = raw_node
         self.resizable = True
 
         self.lambdawidget = QPushButton()
@@ -169,6 +169,41 @@ class UIRobinsonTickerView(UINodeBase):
         # self.lambdawidget.setLineWrapMode(QPlainTextEdit.NoWrap)
 
         self.addWidget(self.lambdawidget)
+
+class UIRobinsonTickerView(UINodeBase):
+#     pinCreated = QtCore.Signal(object)
+
+    def __init__(self, raw_node):
+        super(UIRobinsonTickerView, self).__init__(raw_node)
+        self.node:RobinsonProfiler = raw_node
+        self.resizable = True
+
+        self.stop = QPushButton()
+        self.stop.setText("Stop")
+        self.stop.clicked.connect(lambda: self.node.stop())
+
+        self.single_step = QPushButton()
+        self.single_step.setText("Step")
+        self.single_step.clicked.connect(lambda: self.node.single_step())
+
+        self.play1 = QPushButton()
+        self.play1.setText("Play (1)")
+        self.play1.clicked.connect(lambda: self.node.start(1))
+
+        self.play10 = QPushButton()
+        self.play10.setText("Play (10)")
+        self.play10.clicked.connect(lambda: self.node.start(10))
+
+        self.play100 = QPushButton()
+        self.play100.setText("Play (100)")
+        self.play100.clicked.connect(lambda: self.node.start(100))
+
+        self.addWidget(self.stop)
+        self.addWidget(self.single_step)
+        self.addWidget(self.play1)
+        self.addWidget(self.play10)
+        self.addWidget(self.play100)
+
 
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg
 from matplotlib.figure import Figure

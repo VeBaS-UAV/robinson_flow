@@ -81,6 +81,66 @@ class RobinsonTicker(NodeBase):
         self.outp.enableOptions(PinOptions.AllowAny)
         self.outp.disableOptions(PinOptions.ChangeTypeOnConnection)
 
+        self.dt_exec = 1
+        self.last_exec = time.time()
+        self.running = False
+
+    def Tick(self, delta):
+
+        if self.running is False:
+            return
+
+        if self.dt_exec == 0:
+            self.step()
+            self.dt_exec = -1
+            self.running = False
+
+        if self.dt_exec > 0:
+            if time.time() - self.last_exec > self.dt_exec:
+                self.step()
+
+    def single_step(self):
+        self.running = True
+        self.dt_exec = 0
+
+    def step_rate(self, rate):
+        self.dt_exec = 1.0/rate
+
+    def stop(self):
+        self.running = False
+
+    def start(self, rate=None):
+        if rate is not None:
+            self.step_rate(rate)
+        self.running = True
+
+    def step(self):
+        self.outExec.call()
+        self.last_exec = time.time()
+
+
+    @staticmethod
+    def category():
+        return "utils"
+
+class RobinsonProfiler(NodeBase):
+
+    _packageName = "Robinson"
+
+    def __init__(self, name, uid=None):
+        super().__init__(name, uid)
+        self.logger = getNodeLogger(self)
+        # self.inExec = self.createInputPin(DEFAULT_IN_EXEC_NAME, 'ExecPin', None, self.compute)
+        self.outExec = self.createOutputPin(DEFAULT_OUT_EXEC_NAME, 'ExecPin')
+
+        self.thread = None
+        self.running = False
+
+        self.profile = cProfile.Profile()
+        self.outp = self.createOutputPin("stats", "AnyPin", None)
+        self.outp.enableOptions(PinOptions.AllowAny)
+        self.outp.disableOptions(PinOptions.ChangeTypeOnConnection)
+
     def toggle(self):
         if self.running:
             self.stop()
@@ -109,7 +169,7 @@ class RobinsonTicker(NodeBase):
         self.running = True
 
     def Tick(self, delta):
-        super(RobinsonTicker, self).Tick(delta)
+        super(RobinsonProfiler, self).Tick(delta)
         bEnabled = self.running
         if bEnabled:
             self.profile.enable()
