@@ -12,6 +12,8 @@ from Qt.QtWidgets import QApplication
 
 import robinson.components
 
+from vebas.config import default_logging_settings
+default_logging_settings()
 
 class RobinsonGraphManager(GraphManager):
 
