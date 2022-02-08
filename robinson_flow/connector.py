@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
 from robinson.messaging.mqtt import MQTTConnection
-import robinson_flow
 from robinson.messaging.mqtt import MQTTConnection
-import vebas.config
 from pymavlink.dialects.v20.ardupilotmega import MAVLink_message
 from robinson.messaging.mqtt.serializer import Image, JsonTransform
-from vebas.taskplanner.types import Seedling, SeedlingsList
+# from vebas.taskplanner.types import Seedling, SeedlingsList
+
+from robinson_flow.logger import getLogger
+import copy
 
 class EnvironmentConnector():
 
@@ -17,7 +18,7 @@ class EnvironmentConnector():
 
 class MQTTConnector(EnvironmentConnector):
     def __init__(self, settings):
-        self.logger = vebas.config.getLogger(self)
+        self.logger = getLogger(self)
         self.mqtt = MQTTConnection("mqtt", settings.server)
         self.mqtt.init()
 
@@ -37,7 +38,8 @@ class MQTTConnector(EnvironmentConnector):
 
 class TopicRegistryItem():
 
-    def __init__(self, msg_type, transformer, *args, **kwargs) -> None:
+    def __init__(self, topic, msg_type, transformer, *args, **kwargs) -> None:
+        self.topic = topic
         self.msg_type = msg_type
         self.transformer = transformer
         self.args = args
@@ -51,23 +53,29 @@ class TopicRegistry():
 
     registry = {}
 
-    def __init__(self, topic_mapping = {}) -> None:
-
+    def __init__(self, default:TopicRegistryItem,  topic_mapping = {}) -> None:
+        self.default_item:TopicRegistryItem = default
         self.registry = topic_mapping
 
-        # for topic, (msg_type, transformer, args) in topic_mapping:
-            # self.registry[topic] = TopicRegistryItem(msg_type, transformer, args)
+    def find(self, key:str) -> TopicRegistryItem:
+        import re
 
-        self.registry["default"] = TopicRegistryItem(dict, JsonTransform)
+        if key == "uav_camera_down":
+            pass
+        for pattern, item in self.registry.items():
+            match = re.fullmatch(pattern,key)
 
-    def find(self, topic:str) -> TopicRegistryItem:
-        import fnmatch
+            if match:
+                topic = item.topic.format(*match.groups(),**match.groupdict())
 
-        for key, item in self.registry.items():
-            if fnmatch.fnmatch(topic, key):
-                return item
+                ii = copy.copy(item)
 
-        return self.registry["default"]
+                ii.topic = topic
+
+                return ii
+
+        # raise BaseException(f"Could not find {key}")
+        return self.default_item
 
     def is_valid_topic(self, topic):
         return True if topic is not None and len(topic) > 0 else False
@@ -76,34 +84,38 @@ class TopicRegistry():
 class ExternalConnectionHandler():
 
     def __init__(self, settings) -> None:
-        self.logger = vebas.config.getLogger(self)
+        self.logger = getLogger(self)
         self.config = settings
 
         self.registry = {}
-        self.registry["mavlink"] = TopicRegistryItem(MAVLink_message, JsonTransform, MAVLink_message)
-        self.registry["mavlink/*"] = TopicRegistryItem(MAVLink_message, JsonTransform, MAVLink_message)
-        self.registry['vebas/uav/camera/image'] = TopicRegistryItem(Image, JsonTransform, Image)
-        self.registry['vebas/**/image'] = TopicRegistryItem(Image, JsonTransform, Image)
-        self.registry['vebas/taskplanner/seedlings'] = TopicRegistryItem(SeedlingsList, JsonTransform, SeedlingsList)
-        self.registry["*"] = TopicRegistryItem(dict, JsonTransform)
-        self.registry["default"] = TopicRegistryItem(dict, JsonTransform)
-        self.topic_registry = TopicRegistry(self.registry)
+        self.registry[r"mavlink"] = TopicRegistryItem("mavlink", MAVLink_message, JsonTransform, MAVLink_message)
+        self.registry[r"mavlink/(?P<name>.*)"] = TopicRegistryItem("mavlink/{name}", MAVLink_message, JsonTransform, MAVLink_message)
+        self.registry[r"mavlink_(?P<name>.*)"] = TopicRegistryItem("mavlink/{name}", MAVLink_message, JsonTransform, MAVLink_message)
+        self.registry[r"uav_camera_down"] = TopicRegistryItem("vebas/uav/camera/image", Image, JsonTransform, Image)
+        self.registry[r"tracking_image"] = TopicRegistryItem("vebas/uav/tracking/image", Image, JsonTransform, Image)
+        # self.registry['vebas/**/image'] = TopicRegistryItem(Image, JsonTransform, Image)
+        self.registry[r"seedling_position/(.*)"] = TopicRegistryItem("vebas/tracking/{0}", dict, JsonTransform)
+        self.registry['vebas_seedlingslist'] = TopicRegistryItem("vebas/taskplanner/seedlings", dict, JsonTransform)
+
+        default_item = TopicRegistryItem("NOT_DEFINED_{0}", dict, JsonTransform)
+        # self.registry["default"] = TopicRegistryItem(dict, JsonTransform)
+        self.topic_registry = TopicRegistry(default_item, self.registry)
         self.mqtt = MQTTConnection("robinson.mqtt", self.config.mqtt.server)
 
         self.mqtt.init()
 
     def external_source(self, topic):
         self.logger.info(f"exteral_source for topic {topic}")
-        mqtt_port = self.mqtt.mqtt_output(topic)
         reg_item = self.topic_registry.find(topic)
+        mqtt_port = self.mqtt.mqtt_output(reg_item.topic)
         transformer = reg_item.create()
         mqtt_port.connect(transformer)
         return transformer
 
     def external_sink(self, topic):
         self.logger.info(f"exteral_sink for topic {topic}")
-        mqtt_port = self.mqtt.mqtt_input(topic)
         reg_item = self.topic_registry.find(topic)
+        mqtt_port = self.mqtt.mqtt_input(reg_item.topic)
         transformer = reg_item.create()
         transformer.connect(mqtt_port)
         return transformer.to_json
