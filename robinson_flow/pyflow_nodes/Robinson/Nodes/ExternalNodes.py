@@ -14,15 +14,11 @@ from blinker import Signal
 
 from PyFlow.Core import NodeBase
 from PyFlow.Core.Common import *
-import vebas.config
-
 
 from PyQt5.QtCore import pyqtSignal, QObject
 
 from robinson_flow.config import settings
 from robinson_flow.logger import getNodeLogger
-# config = vebas.config.default_config()
-vebas.config.default_logging_settings()
 
 
 class ExternalBase(NodeBase):

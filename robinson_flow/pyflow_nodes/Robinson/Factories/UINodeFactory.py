@@ -1,4 +1,3 @@
-from vebas.tracking.components.cv import ImageView
 from robinson_flow.pyflow_nodes.Robinson.Nodes.BaseNode import RobinsonProfiler, RobinsonTicker
 from robinson_flow.pyflow_nodes.Robinson.Nodes.ExternalNodes import ExternalSink, ExternalSource
 from robinson_flow.pyflow_nodes.Robinson.Nodes.OpenCV import FrameView
