@@ -4,7 +4,7 @@ from PyFlow.Core.NodeBase import NodePinsSuggestionsHelper
 from PyFlow.Core.Common import *
 import pydantic
 from robinson.messaging.mqtt import MQTTConnection
-from robinson_flow.connector import TopicRegistry, TopicRegistryItem
+from robinson_flow.connector import ExternalConnectionHandler, TopicRegistry, TopicRegistryItem
 
 from robinson.components import Component, InputOutputPortComponent
 
@@ -35,10 +35,11 @@ class ExternalBase(NodeBase):
 
         self.topic = "topic_name"
 
-        self.topic_reg = TopicRegistry()
-        self.mqtt = MQTTConnection("robinson.mqtt", settings.environment.mqtt.server)
-        self.mqtt.init()
+        # self.topic_reg = TopicRegistry()
+        # self.mqtt = MQTTConnection("robinson.mqtt", settings.environment.mqtt.server)
+        # self.mqtt.init()
 
+        self.ext_con = ExternalConnectionHandler(settings.environment)
 
     def serialize(self):
         data =  super().serialize()
@@ -77,23 +78,26 @@ class ExternalSource(ExternalBase,QObject):
         self.outp.setData(msg)
 
     def init_ports(self):
-        mqtt_port = self.mqtt.mqtt_output(self.topic)
+        # mqtt_port = self.mqtt.mqtt_output(self.topic)
 
         global_id = self.uid
 
         if global_id in self.connections:
-            mqtt_port.disconnect(self.connections[global_id])
+            # mqtt_port.disconnect(self.connections[global_id])
             self.connections[global_id].cleanup()
             del self.connections[global_id]
 
-        reg_item = self.topic_reg.find(self.topic)
+        # reg_item = self.topic_reg.find(self.topic)
 
-        transformer = reg_item.create()
+        # transformer = reg_item.create()
         # transformer.connect(self.msg_signal.emit)
-        transformer.connect(self.receive_msg)
+        # transformer.connect(self.receive_msg)
 
-        self.connections[global_id] = transformer
-        mqtt_port.connect(transformer)
+        # self.connections[global_id] = transformer
+        # mqtt_port.connect(transformer)
+        mqtt_port = self.ext_con.external_source(self.topic)
+        mqtt_port.connect(self.receive_msg)
+        self.connections[global_id] = mqtt_port
 
     def update_topic(self, topic):
         self.topic = topic
@@ -137,9 +141,9 @@ class ExternalSink(ExternalBase):
 
     def init_ports(self):
 
-        reg_item = self.topic_reg.find(self.topic)
+        # reg_item = self.topic_reg.find(self.topic)
 
-        mqtt_port = self.mqtt.mqtt_input(self.topic)
+        mqtt_port = self.ext_con.external_sink(self.topic)
 
         global_id = self.uid
 
@@ -147,12 +151,7 @@ class ExternalSink(ExternalBase):
             self.connections[global_id].cleanup()
             del self.connections[global_id]
 
-        transformer = reg_item.create()
-        self.connections[global_id] = transformer
-
-        transformer.connect(mqtt_port)
-        # node.external_output.connect(transformer)
-        self.output_port = transformer.to_json
+        self.output_port = mqtt_port
 
     def update_topic(self, topic):
         self.topic = topic
