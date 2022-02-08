@@ -1,2 +1,2 @@
 <%page args="composite"/>
-${composite.name().lower()|pyname} = ${composite.name().capitalize()|pyname}_Composite('${composite.name().lower()}')
+${composite.name().lower()|pyname} = ${composite.name()|pyname}('${composite.name().lower()}')

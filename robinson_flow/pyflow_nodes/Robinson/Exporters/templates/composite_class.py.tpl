@@ -1,5 +1,5 @@
 <%page args="composite"/>
-class ${composite.name().capitalize()|pyname}_Composite(Composite):
+class ${composite.name()|pyname}(Composite):
 
     def __init__(self, name):
         super().__init__(name)
@@ -16,14 +16,14 @@ class ${composite.name().capitalize()|pyname}_Composite(Composite):
         <%
             name = port.name
         %>
-        self.${name} = DataPortOutput('${name}')\
+        self.${name|pyname} = DataPortOutput('${name}')\
         % endfor
 
         % for port in composite.input_ports():
         <%
         name = port.name
         %>
-        self.${name} = DataPort('${name}')\
+        self.${name|pyname} = DataPort('${name}')\
         % endfor
 
         % for c in composite.connections():
@@ -40,7 +40,7 @@ class ${composite.name().capitalize()|pyname}_Composite(Composite):
             to_port = c.to_port()
             to_statement = f"{to_component}.{to_port}"
         %>
-        ${from_statement}.connect(${to_statement})\
+        ${from_statement|pyname}.connect(${to_statement|pyname})\
         % endfor
 
 % for name, (module, classname) in composite.import_modules().items():
