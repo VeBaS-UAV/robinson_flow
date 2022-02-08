@@ -368,6 +368,9 @@ class CompositeDefinition(NodeDefinition):
         for uid, node in self.nodes().items():
             c = node.config()
 
+            if c is None:
+                continue
+
             if len(c)>0:
                 cfg[node.name()] = c
 
@@ -433,19 +436,23 @@ class CompositeDefinition(NodeDefinition):
 
                 for link in output_links:
 
-                    from_node = n
-                    from_idx = link["outPinId"]
-                    # from_name = n["name"]
-                    # from_port = rob["output_names"][from_idx - 2]
-                    to_uuid = link["rhsNodeUid"]
-                    to_idx = link['inPinId']
-                    # try:
-                    to_node = nodes[to_uuid]# if to_uuid in nodes else uuid
-                    # print("to_node", to_node)
-                    #
-                    if from_node.is_external() or to_node.is_external():
-                        continue
-                    connections.append(CDir(from_node=from_node, from_idx=from_idx, to_node=to_node, to_idx=to_idx))
+                    try:
+                        from_node = n
+                        from_idx = link["outPinId"]
+                        # from_name = n["name"]
+                        # from_port = rob["output_names"][from_idx - 2]
+                        to_uuid = link["rhsNodeUid"]
+                        to_idx = link['inPinId']
+                        # try:
+                        to_node = nodes[to_uuid]# if to_uuid in nodes else uuid
+                        # print("to_node", to_node)
+                        #
+                        if from_node.is_external() or to_node.is_external():
+                            continue
+                        connections.append(CDir(from_node=from_node, from_idx=from_idx, to_node=to_node, to_idx=to_idx))
+                    except Exception as e:
+                        print(f"Could not connect {n} to {to_uuid}")
+                        print(e)
 
         return connections
 
@@ -464,20 +471,23 @@ class CompositeDefinition(NodeDefinition):
 
                 for link in output_links:
 
-                    from_node = n
-                    from_idx = link["outPinId"]
-                    # from_name = n["name"]
-                    # from_port = rob["output_names"][from_idx - 2]
-                    to_uuid = link["rhsNodeUid"]
-                    to_idx = link['inPinId']
-                    # try:
-                    to_node = nodes[to_uuid]# if to_uuid in nodes else uuid
-                    # print("to_node", to_node)
-                    #
-                    if from_node.is_external() == False and to_node.is_external() == False:
-                        continue
-                    connections.append(CDir(from_node=from_node, from_idx=from_idx, to_node=to_node, to_idx=to_idx))
-
+                    try:
+                        from_node = n
+                        from_idx = link["outPinId"]
+                        # from_name = n["name"]
+                        # from_port = rob["output_names"][from_idx - 2]
+                        to_uuid = link["rhsNodeUid"]
+                        to_idx = link['inPinId']
+                        # try:
+                        to_node = nodes[to_uuid]# if to_uuid in nodes else uuid
+                        # print("to_node", to_node)
+                        #
+                        if from_node.is_external() == False and to_node.is_external() == False:
+                            continue
+                        connections.append(CDir(from_node=from_node, from_idx=from_idx, to_node=to_node, to_idx=to_idx))
+                    except Exception as e:
+                        print(f"Could not connect {n} to {to_uuid}")
+                        print(e)
         return connections
 
 

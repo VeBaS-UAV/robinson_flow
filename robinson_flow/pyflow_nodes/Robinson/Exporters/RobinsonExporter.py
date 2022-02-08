@@ -14,7 +14,7 @@ import yaml
 from robinson_flow.pyflow_nodes.Robinson.Exporters.parser_classes import CompositeDefinition
 
 def pyname(name):
-    return name.replace("-","_")
+    return name.replace("-","_").replace("/","_")
 
 class RobinsonExporter(IDataExporter):
     """docstring for DemoExporter."""
@@ -75,11 +75,17 @@ class RobinsonExporter(IDataExporter):
             node_configs = {}
 
             for uuid, node in base.nodes().items():
-                cfg = node.config()
+                try:
+                    cfg = node.config()
 
-                if len(cfg) > 0:
-                    node_configs[node.name()] = cfg
+                    if cfg is None:
+                        continue
 
+                    if len(cfg) > 0:
+                        node_configs[node.name()] = cfg
+                except Exception as e:
+                    print("Error whil reading config from graph")
+                    print(e)
             tmp = mylookup.get_template("config.yaml.tpl")
             buf = StringIO()
 
