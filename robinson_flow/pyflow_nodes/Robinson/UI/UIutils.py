@@ -14,7 +14,7 @@ from robinson_flow.pyflow_nodes.Robinson.Nodes.ExternalNodes import ExternalSour
 from robinson_flow.pyflow_nodes.Robinson.Nodes.OpenCV import FrameView
 import cv2
 
-from robinson_flow.pyflow_nodes.Robinson.Nodes.utils import EvalNode, LambdaNode, LoggingView, PlotView
+from robinson_flow.pyflow_nodes.Robinson.Nodes.utils import EvalNode, LoggingView, PlotView
 
 import datetime
 
@@ -110,50 +110,6 @@ class UIEvalView(UINodeBase):
         except Exception as e:
             self.eval_msg.setText(str(e))
 
-class UILambdaView(UINodeBase):
-#     pinCreated = QtCore.Signal(object)
-
-    def __init__(self, raw_node):
-        super(UILambdaView, self).__init__(raw_node)
-        self.node:LambdaNode = raw_node
-        self.node.lambda_changed.connect(self.lambda_changed)
-        self.node.lambda_eval_msg.connect(self.lambda_eval_msg)
-        self.node.lambda_call_msg.connect(self.lambda_call_msg)
-        self.resizable = True
-
-        self.lambdawidget = QLineEdit()
-        self.lambdawidget.setText(self.node.lambda_code)
-        self.lambdawidget.resize(90,20)
-        self.lambdawidget.textEdited.connect(self.code_updated)
-        # self.lambdawidget.setLineWrapMode(QPlainTextEdit.NoWrap)
-        font = QFont()
-        font.setPointSize(8)
-        self.lambdawidget.setFont(font)
-
-        self.addWidget(self.lambdawidget)
-
-
-        self.eval_msg = QLabel()
-        self.eval_msg.setFont(font)
-        self.eval_msg.setStyleSheet('color: red')
-        self.addWidget(self.eval_msg)
-
-    def lambda_eval_msg(self, msg):
-        self.eval_msg.setText(msg)
-
-    def lambda_call_msg(self, msg):
-        self.eval_msg.setText(msg)
-
-    def lambda_changed(self, code):
-        self.lambdawidget.setText(code)
-
-    def code_updated(self):
-        try:
-            code = self.lambdawidget.text()
-            self.node.update_lambda(code)
-            self.eval_msg.setText("")
-        except Exception as e:
-            self.eval_msg.setText(str(e))
 
 class UIRobinsonProfilerView(UINodeBase):
 #     pinCreated = QtCore.Signal(object)

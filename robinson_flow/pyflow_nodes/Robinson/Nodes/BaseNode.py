@@ -235,7 +235,7 @@ class RobinsonPyFlowBase(NodeBase, RobinsonWrapperMixin):
             self.output_pins[port_name] = (outp, port_callable)
 
 
-        self.update_settings()
+        # self.update_settings()
 
         self.skip_first_update = True
 

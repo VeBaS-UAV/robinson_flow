@@ -3,10 +3,13 @@ from PyFlow.Core.NodeBase import NodeBase
 
 from PyQt5.QtCore import pyqtSignal, QObject
 
+from typing import Callable, Type, Any, List, Union
 import numpy
 import numpy as np
 import pandas
 import pandas as pd
+import pydantic
+from robinson.components import Component, InputOutputPortComponent
 
 from robinson_flow.logger import getNodeLogger
 
@@ -59,76 +62,55 @@ class LoggingView(NodeBase, QObject):
     def category():
         return "utils"
 
-class LambdaNode(NodeBase, QObject):
+class LambdaComponent(InputOutputPortComponent):
 
-    _packageName = "Robinson"
+    class Config(pydantic.BaseModel):
+        lambda_code:str = "lambda m:m"
 
-    lambda_changed = pyqtSignal(str)
-    lambda_eval_msg = pyqtSignal(str)
-    lambda_call_msg = pyqtSignal(str)
+    config = Config()
 
-    def __init__(self, name, uid=None):
-        super().__init__(name, uid)
-        self.logger = getNodeLogger(self)
+    def __init__(self, name):
+        super().__init__(name)
+        self.msg = None
 
-        self.inp = self.createInputPin("m", "AnyPin", None)
-        self.inp.enableOptions(PinOptions.AllowAny)
-        self.inp.disableOptions(PinOptions.ChangeTypeOnConnection)
-        self.inp.dataBeenSet.connect(self.call_lambda)
+        self.update_lambda()
 
-        self.outp = self.createOutputPin("out", "AnyPin", None)
-        self.outp.disableOptions(PinOptions.ChangeTypeOnConnection)
+    def config_update(self, **kwargs):
+        self.config = LambdaComponent.Config(**kwargs)
+        self.update_lambda()
 
-        self.lambda_code = "lambda m:m"
-        self.lambda_func = lambda m:m
+    def config_get(self, key=None) -> dict[str, Any]:
+        if key is None:
+            return self.config.dict()
+        return self.config["key"]
 
-        self.update_lambda(self.lambda_code)
-
-    def update_lambda(self, code):
-        if self.lambda_code == code:
-            return
-
-
-        self.lambda_code = code
+    def update_lambda(self):
         try:
-            self.lambda_func = eval(self.lambda_code)
+            self.lambda_func = eval(self.config.lambda_code)
         except Exception as e:
-            self.lambda_eval_msg.emit(str(e))
-            raise e
-        self.lambda_changed.emit(self.lambda_code)
+            self.logger.warn(f"Could not eval code {self.config.lambda_code}")
 
-    def call_lambda(self, *args):
-        try:
-            if self.lambda_func is None:
-                self.logger.warn(f"Could not find lambda function")
-                return
+    def dataport_input(self, msg):
+        self.msg = msg
 
-            args = [d.getData() for d in self.inputs.values()]
+    def update(self):
+        if self.msg:
 
-            ret = self.lambda_func(*args)
+            try:
+                if self.lambda_func is None:
+                    self.logger.warn(f"Could not find lambda function")
+                    return
 
-            self.outp.setData(ret)
-        except Exception as e:
-            self.logger.warn("Could not call lambda function")
-            self.logger.error(e)
-            self.lambda_call_msg.emit(str(e))
+                args = [self.msg]
+                ret = self.lambda_func(*args)
 
-    def serialize(self):
-        data =  super().serialize()
-        data["lambda_code"] = self.lambda_code
-        # self.logger.info(f"serialize {data}")
-        return data
+                self.dataport_output(ret)
+            except Exception as e:
+                self.logger.warn("Could not call lambda function")
+                self.logger.error(e)
 
-    def postCreate(self, jsonTemplate=None):
-        super().postCreate(jsonTemplate)
+            self.msg = None
 
-        if "lambda_code" in jsonTemplate:
-            self.update_lambda(jsonTemplate["lambda_code"])
-
-
-    @staticmethod
-    def category():
-        return "utils"
 
 class EvalNode(NodeBase, QObject):
 

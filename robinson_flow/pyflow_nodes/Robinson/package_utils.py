@@ -4,7 +4,7 @@ from robinson.components import Component
 from robinson_flow.pyflow_nodes.Robinson.Nodes.BaseNode import RobinsonPyFlowBase, RobinsonPyFlowFunc, RobinsonTicker
 from robinson_flow.pyflow_nodes.Robinson.Nodes.ExternalNodes import ExternalSink, ExternalSource
 from robinson_flow.pyflow_nodes.Robinson.Nodes.OpenCV import FrameView
-from robinson_flow.pyflow_nodes.Robinson.Nodes.utils import EvalNode, LambdaNode, LoggingView, OnMessageExec, PlotView
+from robinson_flow.pyflow_nodes.Robinson.Nodes.utils import EvalNode, LambdaComponent, LoggingView, OnMessageExec, PlotView
 
 
 def factory(cls):
@@ -65,6 +65,7 @@ def export_nodes():
     component_list = []
     function_list = []
 
+    component_list.append(LambdaComponent)
     try:
         robinson_packages = settings.robinson.modules
 
@@ -105,7 +106,6 @@ def export_nodes():
     other_comp["ExternalSource"] = ExternalSource
     other_comp["ExternalSink"] = ExternalSink
     other_comp["FrameView"] = FrameView
-    other_comp["LambdaNode"] = LambdaNode
     other_comp["LoggingView"] = LoggingView
     other_comp["RobinsonTicker"] = RobinsonTicker
     other_comp["OnMessageExec"] = OnMessageExec
