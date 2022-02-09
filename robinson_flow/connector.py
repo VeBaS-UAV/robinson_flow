@@ -38,8 +38,9 @@ class MQTTConnector(EnvironmentConnector):
 
 class TopicRegistryItem():
 
-    def __init__(self, topic, msg_type, transformer, *args, **kwargs) -> None:
-        self.topic = topic
+    def __init__(self, topic_pattern, msg_type, transformer, *args, **kwargs) -> None:
+        self.topic_pattern = topic_pattern
+        self.topic = None
         self.msg_type = msg_type
         self.transformer = transformer
         self.args = args
@@ -47,6 +48,9 @@ class TopicRegistryItem():
 
     def create(self):
         return self.transformer(*self.args, **self.kwargs)
+
+    def update_topic(self, *args, **kwargs):
+        self.topic = self.topic_pattern.format(*args, **kwargs)
 
 
 class TopicRegistry():
@@ -56,26 +60,26 @@ class TopicRegistry():
     def __init__(self, default:TopicRegistryItem,  topic_mapping = {}) -> None:
         self.default_item:TopicRegistryItem = default
         self.registry = topic_mapping
+        self.logger = getLogger(self)
+
 
     def find(self, key:str) -> TopicRegistryItem:
         import re
 
-        if key == "uav_camera_down":
-            pass
         for pattern, item in self.registry.items():
             match = re.fullmatch(pattern,key)
 
             if match:
-                topic = item.topic.format(*match.groups(),**match.groupdict())
+                new_instance = copy.copy(item)
+                new_instance.update_topic(*match.groups(),**match.groupdict())
 
-                ii = copy.copy(item)
+                return new_instance
 
-                ii.topic = topic
+        new_instance = copy.copy(self.default_item)
+        new_instance.update_topic(key)
+        self.logger.warn(f"Using default port for {key} resulting in topic {new_instance.topic}")
+        return new_instance
 
-                return ii
-
-        # raise BaseException(f"Could not find {key}")
-        return self.default_item
 
     def is_valid_topic(self, topic):
         return True if topic is not None and len(topic) > 0 else False
@@ -96,6 +100,7 @@ class ExternalConnectionHandler():
         # self.registry['vebas/**/image'] = TopicRegistryItem(Image, JsonTransform, Image)
         self.registry[r"seedling_position/(.*)"] = TopicRegistryItem("vebas/tracking/{0}", dict, JsonTransform)
         self.registry['vebas_seedlingslist'] = TopicRegistryItem("vebas/taskplanner/seedlings", dict, JsonTransform)
+        self.registry['(.*)'] = TopicRegistryItem("{0}", dict, JsonTransform)
 
         default_item = TopicRegistryItem("NOT_DEFINED_{0}", dict, JsonTransform)
         # self.registry["default"] = TopicRegistryItem(dict, JsonTransform)
