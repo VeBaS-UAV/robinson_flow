@@ -29,3 +29,6 @@ class FrameView(NodeBase, QObject):
     @staticmethod
     def category():
         return "OpenCV"
+
+class ImageView(FrameView):
+    pass

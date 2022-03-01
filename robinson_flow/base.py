@@ -6,6 +6,8 @@ import pydantic
 class RobinsonWrapperMixin():
     input_name = "dataport_input"
     output_name = "dataport_output"
+    eventinput_name = "eventport_input"
+    eventoutput_name = "eventport_output"
 
     def create_component(self):
         self.logger.info(f"Creating component {self.cls} for node {self.name}")
@@ -24,6 +26,15 @@ class RobinsonWrapperMixin():
         ports = [f for f in dir(cl) if f.startswith(self.output_name)]
         return [(name, getattr(cl, name)) for name in ports]
 
+    def cl_event_input_ports(self, cl):
+        ports = [f for f in dir(cl) if f.startswith(self.eventinput_name)]
+        return [(name, getattr(cl, name)) for name in ports]
+
+    def cl_event_output_ports(self, cl):
+        ports = [f for f in dir(cl) if f.startswith(self.eventoutput_name)]
+        return [(name, getattr(cl, name)) for name in ports]
+
+
     def extract_output_name(self, port_name):
         base_name = port_name[len(self.output_name)+1:]
         if len(base_name) == 0:
@@ -34,6 +45,18 @@ class RobinsonWrapperMixin():
         base_name = port_name[len(self.input_name)+1:]
         if len(base_name) == 0:
             return "input"
+        return base_name
+
+    def extract_eventoutput_name(self, port_name):
+        base_name = port_name[len(self.eventoutput_name)+1:]
+        if len(base_name) == 0:
+            return "eventoutput"
+        return base_name
+
+    def extract_eventinput_name(self, port_name):
+        base_name = port_name[len(self.eventinput_name)+1:]
+        if len(base_name) == 0:
+            return "eventinput"
         return base_name
 
     def extract_init_items(self, cls):

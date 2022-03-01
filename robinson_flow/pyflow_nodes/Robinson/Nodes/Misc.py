@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 from pydantic.main import BaseModel
-from robinson.components import Component, DataPortOutput, OutputPortComponent
+from robinson.components import Component, DataPortOutput, EventPortOutput, OutputPortComponent
 from robinson_flow import config
 from robinson_flow.pyflow_nodes.Robinson.Nodes.BaseNode import RobinsonPyFlowBase
 
@@ -45,3 +45,20 @@ class AddHelloComponent(Component):
         if key is None:
             return self.config.dict()
         return self.config["key"]
+
+
+class TestEventComponent(Component):
+
+    def __init__(self, name: str, fqn_logger=True):
+        super().__init__(name, fqn_logger)
+
+        self.dataport_output_onevent = DataPortOutput("eventmsg")
+        self.eventport_output_eventforward = EventPortOutput("eventforward")
+
+    def dataport_input_blank(self, msg):
+        pass
+
+    def eventport_input_inputevent(self):
+        self.logger.error(f"received event")
+        self.dataport_output_onevent("Received event")
+        self.eventport_output_eventforward()

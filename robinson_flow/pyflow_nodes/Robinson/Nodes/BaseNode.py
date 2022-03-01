@@ -15,46 +15,6 @@ from robinson_flow.logger import getNodeLogger
 
 from robinson_flow.base import RobinsonWrapperMixin
 
-class RobinsonPyFlowFunc(NodeBase):
-    _packageName = "Robinson"
-
-    def __init__(self, name, cb:Callable, uid=None):
-        super().__init__(name, uid)
-        self.logger = getNodeLogger(self)
-        self.cb = cb
-        # self.inExec = self.createInputPin(DEFAULT_IN_EXEC_NAME, 'ExecPin', None, self.compute)
-        # self.outExec = self.createOutputPin(DEFAULT_OUT_EXEC_NAME, 'ExecPin')
-
-        input_parameters = inspect.signature(self.cb).parameters
-
-        if input_parameters is not None:
-
-            inp_parameter =  [name for (name, p) in input_parameters.items()]
-            print("input pa", inp_parameter)
-            for name in input_parameters:
-                inp = self.createInputPin(name, "AnyPin",None)
-                inp.enableOptions(PinOptions.AllowAny)
-                inp.disableOptions(PinOptions.AlwaysPushDirty)
-                inp.disableOptions(PinOptions.ChangeTypeOnConnection)
-                inp.dirty = False
-                inp.dataBeenSet.connect(self.compute)
-
-        self.outp = self.createOutputPin("out", "AnyPin", None)
-        self.outp.enableOptions(PinOptions.AllowAny)
-        self.outp.disableOptions(PinOptions.ChangeTypeOnConnection)
-
-    def compute(self, *args, **kwargs):
-
-        if self.isDirty():
-            try:
-                args = [d.getData() for d in self.inputs.values()]
-
-                ret = self.cb(*args)
-
-                self.outp.setData(ret)
-            except Exception as e:
-                self.logger.warn("Could call function succefully")
-                self.logger.error(e)
 
 class RobinsonTicker(NodeBase):
 
@@ -202,6 +162,7 @@ class RobinsonPyFlowBase(NodeBase, RobinsonWrapperMixin):
 
         self.skip_first_update = True
 
+
     def create_ports(self):
         self.inExec = self.createInputPin(DEFAULT_IN_EXEC_NAME, 'ExecPin', None, self.compute)
         self.outExec = self.createOutputPin(DEFAULT_OUT_EXEC_NAME, 'ExecPin')
@@ -231,6 +192,42 @@ class RobinsonPyFlowBase(NodeBase, RobinsonWrapperMixin):
             # .disableOptions(PinOptions.AlwaysPushDirty)
 
             getattr(self.component, port_name).connect(outp.setData)
+
+            self.output_pins[port_name] = (outp, port_callable)
+
+        eventinput_ports = self.cl_event_input_ports(self.component)
+        eventoutput_ports = self.cl_event_output_ports(self.component)
+
+        for port_name, port_callable in eventinput_ports:
+            short_name = self.extract_eventinput_name(port_name)
+            inp = self.createInputPin(short_name, "BoolPin",None)
+            # inp.enableOptions(PinOptions.AllowAny)
+            inp.disableOptions(PinOptions.AlwaysPushDirty)
+            # inp.disableOptions(PinOptions.ChangeTypeOnConnection)
+            inp.dirty = False
+            # sig = inspect.signature(port_callable)
+            # print("input infos", port_callable, sig)
+            def create_inputport_callback(port_cb):
+                def callback(*m):
+                    port_cb()
+                return callback
+
+            self.input_pins[port_name] = (inp, create_inputport_callback(port_callable))
+
+
+        for port_name, port_callable in eventoutput_ports:
+            short_name = self.extract_eventoutput_name(port_name)
+            outp = self.createOutputPin(short_name, "BoolPin", None)
+            # outp.enableOptions(PinOptions.AllowAny)
+            # outp.disableOptions(PinOptions.ChangeTypeOnConnection)
+            # .disableOptions(PinOptions.AlwaysPushDirty)
+
+            def create_outputport_callback(output_port_cb):
+                def callback(*m):
+                    output_port_cb.setData(True)
+                return callback
+
+            getattr(self.component, port_name).connect(create_outputport_callback(outp))
 
             self.output_pins[port_name] = (outp, port_callable)
 

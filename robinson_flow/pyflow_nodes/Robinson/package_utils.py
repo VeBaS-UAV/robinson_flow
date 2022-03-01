@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
-from robinson.components import Component
-from robinson_flow.pyflow_nodes.Robinson.Nodes.BaseNode import RobinsonPyFlowBase, RobinsonPyFlowFunc, RobinsonTicker
+from robinson.components import Component, InputOutputPortComponent
+from robinson_flow.pyflow_nodes.Robinson.Nodes.BaseNode import RobinsonPyFlowBase, RobinsonTicker
 from robinson_flow.pyflow_nodes.Robinson.Nodes.ExternalNodes import ExternalSink, ExternalSource
 from robinson_flow.pyflow_nodes.Robinson.Nodes.OpenCV import FrameView
 from robinson_flow.pyflow_nodes.Robinson.Nodes.utils import EvalNode, LambdaComponent, LoggingView, OnMessageExec, PlotView
@@ -23,24 +23,6 @@ def factory(cls):
             return cls.__module__.replace(".","|")
 
     cl =  PyflowTemplateNode
-    cl.__name__ = name
-
-    return name, cl
-
-def factory_function(cb):
-    name = cb.__name__
-
-    # print(f"generate component {name}:{cls}")
-    class RobinsonPyFlowFunctionWrapperFactory(RobinsonPyFlowFunc):
-        def __init__(self, name, uid=None):
-            super().__init__(name, cb=cb, uid=uid)
-
-        @staticmethod
-        def category():
-            return cb.__module__.replace(".","|")
-
-
-    cl =  RobinsonPyFlowFunctionWrapperFactory
     cl.__name__ = name
 
     return name, cl
@@ -85,21 +67,21 @@ def export_nodes():
 
     rob_comps = {k:v for k,v in [factory(c) for c in component_list]}
 
-    function_names = []
-    try:
-        function_names = settings.robinson.functions #.append("")
+    # function_names = []
+    # try:
+    #     function_names = settings.robinson.functions #.append("")
 
-        for rob_pkg in function_names:
-            module = ".".join(rob_pkg.split(".")[:-1])
-            name = rob_pkg.split(".")[-1]
-            module = importlib.import_module(module)
-            func = getattr(module, name)
-            function_list.append(func)
-    except Exception as e:
-        print("Could not load function from module")
-        print(e)
+    #     for rob_pkg in function_names:
+    #         module = ".".join(rob_pkg.split(".")[:-1])
+    #         name = rob_pkg.split(".")[-1]
+    #         module = importlib.import_module(module)
+    #         func = getattr(module, name)
+    #         function_list.append(func)
+    # except Exception as e:
+    #     print("Could not load function from module")
+    #     print(e)
 
-    func_comps = {k:v for k,v in [factory_function(f) for f in function_list]}
+    # func_comps = {k:v for k,v in [factory_function(f) for f in function_list]}
 
     other_comp = {}
 
@@ -112,4 +94,4 @@ def export_nodes():
     other_comp["EvalNode"] = EvalNode
     other_comp["PlotView"] = PlotView
 
-    return {**rob_comps, **func_comps, **other_comp}
+    return {**rob_comps, **other_comp}
