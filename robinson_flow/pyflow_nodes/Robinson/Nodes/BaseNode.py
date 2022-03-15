@@ -163,6 +163,8 @@ class RobinsonPyFlowBase(NodeBase, RobinsonWrapperMixin):
         self.skip_first_update = True
 
 
+        self.is_initialized = False
+
     def create_ports(self):
         self.inExec = self.createInputPin(DEFAULT_IN_EXEC_NAME, 'ExecPin', None, self.compute)
         self.outExec = self.createOutputPin(DEFAULT_OUT_EXEC_NAME, 'ExecPin')
@@ -176,8 +178,10 @@ class RobinsonPyFlowBase(NodeBase, RobinsonWrapperMixin):
             short_name = self.extract_input_name(port_name)
             inp = self.createInputPin(short_name, "AnyPin",None)
             inp.enableOptions(PinOptions.AllowAny)
+            inp.enableOptions(PinOptions.AllowMultipleConnections)
             inp.disableOptions(PinOptions.AlwaysPushDirty)
             inp.disableOptions(PinOptions.ChangeTypeOnConnection)
+
             inp.dirty = False
             # sig = inspect.signature(port_callable)
             # print("input infos", port_callable, sig)
@@ -203,6 +207,7 @@ class RobinsonPyFlowBase(NodeBase, RobinsonWrapperMixin):
             inp = self.createInputPin(short_name, "BoolPin",None)
             # inp.enableOptions(PinOptions.AllowAny)
             inp.disableOptions(PinOptions.AlwaysPushDirty)
+            inp.enableOptions(PinOptions.AllowMultipleConnections)
             # inp.disableOptions(PinOptions.ChangeTypeOnConnection)
             inp.dirty = False
             # sig = inspect.signature(port_callable)
@@ -274,6 +279,7 @@ class RobinsonPyFlowBase(NodeBase, RobinsonWrapperMixin):
         # init_parameters = self.extract_init_items(self.cls)
         # config_parameters = self.extract_config_items(self.cls)
 
+
         try:
             if self.isDirty():
 
@@ -342,6 +348,9 @@ class RobinsonPyFlowBase(NodeBase, RobinsonWrapperMixin):
                     except Exception as e:
                         self.logger.error(f"Could not set config for {self.name}")
                         self.logger.error(e)
+
+        self.component.init()
+        self.is_initialized = True
 
     @staticmethod
     def pinTypeHints():

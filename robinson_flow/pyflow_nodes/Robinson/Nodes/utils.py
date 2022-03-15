@@ -53,6 +53,7 @@ class LoggingView(NodeBase, QObject):
 
         self.inp = self.createInputPin("msg", "AnyPin", None)
         self.inp.enableOptions(PinOptions.AllowAny)
+        self.inp.enableOptions(PinOptions.AllowMultipleConnections)
         self.inp.dataBeenSet.connect(self.img_received_callback)
 
     def img_received_callback(self, msg):
