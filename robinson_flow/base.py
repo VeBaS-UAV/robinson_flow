@@ -1,8 +1,12 @@
 #!/usr/bin/env python3
 
+from functools import partial
 import inspect
 import pydantic
+import importlib
+import inspect
 
+#TODO build some kind of proxy for robinson components for easy reloading
 class RobinsonWrapperMixin():
     input_name = "dataport_input"
     output_name = "dataport_output"
@@ -10,13 +14,39 @@ class RobinsonWrapperMixin():
     eventoutput_name = "eventport_output"
 
     def create_component(self):
+
         self.logger.info(f"Creating component {self.cls} for node {self.name}")
+
+        if hasattr(self, "component"):
+            if self.component is not None:
+                self.component.cleanup()
+
+        module = importlib.import_module(self.cls.__module__)
+        importlib.reload(module)
+        self.cls = [c[1] for c in inspect.getmembers(module) if c[0] == self.cls.__name__][0]
+
         try:
                 self.component = self.cls(self.name)
+                self.register_generic_callback()
+
         except Exception as e:
                 self.logger.error(f"error while setting up component {self.cls}")
                 self.logger.error(e)
                 self.component = None
+
+    def generic_output_callback(self, name, *args, **kwargs):
+        print("generic output callback", name, args, kwargs)
+
+    def register_generic_callback(self):
+        input_ports = self.cl_input_ports(self.component)
+        output_ports = self.cl_output_ports(self.component)
+        eventinput_ports = self.cl_event_input_ports(self.component)
+        eventoutput_ports = self.cl_event_output_ports(self.component)
+
+        for name, port_callable in output_ports:
+            port_callable.connect(partial(self.generic_output_callback, name))
+        for name, port_callable in eventoutput_ports:
+            port_callable.connect(partial(self.generic_output_callback, name))
 
     def cl_input_ports(self, cl):
         ports = [f for f in dir(cl) if f.startswith(self.input_name)]
@@ -33,7 +63,6 @@ class RobinsonWrapperMixin():
     def cl_event_output_ports(self, cl):
         ports = [f for f in dir(cl) if f.startswith(self.eventoutput_name)]
         return [(name, getattr(cl, name)) for name in ports]
-
 
     def extract_output_name(self, port_name):
         base_name = port_name[len(self.output_name)+1:]
@@ -79,15 +108,14 @@ class RobinsonWrapperMixin():
             print(e)
             return []
 
-    def call_input_port_by_name(self, name, *args, **kw_args):
-        # print("call_input_port_by_name", name, args, kw_args)
+    def get_callable_by_portname(self, name):
         func = getattr(self.component, name)
+        return func
 
-        # if name == "dataport_input_marker":
-        #     pass
+    def call_port_by_name(self, name, *args, **kw_args):
+        print("call_port_by_name", name, args, kw_args)
+        func = self.get_callable_by_portname(name)
 
-        # if name == "dataport_input_args":
-        #     pass
         try:
             sig = inspect.signature(func)
             param = sig.parameters
@@ -109,13 +137,6 @@ class RobinsonWrapperMixin():
         except Exception as e:
             self.logger.error(f"Could not call input porty {self.cls}.{name}")
             self.logger.error(e)
-
-    def call_output_port_by_index(self, index, *args, **kw_args):
-        # print("call outputport by index", index, args, kw_args)
-        if len(args) == 1:
-            self.outputs[index].set_val(args[0])
-        else:
-            self.outputs[index].set_val(args)
 
     def update_init(self, key, value):
         self.logger.info(f"update_init {key}:{value}")
