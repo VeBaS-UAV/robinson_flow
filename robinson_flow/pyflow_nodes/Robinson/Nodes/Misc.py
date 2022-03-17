@@ -1,9 +1,15 @@
 #!/usr/bin/env python3
 
 from pydantic.main import BaseModel
-from robinson.components import Component, DataPortOutput, EventPortOutput, OutputPortComponent
+from robinson.components import Component, DataPortOutput, EventPortOutput, OutputPortComponent, RobinsonQtComponent
 from robinson_flow import config
 from robinson_flow.pyflow_nodes.Robinson.Nodes.BaseNode import RobinsonPyFlowBase
+
+
+from Qt.QtWidgets import *
+from Qt import QtGui
+from Qt import QtCore
+
 
 class OutputNameComponent(OutputPortComponent):
 
@@ -32,13 +38,12 @@ class AddHelloComponent(Component):
     def update(self):
         if self.msg is not None:
             msg = self.config.fstring.format(**self.__dict__)
-            print("dataport_output_hex", hex(id(self)),hex(id(self.dataport_output)))
+            # print("dataport_output_hex", hex(id(self)),hex(id(self.dataport_output)))
             self.dataport_output(msg)
             self.msg = None
             # self.dataport_output(k))
 
     def config_update(self, **kwargs):
-        print("config update")
         self.config = AddHelloComponent.Config(**{**self.config.dict(), **kwargs})
 
     def config_get(self, key=None):
@@ -47,7 +52,7 @@ class AddHelloComponent(Component):
         return self.config["key"]
 
 
-class TestEventComponent(Component):
+class TestEventComponent(Component, RobinsonQtComponent):
 
     def __init__(self, name: str, fqn_logger=True):
         super().__init__(name, fqn_logger)
@@ -56,9 +61,25 @@ class TestEventComponent(Component):
         self.eventport_output_eventforward = EventPortOutput("eventforward")
 
     def dataport_input_blank(self, msg):
+        print("got input", msg)
         pass
 
     def eventport_input_inputevent(self):
         self.logger.error(f"received event")
         self.dataport_output_onevent("Received event")
         self.eventport_output_eventforward()
+
+    def get_widget(self, parent):
+        self.layout = QVBoxLayout()
+
+        self.btn = QPushButton("Klick13!")
+        self.btn.clicked.connect(lambda:self.dataport_output_onevent("klick2"))
+        self.btn.clicked.connect(self.eventport_output_eventforward)
+
+        self.layout.addWidget(self.btn)
+
+        self.widget = QWidget()
+
+        self.widget.setLayout(self.layout)
+
+        return self.widget

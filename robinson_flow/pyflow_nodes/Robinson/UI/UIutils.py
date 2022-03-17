@@ -11,6 +11,7 @@ from Qt.QtGui import QImage, QPixmap, QFont
 from Qt.QtCore import Qt
 from robinson_flow.pyflow_nodes.Robinson.Nodes.BaseNode import RobinsonProfiler
 from robinson_flow.pyflow_nodes.Robinson.Nodes.ExternalNodes import ExternalSource
+from robinson_flow.pyflow_nodes.Robinson.Nodes.Misc import RobinsonQtComponent
 from robinson_flow.pyflow_nodes.Robinson.Nodes.OpenCV import FrameView
 import cv2
 
@@ -182,3 +183,59 @@ class UIRobinsonPlotView(UINodeBase):
         self.sc = MplCanvas()
         self.sc.axes.plot([0,1,2,3,4], [10,1,20,3,40])
         self.addWidget(self.sc)
+
+class UIRobinsonView(UINodeBase):
+#     pinCreated = QtCore.Signal(object)
+
+    def __init__(self, raw_node):
+        super(UIRobinsonView, self).__init__(raw_node)
+        actionAddOut = self._menu.addAction("reload")
+        actionAddOut.setData(NodeActionButtonInfo(RESOURCES_DIR + "/reroute.svg"))
+        actionAddOut.triggered.connect(self.update_component)
+        self.node = raw_node
+        self.component:RobinsonQtComponent = raw_node.component
+        self.resizable = True
+
+
+    def update_component(self):
+
+        self.node.create_component()
+
+
+class UIRobinsonQtView(UINodeBase):
+#     pinCreated = QtCore.Signal(object)
+
+    def __init__(self, raw_node):
+        super(UIRobinsonQtView, self).__init__(raw_node)
+        actionAddOut = self._menu.addAction("reload")
+        actionAddOut.setData(NodeActionButtonInfo(RESOURCES_DIR + "/reroute.svg"))
+        actionAddOut.triggered.connect(self.update_widget)
+        self.node = raw_node
+        self.component:RobinsonQtComponent = raw_node.component
+        self.resizable = True
+
+        # self.update_widget()
+        self.addWidget(self.component.get_widget(self))
+
+
+    def update_widget(self):
+
+        layout = self.customLayout
+        for i in reversed(range(layout.count())):
+            item = layout.itemAt(i)
+
+            if item.widget() is not None:
+                item.widget().deleteLater()
+                item.widget().setParent(None)
+            elif item.layout() is not None:
+                clearLayout(item.layout())
+
+            layout.removeItem(item)
+
+
+        self.node.create_component()
+        self.component = self.node.component
+
+        self.addWidget(self.component.get_widget(self))
+
+        self.updateNodeShape()
