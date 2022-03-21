@@ -3,6 +3,7 @@ from robinson.components import ComponentRunner
 
 from robinson_flow.connector import ExternalConnectionHandler
 from robinson.components import DataPortOutput, DataPort, DataPortInput
+from robinson.components.qt import QtComponentRunner
 
 <%include file="components_import.py.tpl"/> \
 

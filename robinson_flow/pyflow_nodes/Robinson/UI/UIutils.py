@@ -1,7 +1,6 @@
 
 from PyFlow.UI.Canvas.UINodeBase import UINodeBase
 from PyFlow.UI.Widgets.SelectPinDialog import SelectPinDialog
-# from PyFlow.Core.ExternalManager import ExternalManagerSingleton
 from PyFlow.UI.Utils.stylesheet import Colors
 from PyFlow.UI import RESOURCES_DIR
 from PyFlow.UI.Canvas.UICommon import *
@@ -15,55 +14,11 @@ from robinson_flow.pyflow_nodes.Robinson.Nodes.Misc import RobinsonQtComponent
 from robinson_flow.pyflow_nodes.Robinson.Nodes.OpenCV import FrameView
 import cv2
 
-from robinson_flow.pyflow_nodes.Robinson.Nodes.utils import EvalNode, LoggingView, PlotView
+from robinson_flow.pyflow_nodes.Robinson.Nodes.utils import EvalNode, LoggingView
 
 import datetime
 
-class UILoggingView(UINodeBase):
-#     pinCreated = QtCore.Signal(object)
-
-    def __init__(self, raw_node):
-        super(UILoggingView, self).__init__(raw_node)
-        self.node:LoggingView = raw_node
-        self.node.msg_received.connect(self.msg_updated)
-        self.resizable = True
-
-        self.logwidget = QLabel()
-        self.logwidget.resize(30,30)
-        # self.logwidget.setLineWrapMode(QPlainTextEdit.NoWrap)
-        font = QFont()
-        font.setPointSize(6)
-        self.logwidget.setFont(font)
-
-        self.addWidget(self.logwidget)
-
-        self.loglines = []
-
-    def msg_updated(self, msg):
-        try:
-            # horScrollBar = self.logwidget.horizontalScrollBar()
-            # verScrollBar = self.logwidget.verticalScrollBar()
-            # scrollIsAtEnd = verScrollBar.maximum() - verScrollBar.value() <= 10
-
-            now = datetime.datetime.now().strftime("%H:%M:%S")
-            msg_line = str(msg)[:70]
-
-            self.loglines.append("{0}: {1}\n".format(now, msg_line))
-            log = ""
-            for l in self.loglines:
-                log+=l
-
-            self.logwidget.setText(log)
-
-            if len(self.loglines) > 5:
-                self.loglines = self.loglines[-5:]
-            # if scrollIsAtEnd:
-                # verScrollBar.setValue(verScrollBar.maximum()) # Scrolls to the bottom
-                # horScrollBar.setValue(0) # scroll to the left
-        except Exception as e:
-            print(e)
 class UIEvalView(UINodeBase):
-#     pinCreated = QtCore.Signal(object)
 
     def __init__(self, raw_node):
         super(UIEvalView, self).__init__(raw_node)
@@ -214,9 +169,9 @@ class UIRobinsonQtView(UINodeBase):
         self.component:RobinsonQtComponent = raw_node.component
         self.resizable = True
 
+        self.component.init()
         # self.update_widget()
         self.addWidget(self.component.get_widget(self))
-
 
     def update_widget(self):
 

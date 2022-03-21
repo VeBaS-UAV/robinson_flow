@@ -1,15 +1,24 @@
 #!/usr/bin/env python3
 
 from pydantic.main import BaseModel
-from robinson.components import Component, DataPortOutput, EventPortOutput, OutputPortComponent, RobinsonQtComponent
+from robinson.components import Component, DataPortOutput, EventPortOutput, OutputPortComponent, InputOutputPortComponent, InputPortComponent
+from robinson.components.qt import RobinsonQtComponent
+
 from robinson_flow import config
 from robinson_flow.pyflow_nodes.Robinson.Nodes.BaseNode import RobinsonPyFlowBase
-
 
 from Qt.QtWidgets import *
 from Qt import QtGui
 from Qt import QtCore
 
+class ConsoleOutputComponent(InputPortComponent):
+
+    def __init__(self, name: str):
+        super().__init__(name)
+
+    def dataport_input(self, msg):
+        print("dateport input", msg)
+        self.logger.info(msg)
 
 class OutputNameComponent(OutputPortComponent):
 
@@ -72,8 +81,8 @@ class TestEventComponent(Component, RobinsonQtComponent):
     def get_widget(self, parent):
         self.layout = QVBoxLayout()
 
-        self.btn = QPushButton("Klick13!")
-        self.btn.clicked.connect(lambda:self.dataport_output_onevent("klick2"))
+        self.btn = QPushButton("Klick!")
+        self.btn.clicked.connect(lambda:self.dataport_output_onevent("klick"))
         self.btn.clicked.connect(self.eventport_output_eventforward)
 
         self.layout.addWidget(self.btn)

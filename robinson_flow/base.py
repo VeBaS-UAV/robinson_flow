@@ -113,7 +113,6 @@ class RobinsonWrapperMixin():
         return func
 
     def call_port_by_name(self, name, *args, **kw_args):
-        print("call_port_by_name", name, args, kw_args)
         func = self.get_callable_by_portname(name)
 
         try:

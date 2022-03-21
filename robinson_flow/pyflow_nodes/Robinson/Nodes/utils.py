@@ -1,8 +1,11 @@
+from datetime import datetime
 from PyFlow.Core.Common import DEFAULT_OUT_EXEC_NAME, PinOptions
 from PyFlow.Core.NodeBase import NodeBase
 
 from PyQt5.QtCore import pyqtSignal, QObject
-
+from Qt.QtWidgets import *
+from Qt.QtGui import QImage, QPixmap, QFont
+from PySide2.QtWidgets import *
 from typing import Callable, Type, Any, List, Union
 import numpy
 import numpy as np
@@ -10,58 +13,47 @@ import pandas
 import pandas as pd
 import pydantic
 from robinson.components import Component, InputOutputPortComponent
+from robinson.components.qt import RobinsonQtComponent
 
 from robinson_flow.logger import getNodeLogger
 
-class OnMessageExec(NodeBase, QObject):
-
-    _packageName = "Robinson"
-
-    def __init__(self, name, uid=None):
-        super().__init__(name, uid)
-        self.logger = getNodeLogger(self)
-
-        self.msg_received = False
-        self.outExec = self.createOutputPin(DEFAULT_OUT_EXEC_NAME, 'ExecPin')
-
-        self.inp = self.createInputPin("msg", "AnyPin", None)
-        self.inp.enableOptions(PinOptions.AllowAny)
-        self.inp.dataBeenSet.connect(self.msg_callback)
-
-    def msg_callback(self, msg):
-        self.msg_received = True
-
-    def Tick(self, delta):
-        if self.msg_received:
-            self.outExec.call()
-            self.msg_received = False
-
-    @staticmethod
-    def category():
-        return "utils"
-
-class LoggingView(NodeBase, QObject):
-
-    _packageName = "Robinson"
-    connections:dict = {}
+class LoggingView(Component, RobinsonQtComponent):
 
     msg_received = pyqtSignal(object)
 
-    def __init__(self, name, uid=None):
-        super().__init__(name, uid)
+    def __init__(self, name: str, fqn_logger=True):
+        super().__init__(name, fqn_logger)
         self.logger = getNodeLogger(self)
 
-        self.inp = self.createInputPin("msg", "AnyPin", None)
-        self.inp.enableOptions(PinOptions.AllowAny)
-        self.inp.enableOptions(PinOptions.AllowMultipleConnections)
-        self.inp.dataBeenSet.connect(self.img_received_callback)
+        self.loglines = []
 
-    def img_received_callback(self, msg):
-        self.msg_received.emit(self.inp.getData())
+    def init(self):
+        self.logwidget = QLabel()
+        self.logwidget.resize(30,30)
+        # self.logwidget.setLineWrapMode(QPlainTextEdit.NoWrap)
+        font = QFont()
+        font.setPointSize(6)
+        self.logwidget.setFont(font)
 
-    @staticmethod
-    def category():
-        return "utils"
+    def get_widget(self, parent):
+        return self.logwidget
+
+
+    def dataport_input_msg(self, msg):
+        now = datetime.now().strftime("%H:%M:%S")
+        msg_line = str(msg)[:250]
+
+        self.loglines.append("{0}: {1}\n".format(now, msg_line))
+        log = ""
+        for l in self.loglines:
+            log+=l
+
+            self.logwidget.setText(log)
+            QApplication.processEvents()
+
+            if len(self.loglines) > 50:
+                self.loglines = self.loglines[-50:]
+
 
 class LambdaComponent(InputOutputPortComponent):
 
@@ -162,24 +154,3 @@ class EvalNode(NodeBase, QObject):
     def category():
         return "utils"
 
-class PlotView(NodeBase, QObject):
-
-    _packageName = "Robinson"
-    connections:dict = {}
-
-    msg_received = pyqtSignal(object)
-
-    def __init__(self, name, uid=None):
-        super().__init__(name, uid)
-        self.logger = getNodeLogger(self)
-
-        self.inp = self.createInputPin("msg", "AnyPin", None)
-        self.inp.enableOptions(PinOptions.AllowAny)
-        self.inp.dataBeenSet.connect(self.img_received_callback)
-
-    def img_received_callback(self, msg):
-        self.msg_received.emit(self.inp.getData())
-
-    @staticmethod
-    def category():
-        return "utils"
