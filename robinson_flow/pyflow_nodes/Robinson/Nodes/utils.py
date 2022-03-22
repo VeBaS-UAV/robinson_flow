@@ -54,7 +54,6 @@ class LoggingView(Component, RobinsonQtComponent):
             if len(self.loglines) > 50:
                 self.loglines = self.loglines[-50:]
 
-
 class LambdaComponent(InputOutputPortComponent):
 
     class Config(pydantic.BaseModel):
@@ -104,7 +103,6 @@ class LambdaComponent(InputOutputPortComponent):
 
             self.msg = None
 
-
 class EvalNode(NodeBase, QObject):
 
     _packageName = "Robinson"
@@ -148,7 +146,6 @@ class EvalNode(NodeBase, QObject):
 
         if "code" in jsonTemplate:
             self.update_code(jsonTemplate["code"])
-
 
     @staticmethod
     def category():

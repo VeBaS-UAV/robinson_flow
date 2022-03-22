@@ -162,7 +162,7 @@ class RobinsonPyFlowBase(NodeBase, RobinsonWrapperMixin):
             inp.enableOptions(PinOptions.AllowMultipleConnections)
             inp.disableOptions(PinOptions.AlwaysPushDirty)
             inp.disableOptions(PinOptions.ChangeTypeOnConnection)
-
+            inp.disableOptions(PinOptions.AffectsDirtyForward)
             inp.dirty = False
             self.input_pins[port_name] = inp
 
@@ -184,6 +184,7 @@ class RobinsonPyFlowBase(NodeBase, RobinsonWrapperMixin):
             inp.disableOptions(PinOptions.AlwaysPushDirty)
             inp.enableOptions(PinOptions.AllowMultipleConnections)
             inp.dirty = False
+            inp.disableOptions(PinOptions.AffectsDirtyForward)
 
             self.input_pins[port_name] = inp
 
