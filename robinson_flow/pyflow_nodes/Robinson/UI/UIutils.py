@@ -17,6 +17,7 @@ import cv2
 from robinson_flow.pyflow_nodes.Robinson.Nodes.utils import EvalNode, LoggingView
 
 import datetime
+from pathlib import Path
 
 class UIEvalView(UINodeBase):
 
@@ -145,7 +146,8 @@ class UIRobinsonView(UINodeBase):
     def __init__(self, raw_node):
         super(UIRobinsonView, self).__init__(raw_node)
         actionAddOut = self._menu.addAction("reload")
-        actionAddOut.setData(NodeActionButtonInfo(RESOURCES_DIR + "/reroute.svg"))
+        iconfile = str((Path(__file__).parent / "resources/reload_icon.svg").resolve())
+        actionAddOut.setData(NodeActionButtonInfo(iconfile))
         actionAddOut.triggered.connect(self.update_component)
         self.node = raw_node
         self.component:RobinsonQtComponent = raw_node.component
@@ -163,7 +165,8 @@ class UIRobinsonQtView(UINodeBase):
     def __init__(self, raw_node):
         super(UIRobinsonQtView, self).__init__(raw_node)
         actionAddOut = self._menu.addAction("reload")
-        actionAddOut.setData(NodeActionButtonInfo(RESOURCES_DIR + "/reroute.svg"))
+        iconfile = str((Path(__file__).parent / "resources/reload_icon.svg").resolve())
+        actionAddOut.setData(NodeActionButtonInfo(iconfile))
         actionAddOut.triggered.connect(self.update_widget)
         self.node = raw_node
         self.component:RobinsonQtComponent = raw_node.component
