@@ -17,10 +17,12 @@ class RobinsonWrapperMixin():
 
         self.logger.info(f"Creating component {self.cls} for node {self.name}")
 
+        # check if component has been initialized before -> clean up
         if hasattr(self, "component"):
             if self.component is not None:
                 self.component.cleanup()
 
+        # reload module for hot updates
         module = importlib.import_module(self.cls.__module__)
         importlib.reload(module)
         self.cls = [c[1] for c in inspect.getmembers(module) if c[0] == self.cls.__name__][0]

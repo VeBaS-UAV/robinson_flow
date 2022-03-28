@@ -5,7 +5,7 @@ from PyFlow.Core.NodeBase import NodeBase
 from PyQt5.QtCore import pyqtSignal, QObject
 from Qt.QtWidgets import *
 from Qt.QtGui import QImage, QPixmap, QFont
-from PySide2.QtWidgets import *
+from Qt.QtWidgets import *
 from typing import Callable, Type, Any, List, Union
 import numpy
 import numpy as np

@@ -67,22 +67,6 @@ def export_nodes():
 
     rob_comps = {k:v for k,v in [factory(c) for c in component_list]}
 
-    # function_names = []
-    # try:
-    #     function_names = settings.robinson.functions #.append("")
-
-    #     for rob_pkg in function_names:
-    #         module = ".".join(rob_pkg.split(".")[:-1])
-    #         name = rob_pkg.split(".")[-1]
-    #         module = importlib.import_module(module)
-    #         func = getattr(module, name)
-    #         function_list.append(func)
-    # except Exception as e:
-    #     print("Could not load function from module")
-    #     print(e)
-
-    # func_comps = {k:v for k,v in [factory_function(f) for f in function_list]}
-
     other_comp = {}
 
     other_comp["ExternalSource"] = ExternalSource

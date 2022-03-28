@@ -4,9 +4,9 @@ from robinson_flow.pyflow_nodes.Robinson.Nodes.BaseNode import RobinsonPyFlowBas
 
 from PyFlow.UI.Tool.Tool import DockTool
 
-from PySide2 import QtGui, QtWidgets
+from Qt import QtGui, QtWidgets
 from Qt.QtGui import QImage, QPixmap, QFont
-from PySide2.QtWidgets import *
+from Qt.QtWidgets import *
 import json
 import toml
 import yaml
