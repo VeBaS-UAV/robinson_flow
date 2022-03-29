@@ -420,21 +420,24 @@ class CompositeDefinition(NodeDefinition):
         for uuid,n in nodes.items():
             component_name = n["name"]
 
-            if n.is_robinson():
-                # rob = n.robinson_def()
-                module = n.module()
-                classname = n.classname()
-                fqn = f"{module}.{classname}"
+            try:
+                if n.is_robinson():
+                    # rob = n.robinson_def()
+                    module = n.module()
+                    classname = n.classname()
+                    fqn = f"{module}.{classname}"
 
-                import_modules[component_name] = module, classname
+                    import_modules[component_name] = module, classname
 
-            if n.is_compound():
-                # print("Compound Node", n["name"])
-                pass
-            if n.is_external():
-                # print("External Node", n["name"])
-                pass
-
+                if n.is_compound():
+                    # print("Compound Node", n["name"])
+                    pass
+                if n.is_external():
+                    # print("External Node", n["name"])
+                    pass
+            except Exception as e:
+                print("Could not import module ", component_name)
+                print(e)
         return import_modules
 
     def connections(self, include_exec=False):
