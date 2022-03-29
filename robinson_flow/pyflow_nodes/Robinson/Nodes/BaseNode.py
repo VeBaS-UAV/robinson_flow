@@ -4,7 +4,7 @@ import PyFlow
 from PyFlow.Core import NodeBase
 from PyFlow.Core.NodeBase import NodePinsSuggestionsHelper
 from PyFlow.Core.Common import *
-
+from PyFlow.Packages.PyFlowBase.Pins.BoolPin import BoolPin
 from functools import partial
 
 import cProfile
@@ -14,7 +14,6 @@ from robinson_flow.config import settings
 from robinson_flow.logger import getNodeLogger
 
 from robinson_flow.base import RobinsonWrapperMixin
-
 
 class RobinsonTicker(NodeBase):
 
@@ -78,7 +77,7 @@ class RobinsonTicker(NodeBase):
         rob["dt_exec"] = self.dt_exec
         rob["running"] = self.running
 
-        data["robinson"] = rob
+        data["robinson_ticker"] = rob
 
         return data
 
@@ -86,7 +85,7 @@ class RobinsonTicker(NodeBase):
         super().postCreate(jsonTemplate)
 
         if "robinson" in jsonTemplate:
-            rob = jsonTemplate["robinson"]
+            rob = jsonTemplate["robinson_ticker"]
             if "dt_exec" in rob:
                     try:
                         self.dt_exec = rob["dt_exec"]
@@ -175,6 +174,35 @@ class RobinsonPyFlowBase(NodeBase, RobinsonWrapperMixin):
 
         self.is_initialized = False
 
+    def forward_pin_data_to_port(self, input_name, inp, *args):
+        if inp.dirty == False:
+            return
+
+        if self.skip_first_update:
+            inp.setClean()
+            self.skip_first_update = False
+            return
+        data = inp.getData()
+        if data is None:
+            return
+
+        # if isinstance(data, str):
+            # pass
+        if type(data).__name__ == "MyImage":
+            data = data.image
+
+        if isinstance(inp, BoolPin):
+            if data is False:
+                return
+        # self.logger.info(f"Got input data for port {input_name} {data}")
+        try:
+            self.call_port_by_name(input_name, data)
+        except Exception as e:
+            self.logger.warn("Could not call input callable")
+            self.logger.error(e)
+
+        inp.setClean()
+
     def create_ports(self):
         self.inExec = self.createInputPin(DEFAULT_IN_EXEC_NAME, 'ExecPin', None, self.compute)
         self.outExec = self.createOutputPin(DEFAULT_OUT_EXEC_NAME, 'ExecPin')
@@ -189,10 +217,13 @@ class RobinsonPyFlowBase(NodeBase, RobinsonWrapperMixin):
             inp = self.createInputPin(short_name, "AnyPin",None)
             inp.enableOptions(PinOptions.AllowAny)
             inp.enableOptions(PinOptions.AllowMultipleConnections)
-            inp.disableOptions(PinOptions.AlwaysPushDirty)
+            # inp.disableOptions(PinOptions.AlwaysPushDirty)
             inp.disableOptions(PinOptions.ChangeTypeOnConnection)
-            inp.disableOptions(PinOptions.AffectsDirtyForward)
+            # inp.disableOptions(PinOptions.AffectsDirtyForward)
+            inp.enableOptions(PinOptions.AllowCycleConnection)
             inp.dirty = False
+
+            inp.dataBeenSet.connect(partial(self.forward_pin_data_to_port, port_name), weak=False)
             self.input_pins[port_name] = inp
 
 
@@ -201,6 +232,7 @@ class RobinsonPyFlowBase(NodeBase, RobinsonWrapperMixin):
             outp = self.createOutputPin(short_name, "AnyPin", None)
             outp.enableOptions(PinOptions.AllowAny)
             outp.disableOptions(PinOptions.ChangeTypeOnConnection)
+            outp.enableOptions(PinOptions.AllowCycleConnection)
 
             self.output_pins[port_name] = outp
 
@@ -210,17 +242,24 @@ class RobinsonPyFlowBase(NodeBase, RobinsonWrapperMixin):
         for port_name, port_callable in eventinput_ports:
             short_name = self.extract_eventinput_name(port_name)
             inp = self.createInputPin(short_name, "BoolPin",None)
-            inp.disableOptions(PinOptions.AlwaysPushDirty)
+            # inp.disableOptions(PinOptions.AlwaysPushDirty)
             inp.enableOptions(PinOptions.AllowMultipleConnections)
             inp.dirty = False
-            inp.disableOptions(PinOptions.AffectsDirtyForward)
+            # inp.disableOptions(PinOptions.AffectsDirtyForward)
+            inp.enableOptions(PinOptions.AllowCycleConnection)
+            inp.disableOptions(PinOptions.UpdateDataOnConnect)
 
+            inp.dataBeenSet.connect(partial(self.forward_pin_data_to_port, port_name), weak=False)
             self.input_pins[port_name] = inp
 
 
         for port_name, port_callable in eventoutput_ports:
             short_name = self.extract_eventoutput_name(port_name)
             outp = self.createOutputPin(short_name, "BoolPin", None)
+            outp.enableOptions(PinOptions.AllowCycleConnection)
+            # outp.dataBeenSet.connect(self.event_call)
+            # outp.onPinConnected.connect(self.enable_component)
+            outp.disableOptions(PinOptions.UpdateDataOnConnect)
 
             self.output_pins[port_name] = outp
 
@@ -231,7 +270,7 @@ class RobinsonPyFlowBase(NodeBase, RobinsonWrapperMixin):
         try:
             outp = self.output_pins[name]
 
-            if len(args) == 0:
+            if len(args) == 0: # eventport
                 outp.setData(True)
             else:
                 outp.setData(args[0])
@@ -256,41 +295,6 @@ class RobinsonPyFlowBase(NodeBase, RobinsonWrapperMixin):
 
     def compute(self, *args, **kwargs):
 
-        try:
-            if self.isDirty():
-
-                for input_name in self.input_pins:
-                    inp = self.input_pins[input_name]
-
-                    if inp.dirty == False:
-                        continue
-
-                    if self.skip_first_update:
-                        inp.setClean()
-                        continue
-                    data = inp.getData()
-                    if data is None:
-                        continue
-
-                    # if isinstance(data, str):
-                        # pass
-                    if type(data).__name__ == "MyImage":
-                        data = data.image
-
-                    # self.logger.info(f"Got input data for port {input_name} {data}")
-                    try:
-                        self.call_port_by_name(input_name, data)
-                    except Exception as e:
-                        self.logger.warn("Could not call input callable")
-                        self.logger.error(e)
-
-                    inp.setClean()
-                    # print("####")
-                self.skip_first_update = False
-        except Exception as e:
-            self.logger.warn("Could not get all input data")
-            self.logger.error(e)
-
         self.component.update()
 
         self.outExec.call()
@@ -312,6 +316,12 @@ class RobinsonPyFlowBase(NodeBase, RobinsonWrapperMixin):
 
     def postCreate(self, jsonTemplate=None):
         super().postCreate(jsonTemplate)
+
+        for _, p in self.input_pins.items():
+            p.enableOptions(PinOptions.AllowCycleConnection)
+        for _, p in self.output_pins.items():
+            p.enableOptions(PinOptions.AllowCycleConnection)
+
 
         if "robinson" in jsonTemplate:
             rob = jsonTemplate["robinson"]

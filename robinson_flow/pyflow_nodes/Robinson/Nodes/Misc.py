@@ -44,6 +44,12 @@ class AddHelloComponent(Component):
     def dataport_input(self, msg):
         self.msg = msg
 
+    def dataport_input_test2(self, msg):
+        self.msg = msg
+
+    def dataport_input_test3(self, msg):
+        self.msg = msg
+
     def update(self):
         if self.msg is not None:
             msg = self.config.fstring.format(**self.__dict__)

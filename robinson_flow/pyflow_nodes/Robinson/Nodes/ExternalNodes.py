@@ -130,6 +130,7 @@ class ExternalSink(ExternalBase):
 
         self.inp = self.createInputPin(self.topic, "AnyPin", None)
         self.inp.enableOptions(PinOptions.AllowAny)
+        self.inp.enableOptions(PinOptions.AllowMultipleConnections)
         self.inp.dataBeenSet.connect(self.compute)
 
         self.output_port = None

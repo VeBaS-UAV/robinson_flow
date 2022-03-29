@@ -37,7 +37,7 @@ class RobinsonWrapperMixin():
                 self.component = None
 
     def generic_output_callback(self, name, *args, **kwargs):
-        print("generic output callback", name, args, kwargs)
+        self.logger.warn("generic output callback called %s, %s, %s", name, args, kwargs)
 
     def register_generic_callback(self):
         input_ports = self.cl_input_ports(self.component)
