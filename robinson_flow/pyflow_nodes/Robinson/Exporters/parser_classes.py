@@ -18,9 +18,9 @@ from robinson.messaging.mqtt import MQTTConnection
 
 class CDir(BaseModel):
     from_node:Any = None
-    from_idx:int = None
+    from_idx:Any = None
     to_node:Any = None
-    to_idx:int = None
+    to_idx:Any = None
 
 
     def from_name(self):
@@ -240,10 +240,29 @@ class NodeDefinition():
         return self.robinson_def()["class"]
 
     def input_portname_by_index(self, idx):
-        return self.robinson_def()["input_names"][idx - 2]
+        check_ports = ["{0}", "dataport_input_{0}", "dataport_{0}", "eventport_input_{0}"]
+
+        for cp in check_ports:
+            try:
+                if cp.format(idx) in self.robinson_def()["input_names"]:
+                    return cp.format(idx)
+            except:
+                pass
+
+        raise Exception(f"Could not find portname {idx}")
 
     def output_portname_by_index(self, idx):
-        return self.robinson_def()["output_names"][idx - 2]
+
+        check_ports = ["{0}", "dataport_output_{0}", "dataport_{0}", "eventport_output_{0}"]
+
+        for cp in check_ports:
+            try:
+                if cp.format(idx) in self.robinson_def()["output_names"]:
+                    return cp.format(idx)
+            except:
+                pass
+
+        raise Exception(f"Could not find portname {idx}")
 
     def __repr__(self) -> str:
         return f"<Node {self.name()}>"
