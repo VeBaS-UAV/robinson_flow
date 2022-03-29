@@ -71,6 +71,35 @@ class RobinsonTicker(NodeBase):
         self.outExec.call()
         self.last_exec = time.time()
 
+    def serialize(self):
+        data =  super().serialize()
+
+        rob = {}
+        rob["dt_exec"] = self.dt_exec
+        rob["running"] = self.running
+
+        data["robinson"] = rob
+
+        return data
+
+    def postCreate(self, jsonTemplate=None):
+        super().postCreate(jsonTemplate)
+
+        if "robinson" in jsonTemplate:
+            rob = jsonTemplate["robinson"]
+            if "dt_exec" in rob:
+                    try:
+                        self.dt_exec = rob["dt_exec"]
+                    except Exception as e:
+                        self.logger.error(f"Could not set config for {self.name}")
+                        self.logger.error(e)
+            if "running" in rob:
+                    try:
+                        self.running = rob["running"]
+                    except Exception as e:
+                        self.logger.error(f"Could not set config for {self.name}")
+                        self.logger.error(e)
+        self.last_exec = time.time()
 
     @staticmethod
     def category():
