@@ -3,8 +3,8 @@ import os
 
 from PyFlow.Core.Common import SingletonDecorator
 from PyFlow.Core.GraphManager import GraphManager
-# os.environ['QT_API'] = 'pyside2'  # tells QtPy to use PySide2
-os.environ['QT_API'] = 'pyside6'  # tells QtPy to use PySide2
+os.environ['QT_API'] = 'pyside2'  # tells QtPy to use PySide2
+# os.environ['QT_API'] = 'pyside6'  # tells QtPy to use PySide2
 # os.environ['QT_API'] = 'pyqt5'  # tells QtPy to use PySide2
 
 import sys
@@ -12,7 +12,7 @@ from PyFlow.App import PyFlow
 from Qt.QtWidgets import QApplication
 
 import pathlib
-
+import faulthandler; faulthandler.enable()
 class RobinsonGraphManager(GraphManager):
 
 
