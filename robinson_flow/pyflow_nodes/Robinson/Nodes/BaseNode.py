@@ -84,7 +84,7 @@ class RobinsonTicker(NodeBase):
     def postCreate(self, jsonTemplate=None):
         super().postCreate(jsonTemplate)
 
-        if "robinson" in jsonTemplate:
+        if "robinson_ticker" in jsonTemplate:
             rob = jsonTemplate["robinson_ticker"]
             if "dt_exec" in rob:
                     try:
