@@ -295,7 +295,8 @@ class RobinsonPyFlowBase(NodeBase, RobinsonWrapperMixin):
 
     def compute(self, *args, **kwargs):
 
-        self.component.update()
+        if self.component is not None:
+            self.component.update()
 
         self.outExec.call()
 
