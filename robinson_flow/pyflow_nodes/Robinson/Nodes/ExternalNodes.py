@@ -25,22 +25,22 @@ class ExternalBase(NodeBase):
     _packageName = "robinson"
     connections:dict = {}
 
+    external_connection = None
     def __init__(self, name, uid=None):
         super().__init__(name, uid)
         self.logger = getNodeLogger(self)
 
         self.topic = "topic_name"
 
-        # self.topic_reg = TopicRegistry()
-        # self.mqtt = MQTTConnection("robinson.mqtt", settings.environment.mqtt.server)
-        # self.mqtt.init()
+        # ensure singleton
+        if ExternalBase.external_connection is None:
+            ExternalBase.external_connection = ExternalConnectionHandler(settings.environment)
 
-        self.ext_con = ExternalConnectionHandler(settings.environment)
+        self.ext_con = ExternalBase.external_connection
 
     def serialize(self):
         data =  super().serialize()
         data["topic"] = self.topic
-        # self.logger.info(f"serialize {data}")
         return data
 
     def postCreate(self, jsonTemplate=None):
@@ -56,8 +56,6 @@ class ExternalSource(ExternalBase,QObject):
 
     _packageName = "robinson"
 
-    # msg_signal = pyqtSignal(object)
-
     def __init__(self, name, uid=None):
         super().__init__(name, uid=uid)
 
@@ -66,15 +64,11 @@ class ExternalSource(ExternalBase,QObject):
 
         self.init_ports()
 
-        # self.msg_signal.connect(self.receive_msg)
-
     def receive_msg(self, msg):
         tp = type(msg)
-        # self.logger.info(f"reveive_msg {msg}"[:20])
         self.outp.setData(msg)
 
     def init_ports(self):
-        # mqtt_port = self.mqtt.mqtt_output(self.topic)
 
         global_id = self.uid
 
@@ -83,14 +77,6 @@ class ExternalSource(ExternalBase,QObject):
             self.connections[global_id].cleanup()
             del self.connections[global_id]
 
-        # reg_item = self.topic_reg.find(self.topic)
-
-        # transformer = reg_item.create()
-        # transformer.connect(self.msg_signal.emit)
-        # transformer.connect(self.receive_msg)
-
-        # self.connections[global_id] = transformer
-        # mqtt_port.connect(transformer)
         mqtt_port = self.ext_con.external_source(self.topic)
         mqtt_port.connect(self.receive_msg)
         self.connections[global_id] = mqtt_port
@@ -137,8 +123,6 @@ class ExternalSink(ExternalBase):
         self.init_ports()
 
     def init_ports(self):
-
-        # reg_item = self.topic_reg.find(self.topic)
 
         mqtt_port = self.ext_con.external_sink(self.topic)
 

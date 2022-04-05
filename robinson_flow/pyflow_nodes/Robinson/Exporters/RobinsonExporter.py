@@ -11,6 +11,8 @@ import inspect
 # import yaml as serializer
 import yaml
 
+from robinson_flow.config import settings
+
 from robinson_flow.pyflow_nodes.Robinson.Exporters.parser_classes import CompositeDefinition
 
 def pyname(name):
@@ -89,7 +91,9 @@ class RobinsonExporter(IDataExporter):
             tmp = mylookup.get_template("config.yaml.tpl")
             buf = StringIO()
 
-            project_config= {}
+
+            project_config = {}
+            project_config["environment"]= settings.as_dict()["ENVIRONMENT"]
             project_config["components"] = node_configs
 
             yaml_str = yaml.dump(project_config)
