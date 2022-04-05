@@ -26,15 +26,12 @@ from Qt.QtWidgets import QTextEdit, QLineEdit
 from robinson_flow.pyflow_nodes.Robinson.Nodes.ExternalNodes import ExternalSource
 
 class UIExternalSource(UINodeBase):
-#     pinCreated = QtCore.Signal(object)
 
     def __init__(self, raw_node):
         super(UIExternalSource, self).__init__(raw_node)
         self.node:ExternalSource = raw_node
-        print("UIExternalSource.__init__")
 
     def createInputWidgets(self, inputsCategory, inGroup=None, pins=True):
-        print(f"createInputWidgets(self, {inputsCategory}, {inGroup}, {pins}")
         preIndex = inputsCategory.Layout.count()
         w = super().createInputWidgets(inputsCategory, inGroup, pins)
 
@@ -45,16 +42,13 @@ class UIExternalSource(UINodeBase):
         inputsCategory.insertWidget(preIndex, "Topic", self.topic_text, group=inGroup)
 
     def topic_changed(self, *args):
-        print(f"topic_changed {args}")
         self.node.update_topic(self.topic_text.text())
 
 class UIExternalSink(UINodeBase):
-#     pinCreated = QtCore.Signal(object)
 
     def __init__(self, raw_node):
         super(UIExternalSink, self).__init__(raw_node)
         self.node:ExternalSource = raw_node
-        print("UIExternalSink.__init__")
 
     def createInputWidgets(self, inputsCategory, inGroup=None, pins=True):
         preIndex = inputsCategory.Layout.count()
@@ -67,6 +61,4 @@ class UIExternalSink(UINodeBase):
         inputsCategory.insertWidget(preIndex, "Topic", self.topic_text, group=inGroup)
 
     def topic_changed(self, *args):
-        print(f"topic_changed {args}")
         self.node.update_topic(self.topic_text.text())
-
