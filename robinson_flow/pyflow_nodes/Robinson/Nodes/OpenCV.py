@@ -1,7 +1,6 @@
 from PyFlow.Core.Common import PinOptions
 from PyFlow.Core.NodeBase import NodeBase
 
-from PyQt5.QtCore import pyqtSignal, QObject
 from robinson.components import Component
 from robinson.components.qt import RobinsonQtComponent
 

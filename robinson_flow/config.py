@@ -22,5 +22,5 @@ settings = Dynaconf(
     settings_files=dynaconf_config_files()
 )
 
-print("Settings")
-pprint(settings.as_dict())
+# print("Settings")
+# pprint(settings.as_dict())

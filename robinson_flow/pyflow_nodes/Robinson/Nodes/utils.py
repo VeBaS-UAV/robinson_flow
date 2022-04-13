@@ -1,8 +1,9 @@
 from datetime import datetime
 from PyFlow.Core.Common import DEFAULT_OUT_EXEC_NAME, PinOptions
 from PyFlow.Core.NodeBase import NodeBase
+from pydantic.main import BaseModel
 
-from PyQt5.QtCore import pyqtSignal, QObject
+from Qt.QtCore import QObject
 from Qt.QtWidgets import *
 from Qt.QtGui import QImage, QPixmap, QFont
 from Qt.QtWidgets import *
@@ -12,14 +13,25 @@ import numpy as np
 import pandas
 import pandas as pd
 import pydantic
-from robinson.components import Component, InputOutputPortComponent
+from robinson.components import Component, DataPortOutput, InputOutputPortComponent
 from robinson.components.qt import RobinsonQtComponent
 
 from robinson_flow.logger import getNodeLogger
+from typing import Dict
+
+class RandomGenerator(Component):
+
+    def __init__(self, name: str, fqn_logger=True):
+        super().__init__(name, fqn_logger)
+
+        self.dataport_output_number = DataPortOutput("number")
+
+    def update(self):
+        rnd = numpy.random.random()
+
+        self.dataport_output_number(rnd)
 
 class LoggingView(Component, RobinsonQtComponent):
-
-    msg_received = pyqtSignal(object)
 
     def __init__(self, name: str, fqn_logger=True):
         super().__init__(name, fqn_logger)
@@ -53,6 +65,95 @@ class LoggingView(Component, RobinsonQtComponent):
 
             if len(self.loglines) > 50:
                 self.loglines = self.loglines[-50:]
+import matplotlib
+matplotlib.use('Qt5Agg')
+
+# from PyQt5 import QtCore, QtWidgets
+from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
+#QTAgg
+from matplotlib.figure import Figure
+import inspect
+print(inspect.getmro(FigureCanvas))
+print()
+
+class MplCanvas(FigureCanvas):
+
+    def __init__(self, parent=None, width=5, height=4, dpi=100):
+        fig = Figure(figsize=(width, height), dpi=dpi)
+        self.axes = fig.add_subplot(111)
+        super(MplCanvas, self).__init__(fig)
+
+class PlottingView(Component, RobinsonQtComponent):
+
+    class Config(BaseModel):
+        max_samples = 100
+
+    def __init__(self, name: str, fqn_logger=True):
+        super().__init__(name, fqn_logger)
+        self.logger = getNodeLogger(self)
+
+        self.config = PlottingView.Config()
+
+        self.channel_1 = []
+        self.channel_2 = []
+        self.channel_3 = []
+        self.dirty = False
+
+    def init(self):
+        pass
+
+    def get_widget(self, parent):
+
+        self.widget = QWidget()
+        self.sc = MplCanvas(self, width=5, height=4, dpi=100)
+        self.sc.axes.plot([0,1,2,3,4], [10,1,20,3,40])
+
+        self.layout = QVBoxLayout()
+
+        self.layout.addWidget(self.sc)
+
+        self.widget.setLayout(self.layout)
+        return self.widget
+
+    def config_update(self, max_samples, **kwargs):
+        self.config.max_samples = max_samples
+        self.reinit = True
+
+    def config_keys(self) -> List[str]:
+        return self.config.dict().keys()
+
+    def config_get(self, key=None) -> Dict[str, Any]:
+        if key is None:
+            return self.config.dict()
+        return self.config.dict()[key]
+
+    def update(self):
+
+        if self.dirty:
+            self.sc.axes.cla()
+            self.sc.axes.plot(self.channel_1, label="channel_1")
+            self.sc.axes.plot(self.channel_2, label="channel_2")
+            self.sc.axes.plot(self.channel_3, label="channel_3")
+            self.sc.axes.legend(loc=3)
+            self.sc.draw()
+
+        pass
+
+    def dataport_input_channel_1(self, msg):
+        self.channel_1.append(msg)
+
+        if len(self.channel_1) > self.config.max_samples:
+            self.channel_1 = self.channel_1[-self.config.max_samples:]
+
+        self.dirty = True
+
+    def dataport_input_channel_2(self, msg):
+        self.channel_2.append(msg)
+        self.dirty = True
+
+    def dataport_input_channel_3(self, msg):
+        self.channel_3.append(msg)
+        self.dirty = True
 
 class LambdaComponent(InputOutputPortComponent):
 
@@ -107,9 +208,9 @@ class EvalNode(NodeBase, QObject):
 
     _packageName = "Robinson"
 
-    code_changed = pyqtSignal(str)
-    code_eval_msg = pyqtSignal(str)
-    code_call_msg = pyqtSignal(str)
+    # code_changed = pyqtSignal(str)
+    # code_eval_msg = pyqtSignal(str)
+    # code_call_msg = pyqtSignal(str)
 
     def __init__(self, name, uid=None):
         super().__init__(name, uid)

@@ -15,7 +15,7 @@ from blinker import Signal
 from PyFlow.Core import NodeBase
 from PyFlow.Core.Common import *
 
-from PyQt5.QtCore import pyqtSignal, QObject
+from Qt.QtCore import QObject
 
 from robinson_flow.logger import getNodeLogger
 

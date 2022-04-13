@@ -191,7 +191,16 @@ class UIRobinsonQtView(UINodeBase):
             layout.removeItem(item)
 
 
+        try:
+            config = self.node.component.config_get()
+        except:
+            pass
         self.node.create_component()
+        try:
+            self.node.component.config_update(**config)
+        except:
+            pass
+
         self.component = self.node.component
 
         self.addWidget(self.component.get_widget(self))
