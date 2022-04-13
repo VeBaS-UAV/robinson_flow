@@ -1,0 +1,20 @@
+dev-local:
+  environment:
+    mqtt:
+      server: 127.0.0.1
+    mavlink:
+        uri: "udpin:127.0.0.1:14551"
+
+dev-xps9500:
+  environment:
+    mqtt:
+      server: 192.168.67.165
+    mavlink:
+        uri: "udpin:192.168.67.100:14551"
+
+dev-pre75:
+  environment:
+    mqtt:
+      server: 192.168.67.134
+    mavlink:
+        uri: "udpin:192.168.67.100:14551"

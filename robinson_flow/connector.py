@@ -132,7 +132,7 @@ class ExternalConnectionHandler():
         default_item = TopicRegistryItem("mqtt", "NOT_DEFINED_{0}", dict, JsonTransform)
         self.topic_registry = TopicRegistry(default_item, self.registry)
 
-        self.runner = ComponentRunner("external_connection_runner", self.connectors.values(), cycle_rate=50)
+        self.runner = ComponentRunner("external_connection_runner", self.connectors.values(), cycle_rate=10)
         self.runner.start()
 
     def external_source(self, topic):
