@@ -10,7 +10,6 @@ from functools import partial
 import cProfile
 import pstats
 
-from robinson_flow.config import settings
 from robinson_flow.logger import getNodeLogger
 
 from robinson_flow.base import RobinsonWrapperMixin
@@ -81,7 +80,7 @@ class RobinsonTicker(NodeBase):
 
         return data
 
-    def postCreate(self, jsonTemplate=None):
+    def postCreate(self, jsonTemplate={}):
         super().postCreate(jsonTemplate)
 
         if "robinson_ticker" in jsonTemplate:
@@ -186,8 +185,8 @@ class RobinsonPyFlowBase(NodeBase, RobinsonWrapperMixin):
         if data is None:
             return
 
-        # if isinstance(data, str):
-            # pass
+        if isinstance(data, str):
+            pass
         if type(data).__name__ == "MyImage":
             data = data.image
 
@@ -273,6 +272,9 @@ class RobinsonPyFlowBase(NodeBase, RobinsonWrapperMixin):
             if len(args) == 0: # eventport
                 outp.setData(True)
             else:
+                v = args[0]
+                if isinstance(v, str):
+                    pass
                 outp.setData(args[0])
         except Exception as e:
             print(e)

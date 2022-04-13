@@ -17,8 +17,9 @@ from PyFlow.Core.Common import *
 
 from PyQt5.QtCore import pyqtSignal, QObject
 
-from robinson_flow.config import settings
 from robinson_flow.logger import getNodeLogger
+
+from robinson_flow.config import settings
 
 
 class ExternalBase(NodeBase):
@@ -43,7 +44,7 @@ class ExternalBase(NodeBase):
         data["topic"] = self.topic
         return data
 
-    def postCreate(self, jsonTemplate=None):
+    def postCreate(self, jsonTemplate={}):
         super().postCreate(jsonTemplate)
 
         if "topic" in jsonTemplate:

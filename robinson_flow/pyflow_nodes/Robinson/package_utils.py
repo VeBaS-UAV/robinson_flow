@@ -6,6 +6,7 @@ from robinson_flow.pyflow_nodes.Robinson.Nodes.ExternalNodes import ExternalSink
 from robinson_flow.pyflow_nodes.Robinson.Nodes.OpenCV import FrameView
 from robinson_flow.pyflow_nodes.Robinson.Nodes.utils import LambdaComponent
 
+from robinson_flow.config import settings
 
 def factory(cls):
     name = cls.__name__
@@ -41,7 +42,6 @@ def load_components_from_module(module):
 
 def export_nodes():
     import importlib
-    from robinson_flow.config import settings
 
     robinson_packages = []
     component_list = []

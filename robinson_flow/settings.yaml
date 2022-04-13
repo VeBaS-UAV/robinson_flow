@@ -1,0 +1,18 @@
+robinson:
+  modules:
+    - vebas.pyflow
+    - robinson.messaging.mavlink
+    - robinson.components.common
+    - vebas.mavlink
+    - vebas.mavlink.missiontracker
+    - vebas.tracking.components.cv
+    - vebas.tracking.components.control
+    - vebas.tracking.components.filter
+    - vebas.tracking.components.transform
+    - vebas.tracking.kf_ctl_loop.components
+    - vebas.tracking.precision_approaching.components
+    - robinson_flow.pyflow_nodes.Robinson.Nodes.Misc
+    - robinson_flow.pyflow_nodes.Robinson.Nodes.utils
+    - robinson_flow.pyflow_nodes.Robinson.Nodes.OpenCV
+  functions:
+    - vebas.utils.latlon2tuple
