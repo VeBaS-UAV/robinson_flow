@@ -10,6 +10,8 @@ from robinson_flow.logger import getLogger
 import copy
 from robinson.components import InstanceFilter, ComponentRunner, Composite
 
+import importlib
+
 class EnvironmentConnector():
 
     def output_port(self, topic):
@@ -19,10 +21,10 @@ class EnvironmentConnector():
         raise NotImplementedError()
 
 class MQTTConnector(EnvironmentConnector, Composite):
-    def __init__(self, settings):
+    def __init__(self, server):
         Composite.__init__(self,"EnvironmentConnector")
         self.logger = getLogger(self)
-        self.mqtt = MQTTConnection("mqtt", settings.server)
+        self.mqtt = MQTTConnection("mqtt", server)
 
         self.add_component(self.mqtt)
 
@@ -38,10 +40,10 @@ class MQTTConnector(EnvironmentConnector, Composite):
 
 class MavlinkConnector(EnvironmentConnector, Composite):
 
-    def __init__(self, settings) -> None:
+    def __init__(self, uri) -> None:
         Composite.__init__(self, "MavlinkConnector")
         self.mavlink = MavlinkConnection("mavlink")
-        self.mavlink.config_update(**settings)
+        self.mavlink.config_update(uri=uri)
         self.add_component(self.mavlink)
 
     def input_port(self, topic):
@@ -113,28 +115,61 @@ class ExternalConnectionHandler():
 
         self.connectors = {}
 
-        self.connectors["mqtt"] = MQTTConnector(self.config.mqtt)
-        self.connectors["mavlink"] = MavlinkConnector(self.config.mavlink)
+        for name, desc in self.config.connectors.items():
+            try:
+                dparts = desc["class"].split(".")
+                module = ".".join(dparts[:-1])
+                module = importlib.import_module(module)
+                cls = getattr(module, dparts[-1])
+
+                del desc["class"]
+                self.connectors[name] = cls(**desc)
+            except Exception as e:
+                self.logger.error(f"Could not parse config for {name} with {desc}")
+                self.logger.error(e)
+
         self.connectors["default"] = self.connectors["mqtt"]
 
 
         self.registry = {}
-        #TODO how to switch between mavlink and mqtt easily?
-        #can we export this into an own py file or via dynaconf?
-        # self.registry[r"mavlink/(?P<name>.*)"] = TopicRegistryItem("mavlink", "{name}", MAVLink_message, NoTransform)
-        # self.registry[r"mavlink"] = TopicRegistryItem("mavlink", "mavlink_output", MAVLink_message, NoTransform)
-        self.registry[r"mavlink/(?P<name>.*)"] = TopicRegistryItem("mqtt", "mavlink/{name}", dict, JsonTransform)
-        self.registry[r"mavlink"] = TopicRegistryItem("mqtt", "mavlink", dict, JsonTransform)
 
-        self.registry[r"uav_camera_down"] = TopicRegistryItem("mqtt", "vebas/uav/camera/image", Image, JsonTransform, Image)
-        self.registry[r"tracking_image"] = TopicRegistryItem("mqtt", "vebas/uav/tracking/image", Image, JsonTransform, Image)
-        # self.registry['vebas/**/image'] = TopicRegistryItem(Image, JsonTransform, Image)
-        self.registry[r"seedling_position/(.*)"] = TopicRegistryItem("mqtt", "vebas/tracking/{0}", dict, JsonTransform)
-        self.registry['vebas_seedlingslist'] = TopicRegistryItem("mqtt", "vebas/taskplanner/seedlings", dict, JsonTransform)
-        self.registry['(.*)'] = TopicRegistryItem("mqtt", "{0}", dict, JsonTransform)
+
+        for name, desc in self.config.connections.items():
+            try:
+                connector = desc["connector"]
+                topic = desc["topic"]
+
+                msgtype = eval(desc["msgtype"])
+
+                transform = eval(desc["transform"])
+
+                if "transform_args" in desc:
+                    transform_args = eval(desc["transform_args"])
+                else:
+                    transform_args = None
+
+                tri = TopicRegistryItem(connector, topic, msgtype, transform, transform_args)
+                self.registry[name] = tri
+
+            except Exception as e:
+                self.logger.error("Could not parse connection config")
+                self.logger.error(e)
+
+        # # self.registry[r"mavlink/(?P<name>.*)"] = TopicRegistryItem("mavlink", "{name}", MAVLink_message, NoTransform)
+        # # self.registry[r"mavlink"] = TopicRegistryItem("mavlink", "mavlink_output", MAVLink_message, NoTransform)
+        # self.registry[r"mavlink/(?P<name>.*)"] = TopicRegistryItem("mqtt", "mavlink/{name}", dict, JsonTransform)
+        # self.registry[r"mavlink"] = TopicRegistryItem("mqtt", "mavlink", dict, JsonTransform)
+
+        # self.registry[r"uav_camera_down"] = TopicRegistryItem("mqtt", "vebas/uav/camera/image", Image, JsonTransform, Image)
+        # self.registry[r"tracking_image"] = TopicRegistryItem("mqtt", "vebas/uav/tracking/image", Image, JsonTransform, Image)
+        # # self.registry['vebas/**/image'] = TopicRegistryItem(Image, JsonTransform, Image)
+        # self.registry[r"seedling_position/(.*)"] = TopicRegistryItem("mqtt", "vebas/tracking/{0}", dict, JsonTransform)
+        # self.registry['vebas_seedlingslist'] = TopicRegistryItem("mqtt", "vebas/taskplanner/seedlings", dict, JsonTransform)
+        # self.registry['(.*)'] = TopicRegistryItem("mqtt", "{0}", dict, JsonTransform)
 
         default_item = TopicRegistryItem("mqtt", "NOT_DEFINED_{0}", dict, JsonTransform)
         self.topic_registry = TopicRegistry(default_item, self.registry)
+
 
         self.runner = ComponentRunner("external_connection_runner", self.connectors.values(), cycle_rate=10)
         self.runner.start()

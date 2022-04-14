@@ -1,20 +1,73 @@
+default:
+  environment:
+    dynaconf_merge: True
+    connectors:
+        mqtt:
+            class: robinson_flow.connector.MQTTConnector
+        mavlink:
+            class: robinson_flow.connector.MavlinkConnector
+    connections:
+        mavlink:
+            topic: mavlink
+            connector: mqtt
+            msgtype: dict
+            transform: JsonTransform
+        "mavlink/(?P<name>.*)":
+            topic: "mavlink/{name}"
+            connector: mqtt
+            msgtype: dict
+            transform: JsonTransform
+        uav_camera_down:
+            connector: mqtt
+            topic: "vebas/uav/camera/image"
+            msgtype: Image
+            transform: JsonTransform
+            transform_args: Image
+        tracking_image:
+            connector: mqtt
+            topic: "vebas/uav/tracking/image"
+            msgtype: Image
+            transform: JsonTransform
+            transform_args: Image
+        "seedling_position/(.*)":
+            connector: mqtt
+            topic: "vebas/tracking/{0}"
+            msgtype: dict
+            transform: JsonTransform
+        "vebas_seedlingslist":
+            connector: mqtt
+            topic: "vebas/tracking/{0}"
+            msgtype: dict
+            transform: JsonTransform
+        "(.*)":
+            connector: mqtt
+            topic: "{0}"
+            msgtype: dict
+            transform: JsonTransform
+
 dev-local:
   environment:
-    mqtt:
-      server: 127.0.0.1
-    mavlink:
+    dynaconf_merge: True
+    connectors:
+      mqtt:
+        server: 127.0.0.1
+      mavlink:
         uri: "udpin:127.0.0.1:14551"
 
 dev-xps9500:
   environment:
-    mqtt:
-      server: 192.168.67.165
-    mavlink:
-      uri: "udpin:192.168.67.100:14551"
+    dynaconf_merge: True
+    connectors:
+      mqtt:
+        server: 192.168.67.165
+      mavlink:
+        uri: "udpin:192.168.67.100:14551"
 
 dev-pre75:
   environment:
-    mqtt:
-      server: 192.168.67.134
-    mavlink:
-        uri: "udpin:192.168.67.100:14551"
+    dynaconf_merge: True
+    connectors:
+      mqtt:
+        server: 192.168.67.134
+      mavlink:
+          uri: "udpin:192.168.67.100:14551"
