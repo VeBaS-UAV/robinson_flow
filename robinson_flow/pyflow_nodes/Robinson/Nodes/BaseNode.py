@@ -66,7 +66,18 @@ class RobinsonTicker(NodeBase):
         self.running = True
 
     def step(self):
-        self.outExec.call()
+
+        g = self.graph()
+        for node in g._nodes.values():
+            try:
+                if isinstance(node, RobinsonPyFlowBase):
+                    c = node.component
+
+                    c.update()
+            except Exception as e:
+                print(e)
+
+            # self.outExec.call()
         self.last_exec = time.time()
 
     def serialize(self):
