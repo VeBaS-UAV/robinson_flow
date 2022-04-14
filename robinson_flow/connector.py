@@ -119,8 +119,12 @@ class ExternalConnectionHandler():
 
 
         self.registry = {}
-        self.registry[r"mavlink/(?P<name>.*)"] = TopicRegistryItem("mavlink", "{name}", MAVLink_message, NoTransform)
-        self.registry[r"mavlink"] = TopicRegistryItem("mavlink", "mavlink_output", MAVLink_message, NoTransform)
+        #TODO how to switch between mavlink and mqtt easily?
+        #can we export this into an own py file or via dynaconf?
+        # self.registry[r"mavlink/(?P<name>.*)"] = TopicRegistryItem("mavlink", "{name}", MAVLink_message, NoTransform)
+        # self.registry[r"mavlink"] = TopicRegistryItem("mavlink", "mavlink_output", MAVLink_message, NoTransform)
+        self.registry[r"mavlink/(?P<name>.*)"] = TopicRegistryItem("mqtt", "mavlink/{name}", dict, JsonTransform)
+        self.registry[r"mavlink"] = TopicRegistryItem("mqtt", "mavlink", dict, JsonTransform)
 
         self.registry[r"uav_camera_down"] = TopicRegistryItem("mqtt", "vebas/uav/camera/image", Image, JsonTransform, Image)
         self.registry[r"tracking_image"] = TopicRegistryItem("mqtt", "vebas/uav/tracking/image", Image, JsonTransform, Image)

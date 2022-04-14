@@ -10,7 +10,7 @@ dev-xps9500:
     mqtt:
       server: 192.168.67.165
     mavlink:
-        uri: "udpin:192.168.67.100:14551"
+      uri: "udpin:192.168.67.100:14551"
 
 dev-pre75:
   environment:
