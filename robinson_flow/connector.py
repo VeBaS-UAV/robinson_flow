@@ -132,6 +132,7 @@ class ExternalConnectionHandler(Composite):
 
         for name, desc in self.config.connectors.items():
             try:
+                desc = {**desc} # create a copy
                 dparts = desc["class"].split(".")
                 module = ".".join(dparts[:-1])
                 module = importlib.import_module(module)

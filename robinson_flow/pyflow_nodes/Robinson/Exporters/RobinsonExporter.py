@@ -12,7 +12,6 @@ import inspect
 import yaml
 
 import robinson_flow.config
-settings = robinson_flow.config.default_config()
 
 from robinson_flow.pyflow_nodes.Robinson.Exporters.parser_classes import CompositeDefinition
 
@@ -93,6 +92,7 @@ class RobinsonExporter(IDataExporter):
             buf = StringIO()
 
 
+            settings = robinson_flow.config.default_config()
             project_config = {}
             project_config["environment"]= settings.as_dict()["ENVIRONMENT"]
             project_config["components"] = node_configs

@@ -19,10 +19,6 @@ from Qt.QtCore import QObject
 
 from robinson_flow.logger import getNodeLogger
 
-import robinson_flow.config
-settings = robinson_flow.config.default_config()
-
-
 class ExternalBase(NodeBase):
     _packageName = "robinson"
     connections:dict = {}
