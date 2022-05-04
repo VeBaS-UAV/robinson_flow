@@ -9,6 +9,7 @@ from functools import partial
 
 import cProfile
 import pstats
+from robinson_flow.connector import ExternalConnectionHandler
 
 from robinson_flow.logger import getNodeLogger
 
@@ -23,6 +24,7 @@ class RobinsonTicker(NodeBase):
         self.logger = getNodeLogger(self)
         # self.inExec = self.createInputPin(DEFAULT_IN_EXEC_NAME, 'ExecPin', None, self.compute)
         self.outExec = self.createOutputPin(DEFAULT_OUT_EXEC_NAME, 'ExecPin')
+        self.outTick = self.createOutputPin("tick", "AnyPin")
 
         self.thread = None
         self.running = False
@@ -68,6 +70,13 @@ class RobinsonTicker(NodeBase):
     def step(self):
 
         g = self.graph()
+
+        try:
+            ExternalConnectionHandler.instance().update()
+        except Exception as e:
+            self.logger.error("Could not update externen connections")
+            self.logger.error(e)
+
         for node in g._nodes.values():
             try:
                 if isinstance(node, RobinsonPyFlowBase):
@@ -75,9 +84,13 @@ class RobinsonTicker(NodeBase):
 
                     c.update()
             except Exception as e:
+                self.logger.error(f"Clould not execute node update {node}")
+                self.logger.error(e)
+                c.update()
                 print(e)
 
-            # self.outExec.call()
+        self.outTick.setData(True)
+        self.outExec.call()
         self.last_exec = time.time()
 
     def serialize(self):
