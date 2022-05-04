@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+from PyFlow.Core.Common import SingletonDecorator
+from robinson import components
 from robinson.messaging.mqtt import MQTTConnection
 from robinson.messaging.mqtt import MQTTConnection
 from pymavlink.dialects.v20.ardupilotmega import MAVLink_message
@@ -107,9 +109,22 @@ class TopicRegistry():
         return True if topic is not None and len(topic) > 0 else False
 
 
-class ExternalConnectionHandler():
+class ExternalConnectionHandler(Composite):
+
+    _instance = None
+
+    @staticmethod
+    def instance():
+        if ExternalConnectionHandler._instance is None:
+            import robinson_flow.config
+            settings = robinson_flow.config.default_config()
+
+            ExternalConnectionHandler._instance = ExternalConnectionHandler(settings.environment)
+
+        return ExternalConnectionHandler._instance
 
     def __init__(self, settings) -> None:
+        super().__init__("ExternalConnectionHandler")
         self.logger = getLogger(self)
         self.config = settings
 
@@ -123,7 +138,7 @@ class ExternalConnectionHandler():
                 cls = getattr(module, dparts[-1])
 
                 del desc["class"]
-                self.connectors[name] = cls(**desc)
+                self.connectors[name] = cls, desc
             except Exception as e:
                 self.logger.error(f"Could not parse config for {name} with {desc}")
                 self.logger.error(e)
@@ -155,33 +170,34 @@ class ExternalConnectionHandler():
                 self.logger.error("Could not parse connection config")
                 self.logger.error(e)
 
-        # # self.registry[r"mavlink/(?P<name>.*)"] = TopicRegistryItem("mavlink", "{name}", MAVLink_message, NoTransform)
-        # # self.registry[r"mavlink"] = TopicRegistryItem("mavlink", "mavlink_output", MAVLink_message, NoTransform)
-        # self.registry[r"mavlink/(?P<name>.*)"] = TopicRegistryItem("mqtt", "mavlink/{name}", dict, JsonTransform)
-        # self.registry[r"mavlink"] = TopicRegistryItem("mqtt", "mavlink", dict, JsonTransform)
-
-        # self.registry[r"uav_camera_down"] = TopicRegistryItem("mqtt", "vebas/uav/camera/image", Image, JsonTransform, Image)
-        # self.registry[r"tracking_image"] = TopicRegistryItem("mqtt", "vebas/uav/tracking/image", Image, JsonTransform, Image)
-        # # self.registry['vebas/**/image'] = TopicRegistryItem(Image, JsonTransform, Image)
-        # self.registry[r"seedling_position/(.*)"] = TopicRegistryItem("mqtt", "vebas/tracking/{0}", dict, JsonTransform)
-        # self.registry['vebas_seedlingslist'] = TopicRegistryItem("mqtt", "vebas/taskplanner/seedlings", dict, JsonTransform)
-        # self.registry['(.*)'] = TopicRegistryItem("mqtt", "{0}", dict, JsonTransform)
-
         default_item = TopicRegistryItem("mqtt", "NOT_DEFINED_{0}", dict, JsonTransform)
         self.topic_registry = TopicRegistry(default_item, self.registry)
 
 
-        self.runner = ComponentRunner("external_connection_runner", self.connectors.values(), cycle_rate=10)
-        self.runner.start()
+        # self.runner = ComponentRunner("external_connection_runner", self.connectors.values(), cycle_rate=10)
+        # self.runner.start()
+
+        # [self.add_component(c) for c in self.connectors.values()]
+
+    def ensure_connector_init(self, protocol):
+        if isinstance(self.connectors[protocol], tuple):
+            cls, kw_args = self.connectors[protocol]
+            component = cls(**kw_args)
+            self.connectors[protocol] = component
+            component.init()
+            self.add_component(component)
 
     def external_source(self, topic):
         self.logger.info(f"exteral_source for topic {topic}")
         reg_item = self.topic_registry.find(topic)
 
         if reg_item.protocol in self.connectors:
+            self.ensure_connector_init(reg_item.protocol)
+
             connector = self.connectors[reg_item.protocol]
             self.logger.debug(f"using protocol {reg_item.protocol} for topic {reg_item.topic}")
         else:
+            self.ensure_connector_init("default")
             connector = self.connectors["default"]
             self.logger.warn(f"could not find procotol connector for {reg_item.protocol}, using default {connector}")
 
@@ -194,9 +210,11 @@ class ExternalConnectionHandler():
         reg_item = self.topic_registry.find(topic)
 
         if reg_item.protocol in self.connectors:
+            self.ensure_connector_init(reg_item.protocol)
             connector = self.connectors[reg_item.protocol]
             self.logger.debug(f"using protocol {reg_item.protocol} for topic {reg_item.topic}")
         else:
+            self.ensure_connector_init("default")
             connector = self.connectors["default"]
             self.logger.warn(f"could not find procotol connector for {reg_item.protocol}, using default {connector}")
 
