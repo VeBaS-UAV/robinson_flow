@@ -19,6 +19,65 @@ from robinson.components.qt import RobinsonQtComponent
 from robinson_flow.logger import getNodeLogger
 from typing import Dict
 
+import matplotlib
+matplotlib.use('Qt5Agg')
+
+# from PyQt5 import QtCore, QtWidgets
+from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
+#QTAgg
+from matplotlib.figure import Figure
+# import inspect
+# print(inspect.getmro(FigureCanvas))
+# print()
+
+
+class TickCounter(Component):
+
+    def __init__(self, name: str, fqn_logger=True):
+        super().__init__(name, fqn_logger)
+
+        self.last_msg_tick = []
+        self.last_update_tick = []
+
+        self.dataport_output_msg_tick_last = DataPortOutput("msg_tick_last")
+        self.dataport_output_msg_tick_freq = DataPortOutput("msg_tick_freq")
+
+        self.dataport_output_update_tick_last = DataPortOutput("update_tick_last")
+        self.dataport_output_update_tick_freq = DataPortOutput("update_tick_freq")
+
+    def dataport_input(self, msg):
+        self.last_msg_tick.append(datetime.now())
+
+        if len(self.last_msg_tick) > 10:
+            self.last_msg_tick = self.last_msg_tick[-10:]
+
+    def update(self):
+
+        self.last_update_tick.append(datetime.now())
+
+        if len(self.last_update_tick) > 10:
+            self.last_update_tick = self.last_msg_tick[-10:]
+
+        if len(self.last_update_tick) > 2:
+            try:
+                self.dataport_output_update_tick_last(self.last_update_tick[-1])
+                update_tick_freq = (self.last_update_tick[-1] - self.last_update_tick[0]) / len(self.last_update_tick)
+                self.dataport_output_update_tick_freq(1/update_tick_freq.total_seconds())
+            except Exception as e:
+                print(e)
+
+        if len(self.last_msg_tick) > 1:
+            msg_tick_dt_max = (self.last_msg_tick[-1] - self.last_msg_tick[0])
+            msg_tick_dt = msg_tick_dt_max / len(self.last_msg_tick)
+            msg_tick_freq = 1/msg_tick_dt_max.total_seconds()
+            self.dataport_output_msg_tick_last(self.last_msg_tick[-1])
+            self.dataport_output_msg_tick_freq(msg_tick_freq)
+        else:
+            self.dataport_output_msg_tick_freq(0)
+
+        # if len(self.last_msg_tick) > 2:
+            # self.last_msg_tick = self.last_msg_tick[-2:]
+
 class RandomGenerator(Component):
 
     def __init__(self, name: str, fqn_logger=True):
