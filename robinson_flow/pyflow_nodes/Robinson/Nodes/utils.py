@@ -124,16 +124,6 @@ class LoggingView(Component, RobinsonQtComponent):
 
             if len(self.loglines) > 50:
                 self.loglines = self.loglines[-50:]
-import matplotlib
-matplotlib.use('Qt5Agg')
-
-# from PyQt5 import QtCore, QtWidgets
-from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
-#QTAgg
-from matplotlib.figure import Figure
-import inspect
-print(inspect.getmro(FigureCanvas))
-print()
 
 class MplCanvas(FigureCanvas):
 
@@ -208,10 +198,14 @@ class PlottingView(Component, RobinsonQtComponent):
 
     def dataport_input_channel_2(self, msg):
         self.channel_2.append(msg)
+        if len(self.channel_2) > self.config.max_samples:
+            self.channel_2 = self.channel_2[-self.config.max_samples:]
         self.dirty = True
 
     def dataport_input_channel_3(self, msg):
         self.channel_3.append(msg)
+        if len(self.channel_3) > self.config.max_samples:
+            self.channel_3 = self.channel_3[-self.config.max_samples:]
         self.dirty = True
 
 class LambdaComponent(InputOutputPortComponent):

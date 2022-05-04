@@ -57,7 +57,7 @@ def export_nodes():
                 module = importlib.import_module(rob_pkg)
                 component_list.extend(load_components_from_module(module))
             except Exception as e:
-                print("Could not load module")
+                print(f"Could not load module {rob_pkg}")
                 print(e)
 
     except Exception as e:
