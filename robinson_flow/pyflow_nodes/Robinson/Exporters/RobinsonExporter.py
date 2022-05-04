@@ -11,7 +11,8 @@ import inspect
 # import yaml as serializer
 import yaml
 
-from robinson_flow.config import settings
+import robinson_flow.config
+settings = robinson_flow.config.default_config()
 
 from robinson_flow.pyflow_nodes.Robinson.Exporters.parser_classes import CompositeDefinition
 

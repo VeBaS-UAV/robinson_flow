@@ -19,7 +19,8 @@ from Qt.QtCore import QObject
 
 from robinson_flow.logger import getNodeLogger
 
-from robinson_flow.config import settings
+import robinson_flow.config
+settings = robinson_flow.config.default_config()
 
 
 class ExternalBase(NodeBase):
@@ -33,11 +34,7 @@ class ExternalBase(NodeBase):
 
         self.topic = "topic_name"
 
-        # ensure singleton
-        if ExternalBase.external_connection is None:
-            ExternalBase.external_connection = ExternalConnectionHandler(settings.environment)
-
-        self.ext_con = ExternalBase.external_connection
+        self.ext_con = ExternalConnectionHandler.instance()
 
     def serialize(self):
         data =  super().serialize()
@@ -67,6 +64,8 @@ class ExternalSource(ExternalBase,QObject):
 
     def receive_msg(self, msg):
         tp = type(msg)
+        # if tp.__name__ == "Image":
+            # self.logger.error("Received Image")
         self.outp.setData(msg)
 
     def init_ports(self):

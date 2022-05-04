@@ -23,6 +23,11 @@ default:
             msgtype: Image
             transform: JsonTransform
             transform_args: Image
+        uav_seedling_detection_xy:
+            connector: mqtt
+            topic: "vebas/uav/seedling_detection/xy_pixel"
+            msgtype: dict
+            transform: JsonTransform
         tracking_image:
             connector: mqtt
             topic: "vebas/uav/tracking/image"

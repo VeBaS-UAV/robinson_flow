@@ -6,7 +6,8 @@ from robinson_flow.pyflow_nodes.Robinson.Nodes.ExternalNodes import ExternalSink
 from robinson_flow.pyflow_nodes.Robinson.Nodes.OpenCV import FrameView
 from robinson_flow.pyflow_nodes.Robinson.Nodes.utils import LambdaComponent
 
-from robinson_flow.config import settings
+import robinson_flow.config
+settings = robinson_flow.config.default_config()
 
 def factory(cls):
     name = cls.__name__
