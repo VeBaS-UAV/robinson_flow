@@ -12,8 +12,11 @@ from typing import Any, List
 import traceback
 import ipdb
 from robinson_flow.connector import ExternalConnectionHandler
+from robinson.components.qt import RobinsonQtComponent
 
 from robinson.messaging.mqtt import MQTTConnection
+
+import importlib
 
 
 class CDir(BaseModel):
@@ -422,12 +425,23 @@ class CompositeDefinition(NodeDefinition):
 
             try:
                 if n.is_robinson():
+
                     # rob = n.robinson_def()
                     module = n.module()
                     classname = n.classname()
                     fqn = f"{module}.{classname}"
 
+                    # if fqn.lower().find("qt") > 0:
+                    # try:
+                    #    if issubclass(getattr(importlib.import_module(module), classname), RobinsonQtComponent):
+                    #        continue
+                    # except Exception as e:
+                    #     print("Could not check for RobinsonQtComponent")
+                    #     print(e)
+
+                    #     continue
                     import_modules[component_name] = module, classname
+
 
                 if n.is_compound():
                     # print("Compound Node", n["name"])

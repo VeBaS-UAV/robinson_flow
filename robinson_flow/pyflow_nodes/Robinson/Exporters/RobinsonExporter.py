@@ -1,7 +1,10 @@
 import traceback
 from datetime import datetime
+from typing import OrderedDict
 from PyFlow.UI.UIInterfaces import IDataExporter
 from PyFlow.Core.version import Version
+
+from robinson.components.qt import RobinsonQtComponent
 
 from io import StringIO
 from mako.lookup import TemplateLookup
@@ -10,7 +13,7 @@ import inspect
 # import toml as serializer
 # import yaml as serializer
 import yaml
-
+from pprint import pprint
 import robinson_flow.config
 
 from robinson_flow.pyflow_nodes.Robinson.Exporters.parser_classes import CompositeDefinition
@@ -26,7 +29,7 @@ class RobinsonExporter(IDataExporter):
 
     @staticmethod
     def createImporterMenu():
-        return True
+        return False
 
     @staticmethod
     def creationDateString():
@@ -83,6 +86,9 @@ class RobinsonExporter(IDataExporter):
                     if cfg is None:
                         continue
 
+                    # if isinstance(node, RobinsonQtComponent):
+                        # cfg["qt_component"] = True
+
                     if len(cfg) > 0:
                         node_configs[node.name()] = cfg
                 except Exception as e:
@@ -93,11 +99,27 @@ class RobinsonExporter(IDataExporter):
 
 
             settings = robinson_flow.config.default_config()
-            project_config = {}
-            project_config["environment"]= settings.as_dict()["ENVIRONMENT"]
+            project_config = dict()
+            # project_config["environment"]= settings.as_dict()["ENVIRONMENT"]
+            project_config["environment"] = dict()
+
+            envsettings = settings.environment
+
+            for group_key in envsettings.keys():
+                group_config = envsettings[group_key]
+                group = dict()
+
+                try:
+                    for part_key in group_config.keys():
+                        group[part_key] = {**group_config[part_key]}
+
+                    project_config["environment"][group_key] = group
+                except Exception as e:
+                    print(f"Could not export group {group_key} with value {group_config}")
+
             project_config["components"] = node_configs
 
-            yaml_str = yaml.dump(project_config)
+            yaml_str = yaml.safe_dump(project_config, sort_keys=False)
 
             buf.write(tmp.render(component_config=yaml_str))
 
@@ -107,4 +129,4 @@ class RobinsonExporter(IDataExporter):
 
         except Exception as e:
             print("Error while exporting graph")
-            print(traceback.format_exception(e))
+            pprint(traceback.format_exception(e))

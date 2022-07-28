@@ -7,6 +7,7 @@ from Qt.QtCore import QObject
 from Qt.QtWidgets import *
 from Qt.QtGui import QImage, QPixmap, QFont
 from Qt.QtWidgets import *
+from Qt.QtCore import Qt
 from typing import Callable, Type, Any, List, Union
 import numpy
 import numpy as np
@@ -89,6 +90,58 @@ class RandomGenerator(Component):
         rnd = numpy.random.random()
 
         self.dataport_output_number(rnd)
+
+class Slider(Component, RobinsonQtComponent):
+
+    def __init__(self, name: str, fqn_logger=True):
+        super().__init__(name, fqn_logger)
+
+        self.dataport_output_value = DataPortOutput("value")
+
+    def init(self):
+        self.slider = QSlider(Qt.Horizontal)
+        self.slider.setMinimum(0)
+        self.slider.setMaximum(10000)
+        self.slider.setSingleStep(1)
+        # self.slider.setValue(1)
+        # self.slider.setRange(0,100)
+        self.slider.valueChanged.connect(self.send_value)
+        #
+        return self.slider
+
+    def get_widget(self, parent):
+        return self.slider
+
+    def send_value(self):
+        self.dataport_output_value(self.slider.value()/10000.0)
+
+class FileChooser(Component, RobinsonQtComponent):
+
+    def __init__(self, name: str, fqn_logger=True):
+        super().__init__(name, fqn_logger)
+
+        self.dataport_output_filename = DataPortOutput("value")
+
+    def choose_file(self):
+        # options = QFileDialog.Options()
+        # options |= QFileDialog.DontUseNativeDialog
+        fileName, _ = QFileDialog.getOpenFileName(caption='Open file', dir='.', filter='*.*')
+        if fileName:
+            self.dataport_output_filename(fileName)
+
+    def init(self):
+        self.btn_choose = QPushButton("choose")
+        self.btn_choose.clicked.connect(self.choose_file)
+
+        return self.btn_choose
+
+    def get_widget(self, parent):
+        return self.btn_choose
+
+    def send_value(self):
+        self.dataport_output_value(self.slider.value()/10000.0)
+
+
 
 class LoggingView(Component, RobinsonQtComponent):
 

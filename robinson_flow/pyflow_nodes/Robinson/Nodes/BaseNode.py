@@ -86,7 +86,7 @@ class RobinsonTicker(NodeBase):
             except Exception as e:
                 self.logger.error(f"Clould not execute node update {node}")
                 self.logger.error(e)
-                c.update()
+                # c.update()
                 print(e)
 
         self.outTick.setData(True)

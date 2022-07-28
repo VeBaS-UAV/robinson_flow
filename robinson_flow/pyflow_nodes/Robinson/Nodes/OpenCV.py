@@ -1,5 +1,6 @@
 from PyFlow.Core.Common import PinOptions
 from PyFlow.Core.NodeBase import NodeBase
+from pydantic.main import BaseModel
 
 from robinson.components import Component, DataPortOutput
 from robinson.components.qt import RobinsonQtComponent
@@ -50,6 +51,10 @@ class ImageView(Component, RobinsonQtComponent):
             self.pixmap = self.convert_cv_qt(frame)
             self.image_label.setPixmap(self.pixmap)
         except Exception as e:
+
+            frame = self.frame
+            self.pixmap = self.convert_cv_qt(frame)
+            self.image_label.setPixmap(self.pixmap)
             print(e)
 
 class FrameView(ImageView):
@@ -96,3 +101,106 @@ class OpticalFlowDense(Component):
         bgr = cv2.cvtColor(hsv, cv2.COLOR_HSV2BGR)
 
         self.dataport_output_image(bgr)
+
+class ImageSource(Component):
+    class Config(BaseModel):
+        video_file:str = ""
+
+    config = Config()
+
+    def config_update(self, **kw_args):
+        self.config = ImageSource.Config(**{**self.config.dict(), **kw_args})
+        self.init()
+
+    def config_get(self, key=None):
+        if key is None:
+            return self.config.dict()
+        if key not in self.config.dict():
+            return None
+        return self.config[key]
+
+    def __init__(self, name: str, fqn_logger=True):
+        super().__init__(name, fqn_logger)
+        self.dataport_output_frame = DataPortOutput("frame")
+
+        self.img = None
+
+        self.is_init = False
+
+        # self.config.video_file = '/home/matthias/tmp/vebas/uav_t67_2022-05-05/DJI_0012.MP4'
+
+    def dataport_input_filename(self, msg):
+        self.config.video_file = msg
+        self.is_init = False
+
+    def init(self):
+        self.img = cv2.imread(self.config.video_file)
+        self.is_init = True
+
+    def update(self):
+
+        if self.is_init == False:
+            self.init()
+
+        if self.img is not None:
+            self.dataport_output_frame(self.img)
+
+class VideoSource(Component):
+
+
+    class Config(BaseModel):
+        video_file:str = ""
+
+    config = Config()
+
+    def config_update(self, **kw_args):
+        self.config = VideoSource.Config(**{**self.config.dict(), **kw_args})
+        self.init()
+
+    def config_get(self, key=None):
+        if key is None:
+            return self.config.dict()
+        if key not in self.config.dict():
+            return None
+        return self.config[key]
+
+    def __init__(self, name: str, fqn_logger=True):
+        super().__init__(name, fqn_logger)
+        self.dataport_output_frame = DataPortOutput("frame")
+
+        self.cap = None
+
+        self.is_init = False
+
+        # self.config.video_file = '/home/matthias/tmp/vebas/uav_t67_2022-05-05/DJI_0012.MP4'
+
+    def dataport_input_filename(self, msg):
+        self.config.video_file = msg
+        self.is_init = False
+
+    def dataport_input_restart(self, msg):
+        self.init()
+
+
+    def dataport_input_goto_frame(self, msg):
+        if msg < 1:
+            total = int(self.cap.get(cv2.CAP_PROP_FRAME_COUNT))
+            val = int(msg * total)
+            self.cap.set(cv2.CAP_PROP_POS_FRAMES, val)
+        else:
+            self.cap.set(cv2.CAP_PROP_POS_FRAMES, msg)
+
+    def init(self):
+        self.cap = cv2.VideoCapture(self.config.video_file)
+        self.is_init = True
+
+    def update(self):
+
+        if self.is_init == False:
+            self.init()
+
+        ret, frame = self.cap.read()
+        if ret == True:
+            self.dataport_output_frame(frame)
+        else:
+            self.init()

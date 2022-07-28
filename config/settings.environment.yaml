@@ -10,16 +10,24 @@ default:
         mavlink:
             topic: mavlink
             connector: mqtt
-            msgtype: dict
+            msgtype: MAVLink_message
             transform: JsonTransform
+            transform_args: MAVLink_message
         "mavlink/(?P<name>.*)":
             topic: "mavlink/{name}"
             connector: mqtt
-            msgtype: dict
+            msgtype: MAVLink_message
             transform: JsonTransform
+            transform_args: MAVLink_message
         uav_camera_down:
             connector: mqtt
             topic: "vebas/uav/camera/image"
+            msgtype: Image
+            transform: JsonTransform
+            transform_args: Image
+        "(?P<name>.*image.*)":
+            connector: mqtt
+            topic: "{name}"
             msgtype: Image
             transform: JsonTransform
             transform_args: Image
