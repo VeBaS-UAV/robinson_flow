@@ -10,7 +10,6 @@ default:
       - vebas.tracking.components.control
       - vebas.tracking.components.filter
       - vebas.tracking.components.transform
-      - vebas.tracking.kf_ctl_loop.components
       - vebas.tracking.precision_approaching.components
       - robinson_flow.pyflow_nodes.Robinson.Nodes.Misc
       - robinson_flow.pyflow_nodes.Robinson.Nodes.utils

@@ -36,6 +36,11 @@ default:
             topic: "vebas/uav/seedling_detection/xy_pixel"
             msgtype: dict
             transform: JsonTransform
+        uav_seedling_detection_angle:
+            connector: mqtt
+            topic: "vebas/uav/seedling_detection/xy_angle"
+            msgtype: dict
+            transform: JsonTransform
         tracking_image:
             connector: mqtt
             topic: "vebas/uav/tracking/image"
