@@ -31,6 +31,21 @@ default:
             msgtype: Image
             transform: JsonTransform
             transform_args: Image
+        uav_seedling_detection_local_ned:
+            connector: mqtt
+            topic: "vebas/uav/seedling_detection/ned_local"
+            msgtype: dict
+            transform: JsonTransform
+        uav_seedling_detection_global_ned:
+            connector: mqtt
+            topic: "vebas/uav/seedling_detection/ned_global"
+            msgtype: dict
+            transform: JsonTransform
+        uav_seedling_detection_latlon:
+            connector: mqtt
+            topic: "vebas/uav/seedling_detection/latlon"
+            msgtype: dict
+            transform: JsonTransform
         uav_seedling_detection_xy:
             connector: mqtt
             topic: "vebas/uav/seedling_detection/xy_pixel"
