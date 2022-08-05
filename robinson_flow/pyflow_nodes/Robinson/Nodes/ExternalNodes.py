@@ -15,7 +15,7 @@ from blinker import Signal
 from PyFlow.Core import NodeBase
 from PyFlow.Core.Common import *
 
-from Qt.QtCore import QObject
+from Qt.QtCore import QObject, Signal
 
 from robinson_flow.logger import getNodeLogger
 
@@ -50,19 +50,36 @@ class ExternalSource(ExternalBase,QObject):
 
     _packageName = "robinson"
 
+    msg_received_signal = Signal()
+
     def __init__(self, name, uid=None):
         super().__init__(name, uid=uid)
 
         self.outp = self.createOutputPin(self.topic, "AnyPin", None)
         self.outp.enableOptions(PinOptions.AllowAny)
 
+        self.msg_buffer = None
+        self.msg_received_signal.connect(self.received_msg_slot)
+
         self.init_ports()
+
+    def received_msg_slot(self):
+        if self.msg_buffer is not None:
+            self.outp.setData(self.msg_buffer)
+            self.msg_buffer = None
 
     def receive_msg(self, msg):
         tp = type(msg)
+        self.msg_buffer = msg
+        self.msg_received_signal.emit()
+
         # if tp.__name__ == "Image":
             # self.logger.error("Received Image")
-        self.outp.setData(msg)
+            #
+        # def callback():
+            # print("Callback call qtimer")
+
+        # QTimer.singleShot(1, callback)
 
     def init_ports(self):
 
