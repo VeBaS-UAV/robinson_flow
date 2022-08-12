@@ -4,7 +4,7 @@ from robinson.components import Component, InputOutputPortComponent
 from robinson_flow.pyflow_nodes.Robinson.Nodes.BaseNode import RobinsonPyFlowBase, RobinsonTicker
 from robinson_flow.pyflow_nodes.Robinson.Nodes.ExternalNodes import ExternalSink, ExternalSource
 from robinson_flow.pyflow_nodes.Robinson.Nodes.OpenCV import FrameView
-from robinson_flow.pyflow_nodes.Robinson.Nodes.utils import LambdaComponent
+from robinson_flow.pyflow_nodes.Robinson.Nodes.utils import LambdaExpressionComponent
 
 import robinson_flow.config
 settings = robinson_flow.config.default_config()
@@ -48,7 +48,7 @@ def export_nodes():
     component_list = []
     function_list = []
 
-    component_list.append(LambdaComponent)
+    component_list.append(LambdaExpressionComponent)
     try:
         robinson_packages = settings.robinson.modules
 
