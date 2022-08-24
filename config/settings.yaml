@@ -4,6 +4,7 @@ default:
       - vebas.pyflow
       - robinson.messaging.mavlink
       - robinson.components.common
+      - robinson.components.monitors
       - vebas.mavlink
       - vebas.mavlink.missiontracker
       - vebas.tracking.components.cv
@@ -11,6 +12,7 @@ default:
       - vebas.tracking.components.filter
       - vebas.tracking.components.transform
       - vebas.tracking.precision_approaching.components
+      - vebas.tracking.target_based
       - robinson_flow.pyflow_nodes.Robinson.Nodes.Misc
       - robinson_flow.pyflow_nodes.Robinson.Nodes.utils
       - robinson_flow.pyflow_nodes.Robinson.Nodes.OpenCV
