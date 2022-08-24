@@ -151,6 +151,8 @@ class LoggingView(Component, RobinsonQtComponent):
 
         self.loglines = []
 
+        self.logwidget = None
+
     def init(self):
         self.logwidget = QLabel()
         self.logwidget.resize(30,30)
@@ -160,6 +162,9 @@ class LoggingView(Component, RobinsonQtComponent):
         self.logwidget.setFont(font)
 
     def get_widget(self, parent):
+        if self.logwidget is None:
+            self.init()
+
         return self.logwidget
 
 
@@ -167,16 +172,19 @@ class LoggingView(Component, RobinsonQtComponent):
         now = datetime.now().strftime("%H:%M:%S")
         msg_line = str(msg)[:250]
 
-        self.loglines.append("{0}: {1}\n".format(now, msg_line))
-        log = ""
-        for l in self.loglines:
-            log+=l
+        # self.loglines.append("{0}: {1}\n".format(now, msg_line))
 
-            self.logwidget.setText(log)
-            QApplication.processEvents()
+        log = "{0}: {1}\n".format(now, msg_line)
+        # for l in self.loglines:
+            # log+=l
 
-            if len(self.loglines) > 50:
-                self.loglines = self.loglines[-50:]
+        self.logwidget.setText(log)
+        self.logger.info(msg_line)
+        # self.logwidget.setText(self.loglines.__str__())
+        QApplication.processEvents()
+
+        if len(self.loglines) > 50:
+            self.loglines = self.loglines[-50:]
 
 class MplCanvas(FigureCanvas):
 
@@ -261,7 +269,7 @@ class PlottingView(Component, RobinsonQtComponent):
             self.channel_3 = self.channel_3[-self.config.max_samples:]
         self.dirty = True
 
-class LambdaComponent(InputOutputPortComponent):
+class LambdaExpressionComponent(InputOutputPortComponent):
 
     class Config(pydantic.BaseModel):
         lambda_code:str = "lambda m:m"
@@ -275,7 +283,7 @@ class LambdaComponent(InputOutputPortComponent):
         self.update_lambda()
 
     def config_update(self, **kwargs):
-        self.config = LambdaComponent.Config(**kwargs)
+        self.config = LambdaExpressionComponent.Config(**kwargs)
         self.update_lambda()
 
     def config_get(self, key=None) -> dict[str, Any]:
