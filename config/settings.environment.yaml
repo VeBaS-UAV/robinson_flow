@@ -73,10 +73,19 @@ default:
             msgtype: dict
             transform: JsonTransform
         "(.*)":
-            connector: mqtt
+            connector: mqttttttt
             topic: "{0}"
             msgtype: dict
             transform: JsonTransform
+
+dev-pi:
+  environment:
+    dynaconf_merge: True
+    connectors:
+      mqtt:
+        server: 127.0.0.1
+      mavlink:
+        uri: "udpin:127.0.0.1:14551"
 
 dev-local:
   environment:
