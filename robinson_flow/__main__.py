@@ -43,7 +43,8 @@ def main():
     instance = PyFlow.instance(software="standalone", graphManager=RobinsonGraphManagerSingleton())
     # instance.loadFromFile(str(pathlib.Path("/home/matthias/src/robinson/robinson_flow/files/mission_tracker.pygraph")))
     try:
-        instance.loadFromFile(str(pathlib.Path("/home/matthias/src/robinson/robinson_flow/files/latest.pygraph")))
+        # instance.loadFromFile(str(pathlib.Path("/home/matthias/src/robinson/robinson_flow/files/latest.pygraph")))
+        instance.loadFromFile(str(pathlib.Path("latest.pygraph")))
     except Exception as e:
         print(e)
     if instance is not None:
