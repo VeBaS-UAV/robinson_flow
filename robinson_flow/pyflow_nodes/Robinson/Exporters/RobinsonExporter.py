@@ -94,16 +94,21 @@ class RobinsonExporter(IDataExporter):
                 except Exception as e:
                     print("Error whil reading config from graph")
                     print(e)
-            tmp = mylookup.get_template("config.yaml.tpl")
-            buf = StringIO()
+            tmpl_config = mylookup.get_template("config.yaml.tpl")
+            tmpl_local_config = mylookup.get_template("config.local.yaml.tpl")
 
+            cfg_buffer = StringIO()
+            cfg_local_buffer = StringIO()
 
             settings = robinson_flow.config.default_config()
             project_config = dict()
+            project_local_config = dict()
             # project_config["environment"]= settings.as_dict()["ENVIRONMENT"]
             project_config["environment"] = dict()
+            project_local_config["environment"] = dict(dynaconf_merge=True,connectors={})
 
             envsettings = settings.environment
+            envsettings_local = settings.environment.connectors
 
             for group_key in envsettings.keys():
                 group_config = envsettings[group_key]
@@ -117,15 +122,24 @@ class RobinsonExporter(IDataExporter):
                 except Exception as e:
                     print(f"Could not export group {group_key} with value {group_config}")
 
+            project_local_config["environment"]["connectors"] = project_config["environment"]["connectors"]
+            del project_config["environment"]["connectors"]
+
             project_config["components"] = node_configs
 
             yaml_str = yaml.safe_dump(project_config, sort_keys=False)
+            yaml_local_str = yaml.safe_dump(project_local_config, sort_keys=False)
 
-            buf.write(tmp.render(component_config=yaml_str))
+            cfg_buffer.write(tmpl_config.render(component_config=yaml_str))
+            cfg_local_buffer.write(tmpl_local_config.render(component_config=yaml_local_str))
 
             cfg_filename = f"{instance._currentFileName}.yaml"
             with open(cfg_filename,"w") as fh:
-                fh.write(buf.getvalue())
+                fh.write(cfg_buffer.getvalue())
+            cfg_local_filename = f"{instance._currentFileName}.local.yaml"
+            with open(cfg_local_filename,"w") as fh:
+                fh.write(cfg_local_buffer.getvalue())
+
 
         except Exception as e:
             print("Error while exporting graph")

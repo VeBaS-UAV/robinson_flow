@@ -9,15 +9,15 @@ import logging.config
 import robinson_flow
 from pprint import pprint
 
-_config_log = False
+_config_log = True
 
 def dynaconf_config_files():
     cfg_dir = (pathlib.Path(robinson_flow.__file__).parent.parent / "config")# / "logging.ini")
-    pprint(cfg_dir)
+    # pprint(cfg_dir)
 
     cfg_files =  [str((cfg_dir/f)) for f in ["settings.yaml", "settings.environment.yaml", ".secrets.yaml", "logging.yaml"]]
 
-    pprint(cfg_files)
+    # pprint(cfg_files)
     return cfg_files
 
 _settings = Dynaconf(
@@ -32,7 +32,7 @@ def default_config():
     global _settings
 
     if _config_log is False:
-        pprint("Current config:")
+        pprint("Current ROBONSON FLOW config:")
         pprint(_settings.as_dict())
         _config_log = True
 
