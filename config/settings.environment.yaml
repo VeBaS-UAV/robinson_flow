@@ -73,7 +73,7 @@ default:
             msgtype: dict
             transform: JsonTransform
         "(.*)":
-            connector: mqttttttt
+            connector: mqtt
             topic: "{0}"
             msgtype: dict
             transform: JsonTransform
