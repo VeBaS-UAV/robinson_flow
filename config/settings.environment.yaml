@@ -1,4 +1,32 @@
 default:
+  logging:
+    version: 1
+    loggers:
+      "":
+        handlers:
+          - stream_handler
+        level: INFO
+        qualname: python
+      development:
+        handlers:
+          - socket_handler
+        level: INFO
+        propagate: 0
+        qualname: vebas.development.logging
+    handlers:
+      stream_handler:
+        class: logging.StreamHandler
+        formatter: default
+        stream: "ext://sys.stderr"
+      socket_handler:
+        class: logging.handlers.SocketHandler
+        formatter: default
+        host: '127.0.0.1'
+        port: 19996
+    formatters:
+      default:
+        format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+        datefmt: "%H:%M:%S.%03d"
   environment:
     dynaconf_merge: True
     connectors:
@@ -7,21 +35,21 @@ default:
         mavlink:
             class: robinson_flow.connector.MavlinkConnector
     connections:
-        mavlink:
-            topic: mavlink
+        "/mavlink":
+            topic: "/mavlink"
             connector: mqtt
             msgtype: MAVLink_message
             transform: JsonTransform
             transform_args: MAVLink_message
-        "mavlink/(?P<name>.*)":
-            topic: "mavlink/{name}"
+        "/mavlink/(?P<name>.*)":
+            topic: "/mavlink/{name}"
             connector: mqtt
             msgtype: MAVLink_message
             transform: JsonTransform
             transform_args: MAVLink_message
         uav_camera_down:
             connector: mqtt
-            topic: "vebas/uav/camera/image"
+            topic: "camera/image"
             msgtype: Image
             transform: JsonTransform
             transform_args: Image
@@ -33,43 +61,43 @@ default:
             transform_args: Image
         uav_seedling_detection_local_ned:
             connector: mqtt
-            topic: "vebas/uav/seedling_detection/ned_local"
+            topic: "detection/ned_local"
             msgtype: dict
             transform: JsonTransform
         uav_seedling_detection_global_ned:
             connector: mqtt
-            topic: "vebas/uav/seedling_detection/ned_global"
+            topic: "detection/ned_global"
             msgtype: dict
             transform: JsonTransform
         uav_seedling_detection_latlon:
             connector: mqtt
-            topic: "vebas/uav/seedling_detection/latlon"
+            topic: "detection/latlon"
             msgtype: dict
             transform: JsonTransform
         uav_seedling_detection_xy:
             connector: mqtt
-            topic: "vebas/uav/seedling_detection/xy_pixel"
+            topic: "detection/xy_pixel"
             msgtype: dict
             transform: JsonTransform
         uav_seedling_detection_angle:
             connector: mqtt
-            topic: "vebas/uav/seedling_detection/xy_angle"
+            topic: "detection/xy_angle"
             msgtype: dict
             transform: JsonTransform
         tracking_image:
             connector: mqtt
-            topic: "vebas/uav/tracking/image"
+            topic: "tracking/image"
             msgtype: Image
             transform: JsonTransform
             transform_args: Image
         "seedling_position/(.*)":
             connector: mqtt
-            topic: "vebas/tracking/{0}"
+            topic: "tracking/{0}"
             msgtype: dict
             transform: JsonTransform
         "vebas_seedlingslist":
             connector: mqtt
-            topic: "vebas/tracking/{0}"
+            topic: "tracking/{0}"
             msgtype: dict
             transform: JsonTransform
         "(.*)":
