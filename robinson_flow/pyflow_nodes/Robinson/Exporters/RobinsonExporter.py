@@ -100,7 +100,7 @@ class RobinsonExporter(IDataExporter):
             cfg_buffer = StringIO()
             cfg_local_buffer = StringIO()
 
-            settings = robinson_flow.config.default_config()
+            settings = robinson_flow.config.current()
             project_config = dict()
             project_local_config = dict()
             # project_config["environment"]= settings.as_dict()["ENVIRONMENT"]

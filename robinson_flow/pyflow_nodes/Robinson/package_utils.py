@@ -7,7 +7,7 @@ from robinson_flow.pyflow_nodes.Robinson.Nodes.OpenCV import FrameView
 from robinson_flow.pyflow_nodes.Robinson.Nodes.utils import LambdaExpressionComponent
 
 import robinson_flow.config
-settings = robinson_flow.config.default_config()
+# settings = robinson_flow.config.default_config()
 
 def factory(cls):
     name = cls.__name__
@@ -50,8 +50,7 @@ def export_nodes():
 
     component_list.append(LambdaExpressionComponent)
     try:
-        robinson_packages = settings.robinson.modules
-
+        robinson_packages = robinson_flow.config.current().robinson.modules
 
         for rob_pkg in robinson_packages:
             try:
