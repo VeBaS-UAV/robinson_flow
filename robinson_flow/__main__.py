@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 import os
 
+import robinson_flow
+
 os.environ['QT_API'] = 'PyQt5'  # tells QtPy to use PySide2
 os.environ["MPLBACKEND"] = "Qt5Agg"
 
@@ -13,6 +15,7 @@ from PyFlow.Core.GraphManager import GraphManager
 import sys
 from PyFlow.App import PyFlow
 from Qt.QtWidgets import QApplication
+import robinson_flow.config
 import inspect
 print(inspect.getmro(QApplication))
 print()
@@ -38,6 +41,10 @@ class RobinsonGraphManagerSingleton(object):
         return self.man
 
 def main():
+
+    robinson_flow.config.add_config(pathlib.Path(".") / "config/settings.yaml")
+    robinson_flow.config.add_config(pathlib.Path(".") / "config/settings.environment.yaml")
+
     app = QApplication(sys.argv)
 
     instance = PyFlow.instance(software="standalone", graphManager=RobinsonGraphManagerSingleton())
