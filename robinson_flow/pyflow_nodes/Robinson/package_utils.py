@@ -50,7 +50,25 @@ def export_nodes():
 
     component_list.append(LambdaExpressionComponent)
     try:
-        robinson_packages = robinson_flow.config.current().robinson.modules
+        # robinson_packages = robinson_flow.config.current().robinson.modules
+
+        robinson_packages = [
+                    "vebas.pyflow",
+                    "robinson.messaging.mavlink",
+                    "robinson.components.common",
+                    "robinson.components.cv",
+                    "robinson.components.monitors",
+                    "vebas.mavlink",
+                    "vebas.mavlink.missiontracker",
+                    "vebas.tracking.components.cv",
+                    "vebas.tracking.components.control",
+                    "vebas.tracking.components.filter",
+                    "vebas.tracking.components.transform",
+                    "vebas.tracking.precision_approaching.components",
+                    "vebas.tracking.target_based",
+                    "robinson_flow.pyflow_nodes.Robinson.Nodes.Misc",
+                    "robinson_flow.pyflow_nodes.Robinson.Nodes.utils",
+                    "robinson_flow.pyflow_nodes.Robinson.Nodes.OpenCV"]
 
         for rob_pkg in robinson_packages:
             try:

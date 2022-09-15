@@ -148,6 +148,7 @@ class ExternalConnectionHandler(Composite):
     def __init__(self, settings, ns="") -> None:
         super().__init__("ExternalConnectionHandler")
         self.logger = getLogger(self)
+        self.namespace = ns
         self.config = settings
 
         self.connectors = {}
@@ -212,9 +213,26 @@ class ExternalConnectionHandler(Composite):
             component.init()
             self.add_component(component)
 
+    def fqns_topic(self, topic):
+
+        if True:
+            return topic
+
+        if topic[0] == "/":
+            return topic[1:]
+
+        if self.namespace is not None and len(self.namespace) > 0:
+            return f"{self.namespace}/{topic}"
+
+        return topic
+
     def external_source(self, topic):
         self.logger.info(f"exteral_source for topic {topic}")
-        reg_item = self.topic_registry.find(topic)
+
+        fqn_topic = self.fqns_topic(topic)
+        self.logger.info(f"mapped to fqn {fqn_topic}")
+
+        reg_item = self.topic_registry.find(fqn_topic)
 
         if reg_item.protocol in self.connectors:
             self.ensure_connector_init(reg_item.protocol)
@@ -232,7 +250,9 @@ class ExternalConnectionHandler(Composite):
 
     def external_sink(self, topic):
         self.logger.info(f"exteral_sink for topic {topic}")
-        reg_item = self.topic_registry.find(topic)
+        fqn_topic = self.fqns_topic(topic)
+        self.logger.info(f"mapped to fqn {fqn_topic}")
+        reg_item = self.topic_registry.find(fqn_topic)
 
         if reg_item.protocol in self.connectors:
             self.ensure_connector_init(reg_item.protocol)
