@@ -1,1 +1,1 @@
-external = ExternalConnectionHandler(settings["environment"])
+external = ExternalConnectionHandler.instance()
