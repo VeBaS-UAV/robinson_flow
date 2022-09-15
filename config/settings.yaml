@@ -4,6 +4,7 @@ default:
       - vebas.pyflow
       - robinson.messaging.mavlink
       - robinson.components.common
+      - robinson.components.cv
       - robinson.components.monitors
       - vebas.mavlink
       - vebas.mavlink.missiontracker
