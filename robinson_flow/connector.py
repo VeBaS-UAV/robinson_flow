@@ -23,26 +23,38 @@ class EnvironmentConnector():
         raise NotImplementedError()
 
 class MQTTConnector(EnvironmentConnector, Composite):
-    def __init__(self, server):
-        Composite.__init__(self,"EnvironmentConnector")
+    def __init__(self, server, ns=""):
+        Composite.__init__(self, "EnvironmentConnector")
         self.logger = getLogger(self)
+        self.namespace = ns
         self.mqtt = MQTTConnection("mqtt", server)
 
         self.add_component(self.mqtt)
 
+    def fqns_topic(self, topic):
+        if topic[0] == "/":
+            return topic[1:]
+
+        if self.namespace is not None:
+            return f"{self.namespace}/{topic}"
+
+        return topic
+
     def output_port(self, topic):
-        self.logger.info(f"connect {topic}")
-        mqtt_port = self.mqtt.mqtt_output(topic)
+        fqn_topic = self.fqns_topic(topic)
+        self.logger.info(f"connect {fqn_topic}")
+        mqtt_port = self.mqtt.mqtt_output(fqn_topic)
         return mqtt_port
 
     def input_port(self, topic):
-        self.logger.info(f"connect {topic}")
-        mqtt_port = self.mqtt.mqtt_input(topic)
+        fqn_topic = self.fqns_topic(topic)
+        self.logger.info(f"connect {fqn_topic}")
+        mqtt_port = self.mqtt.mqtt_input(fqn_topic)
         return mqtt_port
 
 class MavlinkConnector(EnvironmentConnector, Composite):
 
-    def __init__(self, uri) -> None:
+    def __init__(self, uri, ns="") -> None:
         Composite.__init__(self, "MavlinkConnector")
         self.mavlink = MavlinkConnection("mavlink")
         self.mavlink.config_update(uri=uri)
@@ -117,13 +129,23 @@ class ExternalConnectionHandler(Composite):
     def instance():
         if ExternalConnectionHandler._instance is None:
             import robinson_flow.config
-            settings = robinson_flow.config.default_config()
+            settings = robinson_flow.config.current()
 
-            ExternalConnectionHandler._instance = ExternalConnectionHandler(settings.environment)
+            ns = ''
+            if "namespace" in settings:
+                ns = settings.namespace
+            if "ns" in settings:
+                ns = settings.ns
+            if "NAMESPACE" in settings:
+                ns = settings.namespace
+            if "NS" in settings:
+                ns = settings.ns
+
+            ExternalConnectionHandler._instance = ExternalConnectionHandler(settings.environment, ns=ns)
 
         return ExternalConnectionHandler._instance
 
-    def __init__(self, settings) -> None:
+    def __init__(self, settings, ns="") -> None:
         super().__init__("ExternalConnectionHandler")
         self.logger = getLogger(self)
         self.config = settings
@@ -133,6 +155,8 @@ class ExternalConnectionHandler(Composite):
         for name, desc in self.config.connectors.items():
             try:
                 desc = {**desc} # create a copy
+                if len(ns) > 0:
+                    desc["ns"] = ns
                 dparts = desc["class"].split(".")
                 module = ".".join(dparts[:-1])
                 module = importlib.import_module(module)
