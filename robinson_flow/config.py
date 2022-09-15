@@ -6,36 +6,45 @@ import pathlib
 import logging
 import logging.config
 
+from yaml import events
+
 import robinson_flow
 from pprint import pprint
 
 _config_log = True
 
+
+_dynamic_config_files = []
 def dynaconf_config_files():
     cfg_dir = (pathlib.Path(robinson_flow.__file__).parent.parent / "config")# / "logging.ini")
     # pprint(cfg_dir)
 
-    cfg_files =  [str((cfg_dir/f)) for f in ["settings.yaml", "settings.environment.yaml", ".secrets.yaml", "logging.yaml"]]
+    cfg_files_names = ["settings.yaml", "settings.environment.yaml", ".secrets.yaml", "logging.yaml"]
 
-    # pprint(cfg_files)
+    cfg_files =  [str((cfg_dir/f)) for f in cfg_files_names]
+
+    cfg_files += _dynamic_config_files
+    pprint(cfg_files)
+
     return cfg_files
 
-_settings = Dynaconf(
-    environments=True,
+
+def merge_config(config_file):
+    _dynamic_config_files.clear()
+    _dynamic_config_files.append(config_file)
+
+def current():
+    _settings = Dynaconf(
+
     envvar_prefix="ROBINSON_FLOW",
     env_switcher="ROBINSON_FLOW_MODE",
     settings_files=dynaconf_config_files()
-)
+    )
 
-def default_config():
-    global _config_log
-    global _settings
-
-    if _config_log is False:
-        pprint("Current ROBONSON FLOW config:")
-        pprint(_settings.as_dict())
-        _config_log = True
+    dynsetting = Dynaconf(settings_files=_dynamic_config_files)
+    print("DynSetting")
+    pprint(dynsetting.as_dict())
+    print("Settings")
+    pprint(_settings.as_dict())
 
     return _settings
-# print("Settings")
-# pprint(settings.as_dict())
