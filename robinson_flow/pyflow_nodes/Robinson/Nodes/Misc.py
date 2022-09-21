@@ -11,7 +11,6 @@ from robinson.components import (
 )
 from robinson.components.qt import RobinsonQtComponent
 
-from robinson_flow import config
 from robinson_flow.pyflow_nodes.Robinson.Nodes.BaseNode import RobinsonPyFlowBase
 
 from Qt.QtWidgets import *

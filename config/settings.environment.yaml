@@ -4,7 +4,7 @@ default:
     root:
       handlers:
         - stream_handler
-        # - robinson_handler
+        - robinson_handler
       level: DEBUG
     handlers:
       stream_handler:
@@ -16,9 +16,9 @@ default:
         formatter: default
         host: '127.0.0.1'
         port: 19996
-      # robinson_handler:
-        # class: robinson.logging.RobinsonLoggingHandler
-        # formater: default
+      robinson_handler:
+        class: robinson.logging.RobinsonLoggingHandler
+        formatter: default
         # name: robinsonlogger
         # mqtt_uri: localhost
     formatters:

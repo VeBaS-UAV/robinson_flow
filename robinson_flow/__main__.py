@@ -2,7 +2,7 @@
 import os
 
 import robinson_flow
-from robinson_flow import config
+import robinson.config
 
 os.environ["QT_API"] = "PyQt5"  # tells QtPy to use PySide2
 os.environ["MPLBACKEND"] = "Qt5Agg"
@@ -65,7 +65,7 @@ def prefix_hook(function, prefunction):
 def loadFromFileHook_function(*args, **kwargs):
     cfg_file = pathlib.Path(args[0] + ".yaml")
     print("Loading file...", cfg_file)
-    config.merge_config(cfg_file)
+    robinson.config.merge_config(cfg_file)
     robinson.logging._executable_name = cfg_file.stem
 
 
