@@ -4,7 +4,11 @@ from PyFlow.Core.NodeBase import NodePinsSuggestionsHelper
 from PyFlow.Core.Common import *
 import pydantic
 from robinson.messaging.mqtt import MQTTConnection
-from robinson_flow.connector import ExternalConnectionHandler, TopicRegistry, TopicRegistryItem
+from robinson_flow.connector import (
+    ExternalConnectionHandler,
+    TopicRegistry,
+    TopicRegistryItem,
+)
 
 from robinson.components import Component, InputOutputPortComponent
 
@@ -19,11 +23,13 @@ from Qt.QtCore import QObject, Signal
 
 from robinson_flow.logger import getNodeLogger
 
+
 class ExternalBase(NodeBase):
     _packageName = "robinson"
-    connections:dict = {}
+    connections: dict = {}
 
     external_connection = None
+
     def __init__(self, name, uid=None):
         super().__init__(name, uid)
         self.logger = getNodeLogger(self)
@@ -33,7 +39,7 @@ class ExternalBase(NodeBase):
         self.ext_con = ExternalConnectionHandler.instance()
 
     def serialize(self):
-        data =  super().serialize()
+        data = super().serialize()
         data["topic"] = self.topic
         return data
 
@@ -46,7 +52,8 @@ class ExternalBase(NodeBase):
     def deserialize(self, jsonData):
         return super().deserialize(jsonData)
 
-class ExternalSource(ExternalBase,QObject):
+
+class ExternalSource(ExternalBase, QObject):
 
     _packageName = "robinson"
 
@@ -74,10 +81,10 @@ class ExternalSource(ExternalBase,QObject):
         self.msg_received_signal.emit()
 
         # if tp.__name__ == "Image":
-            # self.logger.error("Received Image")
-            #
+        # self.logger.error("Received Image")
+        #
         # def callback():
-            # print("Callback call qtimer")
+        # print("Callback call qtimer")
 
         # QTimer.singleShot(1, callback)
 
@@ -110,7 +117,7 @@ class ExternalSource(ExternalBase,QObject):
 
     @staticmethod
     def category():
-        return 'extern'
+        return "extern"
 
     @staticmethod
     def keywords():
@@ -120,8 +127,8 @@ class ExternalSource(ExternalBase,QObject):
     def description():
         return "Description in rst format."
 
-class ExternalSink(ExternalBase):
 
+class ExternalSink(ExternalBase):
     def __init__(self, name, uid=None):
         super().__init__(name, uid=uid)
 
@@ -164,7 +171,7 @@ class ExternalSink(ExternalBase):
 
     @staticmethod
     def category():
-        return 'extern'
+        return "extern"
 
     @staticmethod
     def keywords():
@@ -173,4 +180,3 @@ class ExternalSink(ExternalBase):
     @staticmethod
     def description():
         return "Description in rst format."
-

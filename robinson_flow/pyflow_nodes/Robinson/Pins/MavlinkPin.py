@@ -3,9 +3,11 @@ from PyFlow.Core import PinBase
 
 from pymavlink.dialects.v20.ardupilotmega import MAVLink_message
 
+
 class MAVlink_pyflow_dummy(MAVLink_message):
-    def __init__(self, msgId=-1, name='pyflow_dummy'):
+    def __init__(self, msgId=-1, name="pyflow_dummy"):
         super().__init__(msgId, name)
+
 
 class MavlinkJsonEncoder(json.JSONEncoder):
     def default(self, obj):
@@ -19,8 +21,10 @@ class MavlinkJsonEncoder(json.JSONEncoder):
             return json_msg
         return json.JSONEncoder.default(self, obj)
 
+
 class MavlinkPin(PinBase):
     """doc string for MavlinkPin"""
+
     def __init__(self, name, parent, direction, **kwargs):
         super(MavlinkPin, self).__init__(name, parent, direction, **kwargs)
         self.logger = getLogger(name)
@@ -33,11 +37,11 @@ class MavlinkPin(PinBase):
 
     @staticmethod
     def supportedDataTypes():
-        return ('MavlinkPin',)
+        return ("MavlinkPin",)
 
     @staticmethod
     def pinDataTypeHint():
-        return 'MavlinkPin', False
+        return "MavlinkPin", False
 
     @staticmethod
     def color():
@@ -55,6 +59,5 @@ class MavlinkPin(PinBase):
 
     @staticmethod
     def jsonEncoderClass():
-        """Returns json encoder class for this pin
-        """
+        """Returns json encoder class for this pin"""
         return MavlinkJsonEncoder

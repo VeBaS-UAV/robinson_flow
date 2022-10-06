@@ -1,0 +1,6 @@
+bandit
+black==22.8.0
+flake8
+pre-commit==2.20.0
+pycodestyle
+pydocstyle

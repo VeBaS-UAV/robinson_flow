@@ -1,7 +1,14 @@
 #!/usr/bin/env python3
 
 from pydantic.main import BaseModel
-from robinson.components import Component, DataPortOutput, EventPortOutput, OutputPortComponent, InputOutputPortComponent, InputPortComponent
+from robinson.components import (
+    Component,
+    DataPortOutput,
+    EventPortOutput,
+    OutputPortComponent,
+    InputOutputPortComponent,
+    InputPortComponent,
+)
 from robinson.components.qt import RobinsonQtComponent
 
 from robinson_flow import config
@@ -11,8 +18,8 @@ from Qt.QtWidgets import *
 from Qt import QtGui
 from Qt import QtCore
 
-class ConsoleOutputComponent(InputPortComponent):
 
+class ConsoleOutputComponent(InputPortComponent):
     def __init__(self, name: str):
         super().__init__(name)
 
@@ -20,19 +27,18 @@ class ConsoleOutputComponent(InputPortComponent):
         print("dateport input", msg)
         self.logger.info(msg)
 
-class OutputNameComponent(OutputPortComponent):
 
+class OutputNameComponent(OutputPortComponent):
     def __init__(self, name: str):
         super().__init__(name)
 
     def update(self):
         self.dataport_output(self.name)
 
+
 class AddHelloComponent(Component):
-
     class Config(BaseModel):
-        fstring:str = "Hello {msg}"
-
+        fstring: str = "Hello {msg}"
 
     def __init__(self, name):
         super().__init__(name)
@@ -68,7 +74,6 @@ class AddHelloComponent(Component):
 
 
 class TestEventComponent(Component, RobinsonQtComponent):
-
     def __init__(self, name: str, fqn_logger=True):
         super().__init__(name, fqn_logger)
 
@@ -88,7 +93,7 @@ class TestEventComponent(Component, RobinsonQtComponent):
         self.layout = QVBoxLayout()
 
         self.btn = QPushButton("Klick!")
-        self.btn.clicked.connect(lambda:self.dataport_output_onevent("klick"))
+        self.btn.clicked.connect(lambda: self.dataport_output_onevent("klick"))
         self.btn.clicked.connect(self.eventport_output_eventforward)
 
         self.layout.addWidget(self.btn)

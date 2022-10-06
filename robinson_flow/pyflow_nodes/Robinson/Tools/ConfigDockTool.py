@@ -1,4 +1,3 @@
-
 from robinson.components import Component
 from robinson_flow.pyflow_nodes.Robinson.Nodes.BaseNode import RobinsonPyFlowBase
 
@@ -11,8 +10,10 @@ import json
 import toml
 import yaml
 
+
 class ConfigDockTool(DockTool):
     """docstring for History tool."""
+
     def __init__(self):
         super(ConfigDockTool, self).__init__()
 
@@ -25,7 +26,7 @@ class ConfigDockTool(DockTool):
         self.lbl_msg = QLabel()
         font = QFont()
         font.setPointSize(8)
-        self.lbl_msg.setStyleSheet('color: red')
+        self.lbl_msg.setStyleSheet("color: red")
         self.lbl_msg.setFont(font)
         self.layout.addWidget(self.lbl_msg)
 
@@ -41,8 +42,11 @@ class ConfigDockTool(DockTool):
     def onShow(self):
         super().onShow()
         # self.pyFlowInstance.canvasWidget.canvas.scene().focusItemChanged.connect(self.selection_changed)
-        self.pyFlowInstance.canvasWidget.canvas.scene().selectionChanged.connect(self.selection_changed)
-       # self.pyFlowInstance
+        self.pyFlowInstance.canvasWidget.canvas.scene().selectionChanged.connect(
+            self.selection_changed
+        )
+
+    # self.pyFlowInstance
 
     def update_config(self):
 
@@ -54,7 +58,6 @@ class ConfigDockTool(DockTool):
                 self.selected_component.config_update(**cfg_dict)
         except Exception as e:
             self.lbl_msg.setText(str(e))
-
 
     def selection_changed(self, *args, **kwargs):
         nodes = self.pyFlowInstance.canvasWidget.canvas.selectedNodes()
@@ -68,7 +71,7 @@ class ConfigDockTool(DockTool):
         self.update_widget()
 
     def update_widget(self):
-        if(self.selected_node is None):
+        if self.selected_node is None:
             self.config_widget.setPlainText("")
             return
 

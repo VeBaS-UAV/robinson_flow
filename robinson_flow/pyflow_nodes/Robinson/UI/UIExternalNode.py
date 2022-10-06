@@ -1,4 +1,3 @@
-
 ## Copyright 2015-2019 Ilgar Lunin, Pedro Cabrera
 
 ## Licensed under the Apache License, Version 2.0 (the "License");
@@ -18,6 +17,7 @@ from Qt import QtCore
 
 from PyFlow.UI.Canvas.UINodeBase import UINodeBase
 from PyFlow.UI.Widgets.SelectPinDialog import SelectPinDialog
+
 # from PyFlow.Core.ExternalManager import ExternalManagerSingleton
 from PyFlow.UI.Utils.stylesheet import Colors
 from PyFlow.UI import RESOURCES_DIR
@@ -25,11 +25,11 @@ from PyFlow.UI.Canvas.UICommon import *
 from Qt.QtWidgets import QTextEdit, QLineEdit
 from robinson_flow.pyflow_nodes.Robinson.Nodes.ExternalNodes import ExternalSource
 
-class UIExternalSource(UINodeBase):
 
+class UIExternalSource(UINodeBase):
     def __init__(self, raw_node):
         super(UIExternalSource, self).__init__(raw_node)
-        self.node:ExternalSource = raw_node
+        self.node: ExternalSource = raw_node
 
     def createInputWidgets(self, inputsCategory, inGroup=None, pins=True):
         preIndex = inputsCategory.Layout.count()
@@ -44,11 +44,11 @@ class UIExternalSource(UINodeBase):
     def topic_changed(self, *args):
         self.node.update_topic(self.topic_text.text())
 
-class UIExternalSink(UINodeBase):
 
+class UIExternalSink(UINodeBase):
     def __init__(self, raw_node):
         super(UIExternalSink, self).__init__(raw_node)
-        self.node:ExternalSource = raw_node
+        self.node: ExternalSource = raw_node
 
     def createInputWidgets(self, inputsCategory, inGroup=None, pins=True):
         preIndex = inputsCategory.Layout.count()

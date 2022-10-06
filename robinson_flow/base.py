@@ -6,8 +6,8 @@ import pydantic
 import importlib
 import inspect
 
-#TODO build some kind of proxy for robinson components for easy reloading
-class RobinsonWrapperMixin():
+# TODO build some kind of proxy for robinson components for easy reloading
+class RobinsonWrapperMixin:
     input_name = "dataport_input"
     output_name = "dataport_output"
     eventinput_name = "eventport_input"
@@ -25,21 +25,24 @@ class RobinsonWrapperMixin():
         # reload module for hot updates
         module = importlib.import_module(self.cls.__module__)
         importlib.reload(module)
-        self.cls = [c[1] for c in inspect.getmembers(module) if c[0] == self.cls.__name__][0]
+        self.cls = [
+            c[1] for c in inspect.getmembers(module) if c[0] == self.cls.__name__
+        ][0]
 
         try:
-                self.component = self.cls(self.name)
-                self.register_generic_callback()
+            self.component = self.cls(self.name)
+            self.register_generic_callback()
 
-
-                self.component.init()
+            self.component.init()
         except Exception as e:
-                self.logger.error(f"error while setting up component {self.cls}")
-                self.logger.error(e)
-                self.component = None
+            self.logger.error(f"error while setting up component {self.cls}")
+            self.logger.error(e)
+            self.component = None
 
     def generic_output_callback(self, name, *args, **kwargs):
-        self.logger.warn("generic output callback called %s, %s, %s", name, args, kwargs)
+        self.logger.warn(
+            "generic output callback called %s, %s, %s", name, args, kwargs
+        )
 
     def register_generic_callback(self):
         input_ports = self.cl_input_ports(self.component)
@@ -69,25 +72,25 @@ class RobinsonWrapperMixin():
         return [(name, getattr(cl, name)) for name in ports]
 
     def extract_output_name(self, port_name):
-        base_name = port_name[len(self.output_name)+1:]
+        base_name = port_name[len(self.output_name) + 1 :]
         if len(base_name) == 0:
             return "output"
         return base_name
 
     def extract_input_name(self, port_name):
-        base_name = port_name[len(self.input_name)+1:]
+        base_name = port_name[len(self.input_name) + 1 :]
         if len(base_name) == 0:
             return "input"
         return base_name
 
     def extract_eventoutput_name(self, port_name):
-        base_name = port_name[len(self.eventoutput_name)+1:]
+        base_name = port_name[len(self.eventoutput_name) + 1 :]
         if len(base_name) == 0:
             return "eventoutput"
         return base_name
 
     def extract_eventinput_name(self, port_name):
-        base_name = port_name[len(self.eventinput_name)+1:]
+        base_name = port_name[len(self.eventinput_name) + 1 :]
         if len(base_name) == 0:
             return "eventinput"
         return base_name
@@ -96,17 +99,28 @@ class RobinsonWrapperMixin():
         init_parameters = inspect.signature(cls.init).parameters
 
         if init_parameters is not None:
-            return [(name, p.annotation) for (name, p) in init_parameters.items() if name != "self"]
+            return [
+                (name, p.annotation)
+                for (name, p) in init_parameters.items()
+                if name != "self"
+            ]
 
         return []
 
     def extract_config_items(self, cls):
         try:
-            if (isinstance(cls.config, pydantic.BaseModel)):
-                return [(name, cls.config.__fields__[name].type_) for (name, _) in cls.config.__dict__.items()]
+            if isinstance(cls.config, pydantic.BaseModel):
+                return [
+                    (name, cls.config.__fields__[name].type_)
+                    for (name, _) in cls.config.__dict__.items()
+                ]
             else:
                 cfg_parameter = inspect.signature(cls.config).parameters
-                return [(name, p.annotation) for (name, p) in cfg_parameter.items() if name != "self"]
+                return [
+                    (name, p.annotation)
+                    for (name, p) in cfg_parameter.items()
+                    if name != "self"
+                ]
         except Exception as e:
             print("Error in extract_config_item")
             print(e)

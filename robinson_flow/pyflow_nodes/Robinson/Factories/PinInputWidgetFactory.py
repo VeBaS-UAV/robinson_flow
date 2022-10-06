@@ -3,6 +3,7 @@ from PyFlow.Core.Common import DEFAULT_WIDGET_VARIANT
 from PyFlow.UI.Widgets.InputWidgets import InputWidgetSingle
 from Qt import QtCore
 from Qt.QtWidgets import QCheckBox
+
 # from PyFlow.UI.Widgets.InputWidgets import *
 
 
@@ -25,6 +26,10 @@ class DemoInputWidget(InputWidgetSingle):
             self.cb.setCheckState(QtCore.Qt.Unchecked)
 
 
-def getInputWidget(dataType, dataSetter, defaultValue, widgetVariant=DEFAULT_WIDGET_VARIANT, **kwds):
-    if dataType == 'DemoPin':
-        return DemoInputWidget(dataSetCallback=dataSetter, defaultValue=defaultValue, **kwds)
+def getInputWidget(
+    dataType, dataSetter, defaultValue, widgetVariant=DEFAULT_WIDGET_VARIANT, **kwds
+):
+    if dataType == "DemoPin":
+        return DemoInputWidget(
+            dataSetCallback=dataSetter, defaultValue=defaultValue, **kwds
+        )

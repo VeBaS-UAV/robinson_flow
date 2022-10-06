@@ -7,6 +7,7 @@ from Qt import QtGui
 
 class DemoShelfTool(ShelfTool):
     """docstring for DemoShelfTool."""
+
     def __init__(self):
         super(DemoShelfTool, self).__init__()
 

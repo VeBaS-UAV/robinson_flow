@@ -41,7 +41,7 @@ def run(filePath):
     msg.setIcon(QMessageBox.Critical)
 
     if os.path.exists(filePath):
-        with open(filePath, 'r') as f:
+        with open(filePath, "r") as f:
             data = json.load(f)
 
         # Window to display inputs
@@ -51,7 +51,9 @@ def run(filePath):
         prop.setWindowIcon(QtGui.QIcon(":/LogoBpApp.png"))
         # Initalize packages
         try:
-            additional_path = ["/home/matthias/src/robinson/robinson_flow/robinson_flow/pyflow_nodes"]
+            additional_path = [
+                "/home/matthias/src/robinson/robinson_flow/robinson_flow/pyflow_nodes"
+            ]
             INITIALIZE(additionalPackageLocations=additional_path)
             man = GraphManagerSingleton().get()
             man.deserialize(data)
