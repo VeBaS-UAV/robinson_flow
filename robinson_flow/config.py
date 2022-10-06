@@ -20,6 +20,7 @@ _logging_config_done = False
 _additional_config_files = []
 _dynamic_config_files = []
 
+
 def dynaconf_config_files():
     exec_cfg_file = pathlib.Path(main.__file__).with_suffix(".yaml")
     #
@@ -29,7 +30,7 @@ def dynaconf_config_files():
     # cfg_files_names = ["settings.yaml", "settings.environment.yaml", ".secrets.yaml", "logging.yaml"]
 
     # cfg_files =  [str((cfg_dir/f)) for f in cfg_files_names]
-    cfg_files =  []
+    cfg_files = []
 
     cfg_files += _additional_config_files
     cfg_files += _dynamic_config_files
@@ -41,12 +42,15 @@ def dynaconf_config_files():
 
     return cfg_files
 
+
 def add_config(config_file):
     _additional_config_files.append(config_file)
+
 
 def merge_config(config_file):
     _dynamic_config_files.clear()
     _dynamic_config_files.append(config_file)
+
 
 def current():
     global _logging_config_done
@@ -55,7 +59,8 @@ def current():
         environments=True,
         envvar_prefix="ROBINSON_FLOW",
         env_switcher="ROBINSON_FLOW_MODE",
-        settings_files=dynaconf_config_files())
+        settings_files=dynaconf_config_files(),
+    )
 
     dynsetting = Dynaconf(settings_files=_dynamic_config_files)
     print("DynSetting")

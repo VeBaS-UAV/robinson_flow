@@ -1,18 +1,33 @@
-from robinson_flow.pyflow_nodes.Robinson.Nodes.BaseNode import RobinsonProfiler, RobinsonPyFlowBase, RobinsonTicker
-from robinson_flow.pyflow_nodes.Robinson.Nodes.ExternalNodes import ExternalSink, ExternalSource
+from robinson_flow.pyflow_nodes.Robinson.Nodes.BaseNode import (
+    RobinsonProfiler,
+    RobinsonPyFlowBase,
+    RobinsonTicker,
+)
+from robinson_flow.pyflow_nodes.Robinson.Nodes.ExternalNodes import (
+    ExternalSink,
+    ExternalSource,
+)
 from robinson_flow.pyflow_nodes.Robinson.Nodes.Misc import RobinsonQtComponent
 from robinson_flow.pyflow_nodes.Robinson.Nodes.OpenCV import FrameView
 from robinson_flow.pyflow_nodes.Robinson.Nodes.utils import EvalNode, LoggingView
-from robinson_flow.pyflow_nodes.Robinson.UI.UIExternalNode import UIExternalSink, UIExternalSource
+from robinson_flow.pyflow_nodes.Robinson.UI.UIExternalNode import (
+    UIExternalSink,
+    UIExternalSource,
+)
 from PyFlow.UI.Canvas.UINodeBase import UINodeBase
 
-from robinson_flow.pyflow_nodes.Robinson.UI.UIutils import UIEvalView, UIRobinsonProfilerView, UIRobinsonQtView, UIRobinsonTickerView, UIRobinsonView
-
+from robinson_flow.pyflow_nodes.Robinson.UI.UIutils import (
+    UIEvalView,
+    UIRobinsonProfilerView,
+    UIRobinsonQtView,
+    UIRobinsonTickerView,
+    UIRobinsonView,
+)
 
 
 def createUINode(raw_instance):
     # if isinstance(raw_instance, DemoNode):
-        # return UIDemoNode(raw_instance)
+    # return UIDemoNode(raw_instance)
     if isinstance(raw_instance, ExternalSource):
         return UIExternalSource(raw_instance)
     if isinstance(raw_instance, ExternalSink):

@@ -12,8 +12,8 @@ from Qt.QtGui import QImage, QPixmap
 from Qt.QtCore import Qt
 import cv2
 
-class ImageView(Component, RobinsonQtComponent):
 
+class ImageView(Component, RobinsonQtComponent):
     def __init__(self, name: str, fqn_logger=True):
         super().__init__(name, fqn_logger)
 
@@ -25,7 +25,7 @@ class ImageView(Component, RobinsonQtComponent):
     def get_widget(self, parent):
         self.image_label = QLabel()
         self.image_label.setText("waiting for image")
-        self.image_label.resize(30,30)
+        self.image_label.resize(30, 30)
 
         return self.image_label
 
@@ -34,8 +34,12 @@ class ImageView(Component, RobinsonQtComponent):
         rgb_image = cv2.cvtColor(cv_img, cv2.COLOR_BGR2RGB)
         h, w, ch = rgb_image.shape
         bytes_per_line = ch * w
-        convert_to_Qt_format = QImage(rgb_image.data, w, h, bytes_per_line, QImage.Format_RGB888)
-        p = convert_to_Qt_format.scaled(self.image_label.width(), self.image_label.height(), Qt.KeepAspectRatio)
+        convert_to_Qt_format = QImage(
+            rgb_image.data, w, h, bytes_per_line, QImage.Format_RGB888
+        )
+        p = convert_to_Qt_format.scaled(
+            self.image_label.width(), self.image_label.height(), Qt.KeepAspectRatio
+        )
 
         return QPixmap.fromImage(p)
 
@@ -57,16 +61,16 @@ class ImageView(Component, RobinsonQtComponent):
             self.image_label.setPixmap(self.pixmap)
             print(e)
 
+
 class FrameView(ImageView):
 
     pass
 
+
 import numpy as np
 
+
 class OpticalFlowDense(Component):
-
-
-
     def __init__(self, name: str, fqn_logger=True):
         super().__init__(name, fqn_logger)
 
@@ -76,8 +80,7 @@ class OpticalFlowDense(Component):
         self.frame = None
 
     def dataport_input_image(self, msg):
-        self.frame= msg
-
+        self.frame = msg
 
     def update(self):
         if self.frame is None:
@@ -95,16 +98,16 @@ class OpticalFlowDense(Component):
         flow = cv2.calcOpticalFlowFarneback(prev, next, None, 0.5, 3, 15, 3, 5, 1.2, 0)
         mag, ang = cv2.cartToPolar(flow[..., 0], flow[..., 1])
 
-
-        hsv[..., 0] = ang*180/np.pi/2
+        hsv[..., 0] = ang * 180 / np.pi / 2
         hsv[..., 2] = cv2.normalize(mag, None, 0, 255, cv2.NORM_MINMAX)
         bgr = cv2.cvtColor(hsv, cv2.COLOR_HSV2BGR)
 
         self.dataport_output_image(bgr)
 
+
 class ImageSource(Component):
     class Config(BaseModel):
-        video_file:str = ""
+        video_file: str = ""
 
     config = Config()
 
@@ -145,11 +148,10 @@ class ImageSource(Component):
         if self.img is not None:
             self.dataport_output_frame(self.img)
 
+
 class VideoSource(Component):
-
-
     class Config(BaseModel):
-        video_file:str = ""
+        video_file: str = ""
 
     config = Config()
 
@@ -180,7 +182,6 @@ class VideoSource(Component):
 
     def dataport_input_restart(self, msg):
         self.init()
-
 
     def dataport_input_goto_frame(self, msg):
         if msg < 1:

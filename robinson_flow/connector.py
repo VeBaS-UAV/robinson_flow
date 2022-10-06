@@ -5,8 +5,13 @@ from robinson.messaging.mqtt import MQTTConnection
 from robinson.messaging.mqtt import MQTTConnection
 from pymavlink.dialects.v20.ardupilotmega import MAVLink_message
 from robinson.messaging.mqtt.serializer import Image, JsonTransform, NoTransform
+
 # from vebas.taskplanner.types import Seedling, SeedlingsList
-from robinson.messaging.mavlink import MavlinkConnection, get_mavlink_msg_args, get_mavlink_msg_class
+from robinson.messaging.mavlink import (
+    MavlinkConnection,
+    get_mavlink_msg_args,
+    get_mavlink_msg_class,
+)
 
 from robinson_flow.logger import getLogger
 import copy
@@ -14,13 +19,14 @@ from robinson.components import InstanceFilter, ComponentRunner, Composite
 
 import importlib
 
-class EnvironmentConnector():
 
+class EnvironmentConnector:
     def output_port(self, topic):
         raise NotImplementedError()
 
     def input_port(self, topic):
         raise NotImplementedError()
+
 
 class MQTTConnector(EnvironmentConnector, Composite):
     def __init__(self, server, ns=""):
@@ -52,8 +58,8 @@ class MQTTConnector(EnvironmentConnector, Composite):
         mqtt_port = self.mqtt.mqtt_input(fqn_topic)
         return mqtt_port
 
-class MavlinkConnector(EnvironmentConnector, Composite):
 
+class MavlinkConnector(EnvironmentConnector, Composite):
     def __init__(self, uri, ns="") -> None:
         Composite.__init__(self, "MavlinkConnector")
         self.mavlink = MavlinkConnection("mavlink")
@@ -71,9 +77,11 @@ class MavlinkConnector(EnvironmentConnector, Composite):
         self.mavlink.dataport_output.connect(mavlink_filter)
         return mavlink_filter
 
-class TopicRegistryItem():
 
-    def __init__(self, protocol, topic_pattern, msg_type, transformer, *args, **kwargs) -> None:
+class TopicRegistryItem:
+    def __init__(
+        self, protocol, topic_pattern, msg_type, transformer, *args, **kwargs
+    ) -> None:
         self.protocol = protocol
         self.topic_pattern = topic_pattern
         self.topic = None
@@ -89,33 +97,33 @@ class TopicRegistryItem():
         self.topic = self.topic_pattern.format(*args, **kwargs)
 
 
-class TopicRegistry():
+class TopicRegistry:
 
     registry = {}
 
-    def __init__(self, default:TopicRegistryItem,  topic_mapping = {}) -> None:
-        self.default_item:TopicRegistryItem = default
+    def __init__(self, default: TopicRegistryItem, topic_mapping={}) -> None:
+        self.default_item: TopicRegistryItem = default
         self.registry = topic_mapping
         self.logger = getLogger(self)
 
-
-    def find(self, key:str) -> TopicRegistryItem:
+    def find(self, key: str) -> TopicRegistryItem:
         import re
 
         for pattern, item in self.registry.items():
-            match = re.fullmatch(pattern,key)
+            match = re.fullmatch(pattern, key)
 
             if match:
                 new_instance = copy.copy(item)
-                new_instance.update_topic(*match.groups(),**match.groupdict())
+                new_instance.update_topic(*match.groups(), **match.groupdict())
 
                 return new_instance
 
         new_instance = copy.copy(self.default_item)
         new_instance.update_topic(key)
-        self.logger.warn(f"Using default port for {key} resulting in topic {new_instance.topic}")
+        self.logger.warn(
+            f"Using default port for {key} resulting in topic {new_instance.topic}"
+        )
         return new_instance
-
 
     def is_valid_topic(self, topic):
         return True if topic is not None and len(topic) > 0 else False
@@ -129,9 +137,10 @@ class ExternalConnectionHandler(Composite):
     def instance():
         if ExternalConnectionHandler._instance is None:
             import robinson_flow.config
+
             settings = robinson_flow.config.current()
 
-            ns = ''
+            ns = ""
             if "namespace" in settings:
                 ns = settings.namespace
             if "ns" in settings:
@@ -141,7 +150,9 @@ class ExternalConnectionHandler(Composite):
             if "NS" in settings:
                 ns = settings.ns
 
-            ExternalConnectionHandler._instance = ExternalConnectionHandler(settings.environment, ns=ns)
+            ExternalConnectionHandler._instance = ExternalConnectionHandler(
+                settings.environment, ns=ns
+            )
 
         return ExternalConnectionHandler._instance
 
@@ -155,7 +166,7 @@ class ExternalConnectionHandler(Composite):
 
         for name, desc in self.config.connectors.items():
             try:
-                desc = {**desc} # create a copy
+                desc = {**desc}  # create a copy
                 if len(ns) > 0:
                     desc["ns"] = ns
                 dparts = desc["class"].split(".")
@@ -171,9 +182,7 @@ class ExternalConnectionHandler(Composite):
 
         self.connectors["default"] = self.connectors["mqtt"]
 
-
         self.registry = {}
-
 
         for name, desc in self.config.connections.items():
             try:
@@ -189,7 +198,9 @@ class ExternalConnectionHandler(Composite):
                 else:
                     transform_args = None
 
-                tri = TopicRegistryItem(connector, topic, msgtype, transform, transform_args)
+                tri = TopicRegistryItem(
+                    connector, topic, msgtype, transform, transform_args
+                )
                 self.registry[name] = tri
 
             except Exception as e:
@@ -198,7 +209,6 @@ class ExternalConnectionHandler(Composite):
 
         default_item = TopicRegistryItem("mqtt", "NOT_DEFINED_{0}", dict, JsonTransform)
         self.topic_registry = TopicRegistry(default_item, self.registry)
-
 
         # self.runner = ComponentRunner("external_connection_runner", self.connectors.values(), cycle_rate=10)
         # self.runner.start()
@@ -238,11 +248,15 @@ class ExternalConnectionHandler(Composite):
             self.ensure_connector_init(reg_item.protocol)
 
             connector = self.connectors[reg_item.protocol]
-            self.logger.debug(f"using protocol {reg_item.protocol} for topic {reg_item.topic}")
+            self.logger.debug(
+                f"using protocol {reg_item.protocol} for topic {reg_item.topic}"
+            )
         else:
             self.ensure_connector_init("default")
             connector = self.connectors["default"]
-            self.logger.warn(f"could not find procotol connector for {reg_item.protocol}, using default {connector}")
+            self.logger.warn(
+                f"could not find procotol connector for {reg_item.protocol}, using default {connector}"
+            )
 
         transformer = reg_item.create()
         connector.output_port(reg_item.topic).connect(transformer)
@@ -257,11 +271,15 @@ class ExternalConnectionHandler(Composite):
         if reg_item.protocol in self.connectors:
             self.ensure_connector_init(reg_item.protocol)
             connector = self.connectors[reg_item.protocol]
-            self.logger.debug(f"using protocol {reg_item.protocol} for topic {reg_item.topic}")
+            self.logger.debug(
+                f"using protocol {reg_item.protocol} for topic {reg_item.topic}"
+            )
         else:
             self.ensure_connector_init("default")
             connector = self.connectors["default"]
-            self.logger.warn(f"could not find procotol connector for {reg_item.protocol}, using default {connector}")
+            self.logger.warn(
+                f"could not find procotol connector for {reg_item.protocol}, using default {connector}"
+            )
 
         transformer = reg_item.create()
         transformer.connect(connector.input_port(reg_item.topic))

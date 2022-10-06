@@ -10,16 +10,21 @@ from io import StringIO
 from mako.lookup import TemplateLookup
 import pathlib
 import inspect
+
 # import toml as serializer
 # import yaml as serializer
 import yaml
 from pprint import pprint
 import robinson_flow.config
 
-from robinson_flow.pyflow_nodes.Robinson.Exporters.parser_classes import CompositeDefinition
+from robinson_flow.pyflow_nodes.Robinson.Exporters.parser_classes import (
+    CompositeDefinition,
+)
+
 
 def pyname(name):
-    return name.replace("-","_").replace("/","_")
+    return name.replace("-", "_").replace("/", "_")
+
 
 class RobinsonExporter(IDataExporter):
     """docstring for DemoExporter."""
@@ -61,21 +66,22 @@ class RobinsonExporter(IDataExporter):
             python_filename = f"{instance._currentFileName}.py"
             pf = pathlib.Path(python_filename)
 
-            name = pf.name[:pf.name.rfind('.')]
+            name = pf.name[: pf.name.rfind(".")]
             base = CompositeDefinition(name, data)
 
             this_folder = pathlib.Path(inspect.getfile(RobinsonExporter)).parent
             template_folder = this_folder / "templates"
 
-            mylookup = TemplateLookup(directories=[template_folder], imports=[f"{pyname_filter}"])
+            mylookup = TemplateLookup(
+                directories=[template_folder], imports=[f"{pyname_filter}"]
+            )
             tmp = mylookup.get_template("main.py.tpl")
 
             buf = StringIO()
             buf.write(tmp.render(base=base))
 
-            with open(python_filename,"w") as fh:
+            with open(python_filename, "w") as fh:
                 fh.write(buf.getvalue())
-
 
             node_configs = {}
 
@@ -87,7 +93,7 @@ class RobinsonExporter(IDataExporter):
                         continue
 
                     # if isinstance(node, RobinsonQtComponent):
-                        # cfg["qt_component"] = True
+                    # cfg["qt_component"] = True
 
                     if len(cfg) > 0:
                         node_configs[node.name()] = cfg
@@ -110,7 +116,7 @@ class RobinsonExporter(IDataExporter):
 
             # project_config["environment"]= settings.as_dict()["ENVIRONMENT"]
             project_config["environment"] = dict()
-            project_env_config["environment"] = dict(dynaconf_merge=True,connectors={})
+            project_env_config["environment"] = dict(dynaconf_merge=True, connectors={})
             project_local_config["dynaconfig_merge"] = True
 
             envsettings = settings.environment
@@ -126,32 +132,41 @@ class RobinsonExporter(IDataExporter):
 
                     project_config["environment"][group_key] = group
                 except Exception as e:
-                    print(f"Could not export group {group_key} with value {group_config}")
+                    print(
+                        f"Could not export group {group_key} with value {group_config}"
+                    )
 
-            project_env_config["environment"]["connectors"] = project_config["environment"]["connectors"]
+            project_env_config["environment"]["connectors"] = project_config[
+                "environment"
+            ]["connectors"]
             del project_config["environment"]["connectors"]
 
             project_config["components"] = node_configs
 
             yaml_str = yaml.safe_dump(dict(default=project_config), sort_keys=False)
-            yaml_env_str = yaml.safe_dump(dict(default=project_env_config), sort_keys=False)
-            yaml_local_str = yaml.safe_dump(dict(default=project_local_config), sort_keys=False)
+            yaml_env_str = yaml.safe_dump(
+                dict(default=project_env_config), sort_keys=False
+            )
+            yaml_local_str = yaml.safe_dump(
+                dict(default=project_local_config), sort_keys=False
+            )
 
             cfg_buffer.write(tmpl_config.render(component_config=yaml_str))
             cfg_env_buffer.write(tmpl_env_config.render(component_config=yaml_env_str))
-            cfg_local_buffer.write(tmpl_local_config.render(component_config=yaml_local_str))
+            cfg_local_buffer.write(
+                tmpl_local_config.render(component_config=yaml_local_str)
+            )
 
             cfg_filename = f"{instance._currentFileName}.yaml"
-            with open(cfg_filename,"w") as fh:
+            with open(cfg_filename, "w") as fh:
                 fh.write(cfg_buffer.getvalue())
             cfg_env_filename = f"{instance._currentFileName}.env.yaml"
-            with open(cfg_env_filename,"w") as fh:
+            with open(cfg_env_filename, "w") as fh:
                 fh.write(cfg_env_buffer.getvalue())
 
             cfg_local_filename = f"{instance._currentFileName}.local.yaml"
-            with open(cfg_local_filename,"w") as fh:
+            with open(cfg_local_filename, "w") as fh:
                 fh.write(cfg_local_buffer.getvalue())
-
 
         except Exception as e:
             print("Error while exporting graph")

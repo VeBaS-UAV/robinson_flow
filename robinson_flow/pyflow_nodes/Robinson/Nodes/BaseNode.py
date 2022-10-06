@@ -15,6 +15,7 @@ from robinson_flow.logger import getNodeLogger
 
 from robinson_flow.base import RobinsonWrapperMixin
 
+
 class RobinsonTicker(NodeBase):
 
     _packageName = "Robinson"
@@ -23,7 +24,7 @@ class RobinsonTicker(NodeBase):
         super().__init__(name, uid)
         self.logger = getNodeLogger(self)
         # self.inExec = self.createInputPin(DEFAULT_IN_EXEC_NAME, 'ExecPin', None, self.compute)
-        self.outExec = self.createOutputPin(DEFAULT_OUT_EXEC_NAME, 'ExecPin')
+        self.outExec = self.createOutputPin(DEFAULT_OUT_EXEC_NAME, "ExecPin")
         self.outTick = self.createOutputPin("tick", "AnyPin")
 
         self.thread = None
@@ -57,7 +58,7 @@ class RobinsonTicker(NodeBase):
         self.dt_exec = 0
 
     def step_rate(self, rate):
-        self.dt_exec = 1.0/rate
+        self.dt_exec = 1.0 / rate
 
     def stop(self):
         self.running = False
@@ -94,7 +95,7 @@ class RobinsonTicker(NodeBase):
         self.last_exec = time.time()
 
     def serialize(self):
-        data =  super().serialize()
+        data = super().serialize()
 
         rob = {}
         rob["dt_exec"] = self.dt_exec
@@ -110,22 +111,23 @@ class RobinsonTicker(NodeBase):
         if "robinson_ticker" in jsonTemplate:
             rob = jsonTemplate["robinson_ticker"]
             if "dt_exec" in rob:
-                    try:
-                        self.dt_exec = rob["dt_exec"]
-                    except Exception as e:
-                        self.logger.error(f"Could not set config for {self.name}")
-                        self.logger.error(e)
+                try:
+                    self.dt_exec = rob["dt_exec"]
+                except Exception as e:
+                    self.logger.error(f"Could not set config for {self.name}")
+                    self.logger.error(e)
             if "running" in rob:
-                    try:
-                        self.running = rob["running"]
-                    except Exception as e:
-                        self.logger.error(f"Could not set config for {self.name}")
-                        self.logger.error(e)
+                try:
+                    self.running = rob["running"]
+                except Exception as e:
+                    self.logger.error(f"Could not set config for {self.name}")
+                    self.logger.error(e)
         self.last_exec = time.time()
 
     @staticmethod
     def category():
         return "utils"
+
 
 class RobinsonProfiler(NodeBase):
 
@@ -135,7 +137,7 @@ class RobinsonProfiler(NodeBase):
         super().__init__(name, uid)
         self.logger = getNodeLogger(self)
         # self.inExec = self.createInputPin(DEFAULT_IN_EXEC_NAME, 'ExecPin', None, self.compute)
-        self.outExec = self.createOutputPin(DEFAULT_OUT_EXEC_NAME, 'ExecPin')
+        self.outExec = self.createOutputPin(DEFAULT_OUT_EXEC_NAME, "ExecPin")
 
         self.thread = None
         self.running = False
@@ -174,6 +176,7 @@ class RobinsonProfiler(NodeBase):
     @staticmethod
     def category():
         return "utils"
+
 
 class RobinsonPyFlowBase(NodeBase, RobinsonWrapperMixin):
 
@@ -227,8 +230,10 @@ class RobinsonPyFlowBase(NodeBase, RobinsonWrapperMixin):
         inp.setClean()
 
     def create_ports(self):
-        self.inExec = self.createInputPin(DEFAULT_IN_EXEC_NAME, 'ExecPin', None, self.compute)
-        self.outExec = self.createOutputPin(DEFAULT_OUT_EXEC_NAME, 'ExecPin')
+        self.inExec = self.createInputPin(
+            DEFAULT_IN_EXEC_NAME, "ExecPin", None, self.compute
+        )
+        self.outExec = self.createOutputPin(DEFAULT_OUT_EXEC_NAME, "ExecPin")
 
         input_ports = self.cl_input_ports(self.component)
         output_ports = self.cl_output_ports(self.component)
@@ -237,7 +242,7 @@ class RobinsonPyFlowBase(NodeBase, RobinsonWrapperMixin):
         self.output_pins = {}
         for port_name, port_callable in input_ports:
             short_name = self.extract_input_name(port_name)
-            inp = self.createInputPin(short_name, "AnyPin",None)
+            inp = self.createInputPin(short_name, "AnyPin", None)
             inp.enableOptions(PinOptions.AllowAny)
             inp.enableOptions(PinOptions.AllowMultipleConnections)
             # inp.disableOptions(PinOptions.AlwaysPushDirty)
@@ -246,9 +251,10 @@ class RobinsonPyFlowBase(NodeBase, RobinsonWrapperMixin):
             inp.enableOptions(PinOptions.AllowCycleConnection)
             inp.dirty = False
 
-            inp.dataBeenSet.connect(partial(self.forward_pin_data_to_port, port_name), weak=False)
+            inp.dataBeenSet.connect(
+                partial(self.forward_pin_data_to_port, port_name), weak=False
+            )
             self.input_pins[port_name] = inp
-
 
         for port_name, port_callable in output_ports:
             short_name = self.extract_output_name(port_name)
@@ -264,7 +270,7 @@ class RobinsonPyFlowBase(NodeBase, RobinsonWrapperMixin):
 
         for port_name, port_callable in eventinput_ports:
             short_name = self.extract_eventinput_name(port_name)
-            inp = self.createInputPin(short_name, "BoolPin",None)
+            inp = self.createInputPin(short_name, "BoolPin", None)
             # inp.disableOptions(PinOptions.AlwaysPushDirty)
             inp.enableOptions(PinOptions.AllowMultipleConnections)
             inp.dirty = False
@@ -272,9 +278,10 @@ class RobinsonPyFlowBase(NodeBase, RobinsonWrapperMixin):
             inp.enableOptions(PinOptions.AllowCycleConnection)
             inp.disableOptions(PinOptions.UpdateDataOnConnect)
 
-            inp.dataBeenSet.connect(partial(self.forward_pin_data_to_port, port_name), weak=False)
+            inp.dataBeenSet.connect(
+                partial(self.forward_pin_data_to_port, port_name), weak=False
+            )
             self.input_pins[port_name] = inp
-
 
         for port_name, port_callable in eventoutput_ports:
             short_name = self.extract_eventoutput_name(port_name)
@@ -293,7 +300,7 @@ class RobinsonPyFlowBase(NodeBase, RobinsonWrapperMixin):
         try:
             outp = self.output_pins[name]
 
-            if len(args) == 0: # eventport
+            if len(args) == 0:  # eventport
                 outp.setData(True)
             else:
                 v = args[0]
@@ -327,7 +334,7 @@ class RobinsonPyFlowBase(NodeBase, RobinsonWrapperMixin):
         self.outExec.call()
 
     def serialize(self):
-        data =  super().serialize()
+        data = super().serialize()
 
         rob = {}
         rob["input_names"] = list(self.input_pins.keys())
@@ -349,15 +356,14 @@ class RobinsonPyFlowBase(NodeBase, RobinsonWrapperMixin):
         for _, p in self.output_pins.items():
             p.enableOptions(PinOptions.AllowCycleConnection)
 
-
         if "robinson" in jsonTemplate:
             rob = jsonTemplate["robinson"]
             if "config" in rob:
-                    try:
-                        self.component.config_update(**rob["config"])
-                    except Exception as e:
-                        self.logger.error(f"Could not set config for {self.name}")
-                        self.logger.error(e)
+                try:
+                    self.component.config_update(**rob["config"])
+                except Exception as e:
+                    self.logger.error(f"Could not set config for {self.name}")
+                    self.logger.error(e)
 
         self.component.init()
         self.is_initialized = True
@@ -365,8 +371,8 @@ class RobinsonPyFlowBase(NodeBase, RobinsonWrapperMixin):
     @staticmethod
     def pinTypeHints():
         helper = NodePinsSuggestionsHelper()
-        helper.addInputDataType('BoolPin')
-        helper.addOutputDataType('BoolPin')
+        helper.addInputDataType("BoolPin")
+        helper.addOutputDataType("BoolPin")
         helper.addInputStruct(StructureType.Single)
         helper.addOutputStruct(StructureType.Single)
         return helper
@@ -382,4 +388,3 @@ class RobinsonPyFlowBase(NodeBase, RobinsonWrapperMixin):
     @staticmethod
     def description():
         return "Description in rst format."
-

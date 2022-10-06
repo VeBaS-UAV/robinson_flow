@@ -1,6 +1,6 @@
 # Mamoge flow
 
-# 2. Contributing
+# 2. Contribute
 
 The `settings.json` file for `vscode` is included in the repository for a minimum of common configuration rules. When using `vscode` this means that there are specific local configuration options that have to be adopted, since the GitHub pipeline will fail otherwise.
 

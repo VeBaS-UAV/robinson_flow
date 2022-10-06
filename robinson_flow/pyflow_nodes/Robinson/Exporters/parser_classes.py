@@ -20,11 +20,10 @@ import importlib
 
 
 class CDir(BaseModel):
-    from_node:Any = None
-    from_idx:Any = None
-    to_node:Any = None
-    to_idx:Any = None
-
+    from_node: Any = None
+    from_idx: Any = None
+    to_node: Any = None
+    to_idx: Any = None
 
     def from_name(self):
         try:
@@ -59,14 +58,12 @@ class CDir(BaseModel):
             print(traceback.format_exc())
             return str(self.to_idx)
 
-
     def __repr__(self):
         # ipdb.set_trace()
         return f"Connection({self.from_name()}.{self.from_port()} -> {self.to_name()}.{self.to_port()})"
 
 
-class PortDefinition():
-
+class PortDefinition:
     def __init__(self, name, data):
         self.name = name
         self.data = data
@@ -74,19 +71,18 @@ class PortDefinition():
     def __repr__(self):
         return f"<Port  {self.name}>"
 
-class InputPortDefinition(PortDefinition):
 
+class InputPortDefinition(PortDefinition):
     def __repr__(self):
         return f"<InputPort  {self.name}>"
 
-class OutputPortDefinition(PortDefinition):
 
+class OutputPortDefinition(PortDefinition):
     def __repr__(self):
         return f"<OutputPort  {self.name}>"
 
 
-class NodeDefinition():
-
+class NodeDefinition:
     def __init__(self, name, data) -> None:
         self._name = name
         self.data = data
@@ -128,40 +124,40 @@ class NodeDefinition():
     def _nodes(self):
         if "nodes" in self.data:
             nodes = self.data["nodes"]
-            nodes = {n["uuid"]:NodeDefinition(n['name'],n) for n in nodes}
+            nodes = {n["uuid"]: NodeDefinition(n["name"], n) for n in nodes}
             return nodes
         return {}
 
     def robinson_nodes(self):
         nodes = [n for n in self._nodes().values() if n.is_robinson()]
-        nodes = {n["uuid"]:NodeDefinition(n['name'],n) for n in nodes}
+        nodes = {n["uuid"]: NodeDefinition(n["name"], n) for n in nodes}
         return nodes
 
     def robinson_external_sources(self):
         nodes = [n for n in self._nodes().values() if n.is_external_source()]
-        nodes = {n["uuid"]:ExternalSourceDefinition(n['name'],n) for n in nodes}
+        nodes = {n["uuid"]: ExternalSourceDefinition(n["name"], n) for n in nodes}
         return nodes
 
     def robinson_external_sinks(self):
         nodes = [n for n in self._nodes().values() if n.is_external_sink()]
-        nodes = {n["uuid"]:ExternalSinkDefinition(n['name'],n) for n in nodes}
+        nodes = {n["uuid"]: ExternalSinkDefinition(n["name"], n) for n in nodes}
         return nodes
 
     def graph_outputs(self):
         nodes = [n for n in self._nodes().values() if n.is_graph_output()]
         # ipdb.set_trace()
-        nodes = {n["uuid"]:GraphOutputDefinition(n['name'],self,n) for n in nodes}
+        nodes = {n["uuid"]: GraphOutputDefinition(n["name"], self, n) for n in nodes}
         return nodes
 
     def graph_inputs(self):
         nodes = [n for n in self._nodes().values() if n.is_graph_input()]
         # ipdb.set_trace()
-        nodes = {n["uuid"]:GraphInputDefinition(n['name'],self,n) for n in nodes}
+        nodes = {n["uuid"]: GraphInputDefinition(n["name"], self, n) for n in nodes}
         return nodes
 
     def compound_nodes(self):
         compounds = [n for n in self._nodes().values() if n.is_compound()]
-        compounds = {n["uuid"]:CompositeDefinition(n["name"], n) for n in compounds}
+        compounds = {n["uuid"]: CompositeDefinition(n["name"], n) for n in compounds}
         return compounds
 
     def compound_nodes_recursive(self):
@@ -187,18 +183,25 @@ class NodeDefinition():
 
         compounds = self.compound_nodes()
 
-        nodes = {**nodes, **external_sources, **external_sinks, **graph_inputs, **graph_outputs, **compounds}
+        nodes = {
+            **nodes,
+            **external_sources,
+            **external_sinks,
+            **graph_inputs,
+            **graph_outputs,
+            **compounds,
+        }
 
         return nodes
 
-    def nodes_recursive(self, filter=lambda m:True):
+    def nodes_recursive(self, filter=lambda m: True):
         nodes = self.nodes()
 
         for c in nodes.values():
             childs = c.nodes()
             nodes = {**nodes, **childs}
 
-        return {k:v for k,v in nodes.items() if filter(v)}
+        return {k: v for k, v in nodes.items() if filter(v)}
 
     def config(self):
         if "robinson" in self.data:
@@ -243,7 +246,12 @@ class NodeDefinition():
         return self.robinson_def()["class"]
 
     def input_portname_by_index(self, idx):
-        check_ports = ["{0}", "dataport_input_{0}", "dataport_{0}", "eventport_input_{0}"]
+        check_ports = [
+            "{0}",
+            "dataport_input_{0}",
+            "dataport_{0}",
+            "eventport_input_{0}",
+        ]
 
         for cp in check_ports:
             try:
@@ -256,7 +264,12 @@ class NodeDefinition():
 
     def output_portname_by_index(self, idx):
 
-        check_ports = ["{0}", "dataport_output_{0}", "dataport_{0}", "eventport_output_{0}"]
+        check_ports = [
+            "{0}",
+            "dataport_output_{0}",
+            "dataport_{0}",
+            "eventport_output_{0}",
+        ]
 
         for cp in check_ports:
             try:
@@ -270,8 +283,8 @@ class NodeDefinition():
     def __repr__(self) -> str:
         return f"<Node {self.name()}>"
 
-class ExternalSourceDefinition(NodeDefinition):
 
+class ExternalSourceDefinition(NodeDefinition):
     def topic(self):
         return self.data["topic"]
 
@@ -288,7 +301,6 @@ class ExternalSourceDefinition(NodeDefinition):
 
 
 class ExternalSinkDefinition(NodeDefinition):
-
     def topic(self):
         return self.data["topic"]
 
@@ -303,9 +315,8 @@ class ExternalSinkDefinition(NodeDefinition):
     def name(self):
         return "mqtt"
 
+
 class GraphInputDefinition(NodeDefinition):
-
-
     def __init__(self, name, compound, data) -> None:
         self._name = name
         self.compound = compound
@@ -327,8 +338,8 @@ class GraphInputDefinition(NodeDefinition):
         # return self.compound.name()
         return super().name()
 
-class GraphOutputDefinition(NodeDefinition):
 
+class GraphOutputDefinition(NodeDefinition):
     def __init__(self, name, compound, data) -> None:
         self._name = name
         self.compound = compound
@@ -355,7 +366,6 @@ class GraphOutputDefinition(NodeDefinition):
 
 
 class CompositeDefinition(NodeDefinition):
-
     def __init__(self, name, data):
         self._name = name
         self.data = data
@@ -371,11 +381,11 @@ class CompositeDefinition(NodeDefinition):
         # ipdb.set_trace()
         if "graphData" in self.data:
             nodes = self.data["graphData"]["nodes"]
-            nodes = {n["uuid"]:NodeDefinition(n['name'],n) for n in nodes}
+            nodes = {n["uuid"]: NodeDefinition(n["name"], n) for n in nodes}
             return nodes
         if "nodes" in self.data:
             nodes = self.data["nodes"]
-            nodes = {n["uuid"]:NodeDefinition(n['name'],n) for n in nodes}
+            nodes = {n["uuid"]: NodeDefinition(n["name"], n) for n in nodes}
             return nodes
 
     def module(self):
@@ -393,7 +403,7 @@ class CompositeDefinition(NodeDefinition):
             if c is None:
                 continue
 
-            if len(c)>0:
+            if len(c) > 0:
                 cfg[node.name()] = c
 
         return cfg
@@ -404,7 +414,7 @@ class CompositeDefinition(NodeDefinition):
         if len(r) > 0:
             return r[0]
 
-        return f'UNKNOWN_{idx}'
+        return f"UNKNOWN_{idx}"
 
     def output_portname_by_index(self, idx):
         r = [n["name"] for n in self.data["outputs"] if n["pinIndex"] == idx]
@@ -412,15 +422,14 @@ class CompositeDefinition(NodeDefinition):
         if len(r) > 0:
             return r[0]
 
-        return f'UNKNOWN_{idx}'
-
+        return f"UNKNOWN_{idx}"
 
     def import_modules(self):
 
         import_modules = {}
         nodes = self.nodes()
 
-        for uuid,n in nodes.items():
+        for uuid, n in nodes.items():
             component_name = n["name"]
 
             try:
@@ -442,7 +451,6 @@ class CompositeDefinition(NodeDefinition):
                     #     continue
                     import_modules[component_name] = module, classname
 
-
                 if n.is_compound():
                     # print("Compound Node", n["name"])
                     pass
@@ -459,7 +467,7 @@ class CompositeDefinition(NodeDefinition):
         nodes = self.nodes()
 
         connections = []
-        for uuid,n in nodes.items():
+        for uuid, n in nodes.items():
             out = n.outputs()
 
             for o in out:
@@ -478,14 +486,21 @@ class CompositeDefinition(NodeDefinition):
                         # from_name = n["name"]
                         # from_port = rob["output_names"][from_idx - 2]
                         to_uuid = link["rhsNodeUid"]
-                        to_idx = link['inPinId']
+                        to_idx = link["inPinId"]
                         # try:
-                        to_node = nodes[to_uuid]# if to_uuid in nodes else uuid
+                        to_node = nodes[to_uuid]  # if to_uuid in nodes else uuid
                         # print("to_node", to_node)
                         #
                         if from_node.is_external() or to_node.is_external():
                             continue
-                        connections.append(CDir(from_node=from_node, from_idx=from_idx, to_node=to_node, to_idx=to_idx))
+                        connections.append(
+                            CDir(
+                                from_node=from_node,
+                                from_idx=from_idx,
+                                to_node=to_node,
+                                to_idx=to_idx,
+                            )
+                        )
                     except Exception as e:
                         print(f"Could not connect {n} to {to_uuid}")
                         print(e)
@@ -497,7 +512,7 @@ class CompositeDefinition(NodeDefinition):
         nodes = self.nodes()
 
         connections = []
-        for uuid,n in nodes.items():
+        for uuid, n in nodes.items():
             out = n.outputs()
 
             for o in out:
@@ -513,17 +528,25 @@ class CompositeDefinition(NodeDefinition):
                         # from_name = n["name"]
                         # from_port = rob["output_names"][from_idx - 2]
                         to_uuid = link["rhsNodeUid"]
-                        to_idx = link['inPinId']
+                        to_idx = link["inPinId"]
                         # try:
-                        to_node = nodes[to_uuid]# if to_uuid in nodes else uuid
+                        to_node = nodes[to_uuid]  # if to_uuid in nodes else uuid
                         # print("to_node", to_node)
                         #
-                        if from_node.is_external() == False and to_node.is_external() == False:
+                        if (
+                            from_node.is_external() == False
+                            and to_node.is_external() == False
+                        ):
                             continue
-                        connections.append(CDir(from_node=from_node, from_idx=from_idx, to_node=to_node, to_idx=to_idx))
+                        connections.append(
+                            CDir(
+                                from_node=from_node,
+                                from_idx=from_idx,
+                                to_node=to_node,
+                                to_idx=to_idx,
+                            )
+                        )
                     except Exception as e:
                         print(f"Could not connect {n} to {to_uuid}")
                         print(e)
         return connections
-
-

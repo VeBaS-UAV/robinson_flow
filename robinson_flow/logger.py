@@ -2,6 +2,7 @@
 
 import logging
 
+
 def getLogger(cl, name=None, short=True):
     if short:
         fullname = type(cl).__name__
@@ -10,6 +11,7 @@ def getLogger(cl, name=None, short=True):
     if name:
         fullname += f".{name}"
     return logging.getLogger(fullname)
+
 
 def getNodeLogger(node):
     return logging.getLogger(node.name)
