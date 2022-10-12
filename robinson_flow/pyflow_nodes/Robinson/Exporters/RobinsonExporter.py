@@ -143,7 +143,9 @@ class RobinsonExporter(IDataExporter):
                     )
 
             try:
-                project_env_config["environment"]["connectors"] = project_config["environment"]["connectors"]
+                project_env_config["environment"]["connectors"] = project_config[
+                    "environment"
+                ]["connectors"]
                 del project_config["environment"]["connectors"]
             except Exception as e:
                 logger.exception("Could not copy environment.connectors")
@@ -171,18 +173,13 @@ class RobinsonExporter(IDataExporter):
             cfg_env_filename = f"{instance._currentFileName}.env.yaml"
             with open(cfg_env_filename, "w") as fh:
                 fh.write(cfg_env_buffer.getvalue())
-=======
-            logger.debug(f"Writing config file {cfg_filename}")
-            with open(cfg_filename,"w") as fh:
-                fh.write(cfg_buffer.getvalue())
 
             export_env_file = False
             if export_env_file:
                 cfg_env_filename = f"{instance._currentFileName}.env.yaml"
                 logger.debug(f"Writing config file {cfg_filename}")
-                with open(cfg_env_filename,"w") as fh:
+                with open(cfg_env_filename, "w") as fh:
                     fh.write(cfg_env_buffer.getvalue())
->>>>>>> b6799f8 (config stuff)
 
             # do not overwrite
             # cfg_local_filename = f"{instance._currentFileName}.local.yaml"
