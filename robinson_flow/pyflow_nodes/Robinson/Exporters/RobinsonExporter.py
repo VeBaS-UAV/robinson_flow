@@ -1,3 +1,4 @@
+import logging
 import traceback
 from datetime import datetime
 from typing import OrderedDict
@@ -61,6 +62,9 @@ class RobinsonExporter(IDataExporter):
         pyname_filter = "from robinson_flow.pyflow_nodes.Robinson.Exporters.RobinsonExporter import pyname"
 
         try:
+
+            logger = logging.getLogger(__name__)
+
             data = instance.graphManager.man.serialize()
 
             python_filename = f"{instance._currentFileName}.py"
@@ -110,6 +114,8 @@ class RobinsonExporter(IDataExporter):
             cfg_local_buffer = StringIO()
 
             settings = robinson.config.current()
+
+            pprint(settings.as_dict())
             project_config = dict()
             project_env_config = dict()
             project_local_config = dict()
@@ -120,7 +126,7 @@ class RobinsonExporter(IDataExporter):
             project_local_config["dynaconfig_merge"] = True
 
             envsettings = settings.environment
-            envsettings_env = settings.environment.connectors
+            # envsettings_env = settings.environment.connectors
 
             for group_key in envsettings.keys():
                 group_config = envsettings[group_key]
@@ -136,10 +142,11 @@ class RobinsonExporter(IDataExporter):
                         f"Could not export group {group_key} with value {group_config}"
                     )
 
-            project_env_config["environment"]["connectors"] = project_config[
-                "environment"
-            ]["connectors"]
-            del project_config["environment"]["connectors"]
+            try:
+                project_env_config["environment"]["connectors"] = project_config["environment"]["connectors"]
+                del project_config["environment"]["connectors"]
+            except Exception as e:
+                logger.exception("Could not copy environment.connectors")
 
             project_config["components"] = node_configs
 
@@ -158,11 +165,24 @@ class RobinsonExporter(IDataExporter):
             )
 
             cfg_filename = f"{instance._currentFileName}.yaml"
+
             with open(cfg_filename, "w") as fh:
                 fh.write(cfg_buffer.getvalue())
             cfg_env_filename = f"{instance._currentFileName}.env.yaml"
             with open(cfg_env_filename, "w") as fh:
                 fh.write(cfg_env_buffer.getvalue())
+=======
+            logger.debug(f"Writing config file {cfg_filename}")
+            with open(cfg_filename,"w") as fh:
+                fh.write(cfg_buffer.getvalue())
+
+            export_env_file = False
+            if export_env_file:
+                cfg_env_filename = f"{instance._currentFileName}.env.yaml"
+                logger.debug(f"Writing config file {cfg_filename}")
+                with open(cfg_env_filename,"w") as fh:
+                    fh.write(cfg_env_buffer.getvalue())
+>>>>>>> b6799f8 (config stuff)
 
             # do not overwrite
             # cfg_local_filename = f"{instance._currentFileName}.local.yaml"

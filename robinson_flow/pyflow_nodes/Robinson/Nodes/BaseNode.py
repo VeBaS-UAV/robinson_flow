@@ -342,7 +342,11 @@ class RobinsonPyFlowBase(NodeBase, RobinsonWrapperMixin):
         rob["class"] = self.cls.__name__
         rob["module"] = self.cls.__module__
 
-        rob["config"] = self.component.config_get()
+        try:
+            rob["config"] = self.component.config_get()
+        except:
+            rob["config"] = {}
+            self.logger.error(f"Could not read config for component {self.component}")
 
         data["robinson"] = rob
 

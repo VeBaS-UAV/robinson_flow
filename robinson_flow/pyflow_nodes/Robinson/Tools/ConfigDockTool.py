@@ -78,7 +78,11 @@ class ConfigDockTool(DockTool):
         if issubclass(self.selected_node.__class__, RobinsonPyFlowBase):
             self.selected_component = self.selected_node.component
 
-            cfg_dict = self.selected_component.config_get()
+            cfg_dict = None
+            try:
+                cfg_dict = self.selected_component.config_get()
+            except Exception as e:
+                print(f"Could not get config from component {self.selected_component}")
 
             if cfg_dict is not None:
                 cfg_text = toml.dumps(self.selected_component.config_get())
