@@ -15,7 +15,7 @@ import inspect
 # import yaml as serializer
 import yaml
 from pprint import pprint
-import robinson_flow.config
+import robinson.config
 
 from robinson_flow.pyflow_nodes.Robinson.Exporters.parser_classes import (
     CompositeDefinition,
@@ -109,7 +109,7 @@ class RobinsonExporter(IDataExporter):
             cfg_env_buffer = StringIO()
             cfg_local_buffer = StringIO()
 
-            settings = robinson_flow.config.current()
+            settings = robinson.config.current()
             project_config = dict()
             project_env_config = dict()
             project_local_config = dict()

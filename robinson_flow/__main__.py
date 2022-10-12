@@ -22,7 +22,7 @@ from Qt.QtWidgets import QApplication
 import sys
 from PyFlow.App import PyFlow
 from Qt.QtWidgets import QApplication
-import robinson_flow.config
+import robinson.config
 import inspect
 
 print(inspect.getmro(QApplication))

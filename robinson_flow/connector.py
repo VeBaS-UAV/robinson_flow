@@ -136,9 +136,9 @@ class ExternalConnectionHandler(Composite):
     @staticmethod
     def instance():
         if ExternalConnectionHandler._instance is None:
-            import robinson_flow.config
+            import robinson.config
 
-            settings = robinson_flow.config.current()
+            settings = robinson.config.current()
 
             ns = ""
             if "namespace" in settings:

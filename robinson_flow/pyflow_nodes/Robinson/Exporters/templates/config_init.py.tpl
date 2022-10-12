@@ -1,3 +1,3 @@
-import robinson_flow.config
+import robinson.config
 
-settings = robinson_flow.config.current()
+settings = robinson.config.current()

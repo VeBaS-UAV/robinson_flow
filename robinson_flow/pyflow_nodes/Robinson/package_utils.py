@@ -12,9 +12,9 @@ from robinson_flow.pyflow_nodes.Robinson.Nodes.ExternalNodes import (
 from robinson_flow.pyflow_nodes.Robinson.Nodes.OpenCV import FrameView
 from robinson_flow.pyflow_nodes.Robinson.Nodes.utils import LambdaExpressionComponent
 
-import robinson_flow.config
+import robinson.config
 
-# settings = robinson_flow.config.default_config()
+# settings = robinson.config.default_config()
 
 
 def factory(cls):
@@ -60,7 +60,7 @@ def export_nodes():
 
     component_list.append(LambdaExpressionComponent)
     try:
-        # robinson_packages = robinson_flow.config.current().robinson.modules
+        # robinson_packages = robinson.config.current().robinson.modules
 
         robinson_packages = [
             "vebas.pyflow",
