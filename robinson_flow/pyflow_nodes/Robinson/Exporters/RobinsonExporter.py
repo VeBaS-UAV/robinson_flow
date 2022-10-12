@@ -164,9 +164,10 @@ class RobinsonExporter(IDataExporter):
             with open(cfg_env_filename, "w") as fh:
                 fh.write(cfg_env_buffer.getvalue())
 
-            cfg_local_filename = f"{instance._currentFileName}.local.yaml"
-            with open(cfg_local_filename, "w") as fh:
-                fh.write(cfg_local_buffer.getvalue())
+            # do not overwrite
+            # cfg_local_filename = f"{instance._currentFileName}.local.yaml"
+            # with open(cfg_local_filename,"w") as fh:
+            #     fh.write(cfg_local_buffer.getvalue())
 
         except Exception as e:
             print("Error while exporting graph")

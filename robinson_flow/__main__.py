@@ -2,12 +2,18 @@
 import os
 
 import robinson_flow
+from robinson_flow import config
 
 os.environ["QT_API"] = "PyQt5"  # tells QtPy to use PySide2
 os.environ["MPLBACKEND"] = "Qt5Agg"
 
+import inspect
+import sys
+
+from PyFlow.App import PyFlow
 from PyFlow.Core.Common import SingletonDecorator
 from PyFlow.Core.GraphManager import GraphManager
+from Qt.QtWidgets import QApplication
 
 # os.environ['QT_API'] = 'pyside2'  # tells QtPy to use PySide2
 # os.environ['QT_API'] = 'pyside6'  # tells QtPy to use PySide2
@@ -21,11 +27,13 @@ import inspect
 
 print(inspect.getmro(QApplication))
 print()
-
+import functools
 import pathlib
 import faulthandler
 
 faulthandler.enable()
+
+import robinson.logging
 
 
 class RobinsonGraphManager(GraphManager):
@@ -46,6 +54,21 @@ class RobinsonGraphManagerSingleton(object):
         return self.man
 
 
+def prefix_hook(function, prefunction):
+    def run(*args, **kwargs):
+        prefunction(*args, **kwargs)
+        return function(*args, **kwargs)
+
+    return run
+
+
+def loadFromFileHook_function(*args, **kwargs):
+    cfg_file = pathlib.Path(args[0] + ".yaml")
+    print("Loading file...", cfg_file)
+    config.merge_config(cfg_file)
+    robinson.logging._executable_name = cfg_file.stem
+
+
 def main():
 
     robinson_flow.config.add_config(pathlib.Path(".") / "config/settings.yaml")
@@ -59,6 +82,11 @@ def main():
         software="standalone", graphManager=RobinsonGraphManagerSingleton()
     )
     # instance.loadFromFile(str(pathlib.Path("/home/matthias/src/robinson/robinson_flow/files/mission_tracker.pygraph")))
+
+    instance.loadFromFile = prefix_hook(
+        instance.loadFromFile, loadFromFileHook_function
+    )
+
     try:
         # instance.loadFromFile(str(pathlib.Path("/home/matthias/src/robinson/robinson_flow/files/latest.pygraph")))
         instance.loadFromFile(str(pathlib.Path("latest.pygraph")))

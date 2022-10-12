@@ -1,18 +1,11 @@
 default:
   logging:
     version: 1
-    loggers:
-      "":
-        handlers:
-          - stream_handler
-        level: INFO
-        qualname: python
-      development:
-        handlers:
-          - socket_handler
-        level: INFO
-        propagate: 0
-        qualname: vebas.development.logging
+    root:
+      handlers:
+        - stream_handler
+        # - robinson_handler
+      level: DEBUG
     handlers:
       stream_handler:
         class: logging.StreamHandler
@@ -23,6 +16,11 @@ default:
         formatter: default
         host: '127.0.0.1'
         port: 19996
+      # robinson_handler:
+        # class: robinson.logging.RobinsonLoggingHandler
+        # formater: default
+        # name: robinsonlogger
+        # mqtt_uri: localhost
     formatters:
       default:
         format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
