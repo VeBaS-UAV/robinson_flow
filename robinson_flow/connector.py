@@ -164,6 +164,8 @@ class ExternalConnectionHandler(Composite):
 
         self.connectors = {}
 
+        self.logger.info(f"Creating external connection with namespace: {ns}")
+
         for name, desc in self.config.connectors.items():
             try:
                 desc = {**desc}  # create a copy
