@@ -306,7 +306,7 @@ class LambdaExpressionComponent(InputOutputPortComponent):
         self.msg = msg
 
     def update(self):
-        if self.msg:
+        if self.msg is not None:
 
             try:
                 if self.lambda_func is None:
