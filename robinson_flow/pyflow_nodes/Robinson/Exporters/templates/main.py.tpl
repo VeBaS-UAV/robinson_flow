@@ -2,8 +2,7 @@ from robinson.components import Composite
 from robinson.components import ComponentRunner
 
 from robinson_flow.connector import ExternalConnectionHandler
-from robinson.components import DataPortOutput, DataPort, DataPortInput
-from robinson.components.qt import QtComponentRunner
+from robinson.components import DataPortOutput, DataPort, DataPortInput, ComponentRunner
 
 <%include file="components_import.py.tpl"/> \
 
@@ -17,11 +16,12 @@ class ${base.name().title().replace(".","")|pyname}(Composite):
     def __init__(self, name:str):
         super().__init__(name)
 
-% for name, (module, classname) in base.import_modules().items():
+## % for name, (module, classname) in base.import_modules().items():
+% for name, (module, classname) in base.components().items():
         self.${name.lower()} = ${name}('${name.lower()}')
 % endfor
 
-% for name, (module, classname) in base.import_modules().items():
+% for name, (module, classname) in base.components().items():
         self.add(self.${name.lower()})
 % endfor
 
@@ -39,7 +39,7 @@ class ${base.name().title().replace(".","")|pyname}(Composite):
 % endif
 % endfor
 
-def init_external_connections(self, composite, external):
+def init_external_connections(composite, external):
 % for c in base.connections_extern():
 % if c.from_node.is_external():
     external.external_source("${c.from_node.topic()}").connect(\
@@ -75,14 +75,16 @@ composite.dataport_input_${c.from_port()|pyname})
 </%doc>
 
 if __name__ == "__main__":
-    runner = QtComponentRunner('runner')
+    runner = ComponentRunner('runner')
 
     external = ExternalConnectionHandler.instance()
     composite = ${base.name().title().replace(".","")|pyname}("${base.name().title().replace('.','_')}")
 
+    init_external_connections(composite, external)
+
     runner += external
     runner += composite
 
-    runner.config_update(**settings["components"])
+    composite.config_update(**settings["components"])
 
     runner.run()

@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import json
+from robinson import components
 from robinson.messaging.mqtt import MQTTConnection
 import yaml
 import pickle
@@ -462,9 +463,25 @@ class CompositeDefinition(NodeDefinition):
                 print(e)
         return import_modules
 
+    def components(self, qt=True):
+        import_modules = self.import_modules()
+
+        result = {}
+
+        for name, (module, classname) in import_modules.items():
+            if issubclass(
+                getattr(importlib.import_module(module), classname), RobinsonQtComponent
+            ):
+                continue
+            result[name] = (module, classname)
+
+        return result
+
     def connections(self, include_exec=False):
         # nodes = {u:c for u,c in self.nodes().items() if c.is_external() == False}
         nodes = self.nodes()
+
+        components = self.components()
 
         connections = []
         for uuid, n in nodes.items():
@@ -493,6 +510,14 @@ class CompositeDefinition(NodeDefinition):
                         #
                         if from_node.is_external() or to_node.is_external():
                             continue
+
+                        # check if qt components, skiop if true
+                        if (
+                            from_node._name not in components
+                            or to_node._name not in components
+                        ):
+                            continue
+
                         connections.append(
                             CDir(
                                 from_node=from_node,

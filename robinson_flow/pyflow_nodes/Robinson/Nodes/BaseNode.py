@@ -9,6 +9,8 @@ from functools import partial
 
 import cProfile
 import pstats
+
+from robinson.components.qt import RobinsonQtComponent
 from robinson_flow.connector import ExternalConnectionHandler
 
 from robinson_flow.logger import getNodeLogger
@@ -341,7 +343,7 @@ class RobinsonPyFlowBase(NodeBase, RobinsonWrapperMixin):
         rob["output_names"] = list(self.output_pins.keys())
         rob["class"] = self.cls.__name__
         rob["module"] = self.cls.__module__
-
+        rob["qt_component"] = isinstance(self, RobinsonQtComponent)
         try:
             rob["config"] = self.component.config_get()
         except:

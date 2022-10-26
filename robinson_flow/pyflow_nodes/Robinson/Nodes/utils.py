@@ -298,6 +298,7 @@ class LambdaExpressionComponent(InputOutputPortComponent):
 
     def update_lambda(self):
         try:
+            self.logger.info(f"Init lambdaExpression with {self.config.lambda_code}")
             self.lambda_func = eval(self.config.lambda_code)
         except Exception as e:
             self.logger.warn(f"Could not eval code {self.config.lambda_code}")
