@@ -71,9 +71,10 @@ def loadFromFileHook_function(*args, **kwargs):
 
 def main():
 
-    robinson_flow.config.add_config(pathlib.Path(".") / "config/settings.yaml")
-    robinson_flow.config.add_config(
-        pathlib.Path(".") / "config/settings.environment.yaml"
+    robinson.config.add_config(pathlib.Path(".") / "config/settings.yaml")
+    robinson.config.add_config(pathlib.Path(".") / "config/settings.environment.yaml")
+    robinson.config.add_config(
+        pathlib.Path("/home/matthias/src/vebas/vebas/app/target_based/config.yaml")
     )
 
     app = QApplication(sys.argv)

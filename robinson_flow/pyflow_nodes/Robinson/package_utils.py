@@ -77,6 +77,7 @@ def export_nodes():
             "vebas.tracking.precision_approaching.components",
             "vebas.tracking.target_based",
             "vebas.tracking.gfai",
+            "vebas.tracking.test",
             "robinson_flow.pyflow_nodes.Robinson.Nodes.Misc",
             "robinson_flow.pyflow_nodes.Robinson.Nodes.utils",
             "robinson_flow.pyflow_nodes.Robinson.Nodes.OpenCV",

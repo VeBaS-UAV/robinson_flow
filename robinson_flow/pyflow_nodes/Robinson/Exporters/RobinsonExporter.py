@@ -5,15 +5,14 @@ from typing import OrderedDict
 from PyFlow.UI.UIInterfaces import IDataExporter
 from PyFlow.Core.version import Version
 
-from robinson.components.qt import RobinsonQtComponent
+import black
 
 from io import StringIO
 from mako.lookup import TemplateLookup
 import pathlib
 import inspect
 
-# import toml as serializer
-# import yaml as serializer
+import re
 import yaml
 from pprint import pprint
 import robinson.config
@@ -24,7 +23,11 @@ from robinson_flow.pyflow_nodes.Robinson.Exporters.parser_classes import (
 
 
 def pyname(name):
-    return name.replace("-", "_").replace("/", "_")
+    base_str = name.replace("-", "_").replace("/", "_").replace("__", "_")
+
+    base_str = re.sub("^_", "", base_str)
+
+    return base_str
 
 
 class RobinsonExporter(IDataExporter):
@@ -86,6 +89,19 @@ class RobinsonExporter(IDataExporter):
 
             with open(python_filename, "w") as fh:
                 fh.write(buf.getvalue())
+
+            try:
+                # os.system(f"python -m black {python_filename}")
+                black.format_file_in_place(
+                    pathlib.Path(python_filename),
+                    mode=black.FileMode(line_length=80),
+                    fast=False,
+                    write_back=black.WriteBack.YES,
+                )
+                # black.format_file_in_place(python_filename, fast=False, mode=)
+            except Exception as e:
+                logger.warn("Could not format code with black")
+                logger.warn(e)
 
             node_configs = {}
 

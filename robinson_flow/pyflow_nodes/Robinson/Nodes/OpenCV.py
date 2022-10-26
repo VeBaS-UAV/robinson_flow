@@ -18,6 +18,7 @@ class ImageView(Component, RobinsonQtComponent):
         super().__init__(name, fqn_logger)
 
         self.frame = None
+        self.is_init = False
 
     def dataport_input_frame(self, msg):
         self.frame = msg
@@ -27,10 +28,14 @@ class ImageView(Component, RobinsonQtComponent):
         self.image_label.setText("waiting for image")
         self.image_label.resize(30, 30)
 
+        self.is_init = True
         return self.image_label
 
     def convert_cv_qt(self, cv_img):
         """Convert from an opencv image to QPixmap"""
+        if self.is_init == False:
+            self.get_widget(None)
+
         rgb_image = cv2.cvtColor(cv_img, cv2.COLOR_BGR2RGB)
         h, w, ch = rgb_image.shape
         bytes_per_line = ch * w
