@@ -32,10 +32,10 @@ class ${base.name().title().replace(".","")|pyname}(Composite):
         #defining composite ports
 % for c in base.connections_extern():
 % if c.from_node.is_external():
-        self.dataport_input_${c.to_name().lower()|pyname}_${c.to_port()|pyname} = self.${c.to_name().lower()|pyname}.${c.to_port()|pyname}
+        self.dataport_input_${c.from_port()|pyname} = self.${c.to_name().lower()|pyname}.${c.to_port()|pyname}
 % endif
 % if c.to_node.is_external():
-        self.dataport_output_${c.from_name().lower()|pyname}_${c.from_port()|pyname} = self.${c.from_name().lower()|pyname}.${c.from_port().lower()|pyname}
+        self.dataport_output_${c.to_port()|pyname} = self.${c.from_name().lower()|pyname}.${c.from_port().lower()|pyname}
 % endif
 % endfor
 
@@ -44,13 +44,13 @@ def init_external_connections(self, composite, external):
 % if c.from_node.is_external():
     external.external_source("${c.from_node.topic()}").connect(\
 % else:
-    composite.${c.from_name().lower()|pyname}.${c.from_port()|pyname}.connect(\
+    composite.dataport_output_${c.to_port()|pyname}.connect(\
 % endif
 \
 % if c.to_node.is_external():
 external.external_sink("${c.to_node.topic()}"))
 % else:
-composite.${c.to_name().lower()|pyname}.${c.to_port()|pyname})
+composite.dataport_input_${c.from_port()|pyname})
 % endif
 % endfor
 
