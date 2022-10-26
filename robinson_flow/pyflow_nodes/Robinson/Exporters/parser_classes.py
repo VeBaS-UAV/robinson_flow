@@ -483,7 +483,7 @@ class CompositeDefinition(NodeDefinition):
 
         components = self.components()
 
-        connections = []
+        connections = {}
         for uuid, n in nodes.items():
             out = n.outputs()
 
@@ -518,7 +518,11 @@ class CompositeDefinition(NodeDefinition):
                         ):
                             continue
 
-                        connections.append(
+                        key = (from_node, from_idx)
+
+                        if key not in connections:
+                            connections[key] = []
+                        connections[key].append(
                             CDir(
                                 from_node=from_node,
                                 from_idx=from_idx,
@@ -526,6 +530,14 @@ class CompositeDefinition(NodeDefinition):
                                 to_idx=to_idx,
                             )
                         )
+                        # connections.append(
+                        #     CDir(
+                        #         from_node=from_node,
+                        #         from_idx=from_idx,
+                        #         to_node=to_node,
+                        #         to_idx=to_idx,
+                        #     )
+                        # )
                     except Exception as e:
                         print(f"Could not connect {n} to {to_uuid}")
                         print(e)
@@ -536,7 +548,8 @@ class CompositeDefinition(NodeDefinition):
         # nodes = {u:c for u,c in self.nodes().items() if c.is_external() == False}
         nodes = self.nodes()
 
-        connections = []
+        input_connections = {}
+        output_connections = {}
         for uuid, n in nodes.items():
             out = n.outputs()
 
@@ -563,15 +576,41 @@ class CompositeDefinition(NodeDefinition):
                             and to_node.is_external() == False
                         ):
                             continue
-                        connections.append(
-                            CDir(
-                                from_node=from_node,
-                                from_idx=from_idx,
-                                to_node=to_node,
-                                to_idx=to_idx,
+
+                        if from_node.is_external():
+                            key = (from_node, from_idx)
+
+                            if key not in input_connections:
+                                input_connections[key] = []
+                            input_connections[key].append(
+                                CDir(
+                                    from_node=from_node,
+                                    from_idx=from_idx,
+                                    to_node=to_node,
+                                    to_idx=to_idx,
+                                )
                             )
-                        )
+                        if to_node.is_external():
+                            key = (to_node, to_idx)
+
+                            if key not in output_connections:
+                                output_connections[key] = []
+                            output_connections[key].append(
+                                CDir(
+                                    from_node=from_node,
+                                    from_idx=from_idx,
+                                    to_node=to_node,
+                                    to_idx=to_idx,
+                                )
+                            )
+
                     except Exception as e:
                         print(f"Could not connect {n} to {to_uuid}")
                         print(e)
-        return connections
+        return input_connections, output_connections
+
+    def connections_extern_input(self):
+        return self.connections_extern()[0]
+
+    def connections_extern_output(self):
+        return self.connections_extern()[1]
