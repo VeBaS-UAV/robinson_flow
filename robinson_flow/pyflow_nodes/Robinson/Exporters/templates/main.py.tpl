@@ -64,7 +64,7 @@ composite.dataport_input_${c.from_node.topic().lower()|pyname})
 external.external_sink("${to_tuple[0].topic()}"))
 % endfor
 % endfor
-
+    pass
 
 if __name__ == "__main__":
     runner = ComponentRunner('runner')
