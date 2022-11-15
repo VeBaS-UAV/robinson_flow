@@ -70,7 +70,10 @@ class RobinsonExporter(IDataExporter):
 
             data = instance.graphManager.man.serialize()
 
-            python_filename = f"{instance._currentFileName}.py"
+            base_filename = f"{instance._currentFileName}"
+            base_filename = base_filename[:-8]
+            python_filename = base_filename + ".py"
+
             pf = pathlib.Path(python_filename)
 
             name = pf.name[: pf.name.rfind(".")]
@@ -182,17 +185,17 @@ class RobinsonExporter(IDataExporter):
                 tmpl_local_config.render(component_config=yaml_local_str)
             )
 
-            cfg_filename = f"{instance._currentFileName}.yaml"
+            cfg_filename = f"{base_filename}.yaml"
 
             with open(cfg_filename, "w") as fh:
                 fh.write(cfg_buffer.getvalue())
-            cfg_env_filename = f"{instance._currentFileName}.env.yaml"
+            cfg_env_filename = f"{base_filename}.env.yaml"
             with open(cfg_env_filename, "w") as fh:
                 fh.write(cfg_env_buffer.getvalue())
 
             export_env_file = False
             if export_env_file:
-                cfg_env_filename = f"{instance._currentFileName}.env.yaml"
+                cfg_env_filename = f"{base_filename}.env.yaml"
                 logger.debug(f"Writing config file {cfg_filename}")
                 with open(cfg_env_filename, "w") as fh:
                     fh.write(cfg_env_buffer.getvalue())
