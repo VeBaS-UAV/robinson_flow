@@ -125,28 +125,28 @@ class UIRobinsonTickerView(UINodeBase):
         self.addWidget(self.play100)
 
 
-from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg
-from matplotlib.figure import Figure
+# from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg
+# from matplotlib.figure import Figure
 
 
-class MplCanvas(FigureCanvasQTAgg):
-    def __init__(self, parent=None, width=5, height=4, dpi=100):
-        fig = Figure(figsize=(width, height), dpi=dpi)
-        self.axes = fig.add_subplot(111)
-        super(MplCanvas, self).__init__(fig)
+# class MplCanvas(FigureCanvasQTAgg):
+#     def __init__(self, parent=None, width=5, height=4, dpi=100):
+#         fig = Figure(figsize=(width, height), dpi=dpi)
+#         self.axes = fig.add_subplot(111)
+#         super(MplCanvas, self).__init__(fig)
 
 
-class UIRobinsonPlotView(UINodeBase):
-    #     pinCreated = QtCore.Signal(object)
+# class UIRobinsonPlotView(UINodeBase):
+#     #     pinCreated = QtCore.Signal(object)
 
-    def __init__(self, raw_node):
-        super(UIRobinsonPlotView, self).__init__(raw_node)
-        self.node: PlotView = raw_node
-        self.resizable = True
+#     def __init__(self, raw_node):
+#         super(UIRobinsonPlotView, self).__init__(raw_node)
+#         self.node: PlotView = raw_node
+#         self.resizable = True
 
-        self.sc = MplCanvas()
-        self.sc.axes.plot([0, 1, 2, 3, 4], [10, 1, 20, 3, 40])
-        self.addWidget(self.sc)
+#         self.sc = MplCanvas()
+#         self.sc.axes.plot([0, 1, 2, 3, 4], [10, 1, 20, 3, 40])
+#         self.addWidget(self.sc)
 
 
 class UIRobinsonView(UINodeBase):

@@ -20,15 +20,14 @@ from robinson.components.qt import RobinsonQtComponent
 from robinson_flow.logger import getNodeLogger
 from typing import Dict
 
-import matplotlib
-
-matplotlib.use("Qt5Agg")
+# import matplotlib
+# matplotlib.use("Qt5Agg")
 
 # from PyQt5 import QtCore, QtWidgets
-from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
+# from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 
 # QTAgg
-from matplotlib.figure import Figure
+# from matplotlib.figure import Figure
 
 # import inspect
 # print(inspect.getmro(FigureCanvas))
@@ -192,87 +191,87 @@ class LoggingView(Component, RobinsonQtComponent):
             self.loglines = self.loglines[-50:]
 
 
-class MplCanvas(FigureCanvas):
-    def __init__(self, parent=None, width=5, height=4, dpi=100):
-        fig = Figure(figsize=(width, height), dpi=dpi)
-        self.axes = fig.add_subplot(111)
-        super(MplCanvas, self).__init__(fig)
+# class MplCanvas(FigureCanvas):
+#     def __init__(self, parent=None, width=5, height=4, dpi=100):
+#         fig = Figure(figsize=(width, height), dpi=dpi)
+#         self.axes = fig.add_subplot(111)
+#         super(MplCanvas, self).__init__(fig)
 
 
-class PlottingView(Component, RobinsonQtComponent):
-    class Config(BaseModel):
-        max_samples = 100
+# class PlottingView(Component, RobinsonQtComponent):
+#     class Config(BaseModel):
+#         max_samples = 100
 
-    def __init__(self, name: str, fqn_logger=True):
-        super().__init__(name, fqn_logger)
-        self.logger = getNodeLogger(self)
+#     def __init__(self, name: str, fqn_logger=True):
+#         super().__init__(name, fqn_logger)
+#         self.logger = getNodeLogger(self)
 
-        self.config = PlottingView.Config()
+#         self.config = PlottingView.Config()
 
-        self.channel_1 = []
-        self.channel_2 = []
-        self.channel_3 = []
-        self.dirty = False
+#         self.channel_1 = []
+#         self.channel_2 = []
+#         self.channel_3 = []
+#         self.dirty = False
 
-    def init(self):
-        pass
+#     def init(self):
+#         pass
 
-    def get_widget(self, parent):
+#     def get_widget(self, parent):
 
-        self.widget = QWidget()
-        self.sc = MplCanvas(self, width=5, height=4, dpi=100)
-        self.sc.axes.plot([0, 1, 2, 3, 4], [10, 1, 20, 3, 40])
+#         self.widget = QWidget()
+#         self.sc = MplCanvas(self, width=5, height=4, dpi=100)
+#         self.sc.axes.plot([0, 1, 2, 3, 4], [10, 1, 20, 3, 40])
 
-        self.layout = QVBoxLayout()
+#         self.layout = QVBoxLayout()
 
-        self.layout.addWidget(self.sc)
+#         self.layout.addWidget(self.sc)
 
-        self.widget.setLayout(self.layout)
-        return self.widget
+#         self.widget.setLayout(self.layout)
+#         return self.widget
 
-    def config_update(self, max_samples, **kwargs):
-        self.config.max_samples = max_samples
-        self.reinit = True
+#     def config_update(self, max_samples, **kwargs):
+#         self.config.max_samples = max_samples
+#         self.reinit = True
 
-    def config_keys(self) -> List[str]:
-        return self.config.dict().keys()
+#     def config_keys(self) -> List[str]:
+#         return self.config.dict().keys()
 
-    def config_get(self, key=None) -> Dict[str, Any]:
-        if key is None:
-            return self.config.dict()
-        return self.config.dict()[key]
+#     def config_get(self, key=None) -> Dict[str, Any]:
+#         if key is None:
+#             return self.config.dict()
+#         return self.config.dict()[key]
 
-    def update(self):
+#     def update(self):
 
-        if self.dirty:
-            self.sc.axes.cla()
-            self.sc.axes.plot(self.channel_1, label="channel_1")
-            self.sc.axes.plot(self.channel_2, label="channel_2")
-            self.sc.axes.plot(self.channel_3, label="channel_3")
-            self.sc.axes.legend(loc=3)
-            self.sc.draw()
+#         if self.dirty:
+#             self.sc.axes.cla()
+#             self.sc.axes.plot(self.channel_1, label="channel_1")
+#             self.sc.axes.plot(self.channel_2, label="channel_2")
+#             self.sc.axes.plot(self.channel_3, label="channel_3")
+#             self.sc.axes.legend(loc=3)
+#             self.sc.draw()
 
-        pass
+#         pass
 
-    def dataport_input_channel_1(self, msg):
-        self.channel_1.append(msg)
+#     def dataport_input_channel_1(self, msg):
+#         self.channel_1.append(msg)
 
-        if len(self.channel_1) > self.config.max_samples:
-            self.channel_1 = self.channel_1[-self.config.max_samples :]
+#         if len(self.channel_1) > self.config.max_samples:
+#             self.channel_1 = self.channel_1[-self.config.max_samples :]
 
-        self.dirty = True
+#         self.dirty = True
 
-    def dataport_input_channel_2(self, msg):
-        self.channel_2.append(msg)
-        if len(self.channel_2) > self.config.max_samples:
-            self.channel_2 = self.channel_2[-self.config.max_samples :]
-        self.dirty = True
+#     def dataport_input_channel_2(self, msg):
+#         self.channel_2.append(msg)
+#         if len(self.channel_2) > self.config.max_samples:
+#             self.channel_2 = self.channel_2[-self.config.max_samples :]
+#         self.dirty = True
 
-    def dataport_input_channel_3(self, msg):
-        self.channel_3.append(msg)
-        if len(self.channel_3) > self.config.max_samples:
-            self.channel_3 = self.channel_3[-self.config.max_samples :]
-        self.dirty = True
+#     def dataport_input_channel_3(self, msg):
+#         self.channel_3.append(msg)
+#         if len(self.channel_3) > self.config.max_samples:
+#             self.channel_3 = self.channel_3[-self.config.max_samples :]
+#         self.dirty = True
 
 
 class LambdaExpressionComponent(InputOutputPortComponent):
