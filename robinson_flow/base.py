@@ -151,6 +151,8 @@ class RobinsonWrapperMixin:
                         func(*args[0])
                     elif isinstance(args[0], dict):
                         func(**args[0])
+                    else:
+                        func(args[0])
         except Exception as e:
             self.logger.error(f"Could not call input port {self.cls}.{name}")
             self.logger.error(e)
