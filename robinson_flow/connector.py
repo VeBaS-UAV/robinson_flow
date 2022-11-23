@@ -41,7 +41,7 @@ class MQTTConnector(EnvironmentConnector, Composite):
         if topic[0] == "/":
             return topic[1:]
 
-        if self.namespace is not None:
+        if self.namespace is not None and len(self.namespace) > 0:
             return f"{self.namespace}/{topic}"
 
         return topic
@@ -177,6 +177,9 @@ class ExternalConnectionHandler(Composite):
                 cls = getattr(module, dparts[-1])
 
                 del desc["class"]
+                self.logger.info(
+                    f"Creating connector {name} with class {cls} and config {desc}"
+                )
                 self.connectors[name] = cls, desc
             except Exception as e:
                 self.logger.error(f"Could not parse config for {name} with {desc}")
