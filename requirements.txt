@@ -1,6 +1,11 @@
 bandit
 black==22.8.0
+dynaconf
 flake8
+paho-mqtt
 pre-commit==2.20.0
 pycodestyle
+pydantic
 pydocstyle
+pymavlink
+PySide2
