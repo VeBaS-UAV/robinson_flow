@@ -73,23 +73,19 @@ def main():
 
     robinson.config.add_config(pathlib.Path(".") / "config/settings.yaml")
     robinson.config.add_config(pathlib.Path(".") / "config/settings.environment.yaml")
-    robinson.config.add_config(
-        pathlib.Path("/home/matthias/src/vebas/vebas/app/target_based/config.yaml")
-    )
+    robinson.config.add_config(pathlib.Path(os.environ["ROBINSON_WS"]) / "config.yaml")
 
     app = QApplication(sys.argv)
 
     instance = PyFlow.instance(
         software="standalone", graphManager=RobinsonGraphManagerSingleton()
     )
-    # instance.loadFromFile(str(pathlib.Path("/home/matthias/src/robinson/robinson_flow/files/mission_tracker.pygraph")))
 
     instance.loadFromFile = prefix_hook(
         instance.loadFromFile, loadFromFileHook_function
     )
 
     try:
-        # instance.loadFromFile(str(pathlib.Path("/home/matthias/src/robinson/robinson_flow/files/latest.pygraph")))
         instance.loadFromFile(str(pathlib.Path("latest.pygraph")))
     except Exception as e:
         print(e)
