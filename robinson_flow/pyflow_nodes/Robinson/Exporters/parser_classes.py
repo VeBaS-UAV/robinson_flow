@@ -252,6 +252,7 @@ class NodeDefinition:
             "dataport_input_{0}",
             "dataport_{0}",
             "eventport_input_{0}",
+            "eventport_input",
         ]
 
         for cp in check_ports:
@@ -270,6 +271,7 @@ class NodeDefinition:
             "dataport_output_{0}",
             "dataport_{0}",
             "eventport_output_{0}",
+            "eventport_output",
         ]
 
         for cp in check_ports:
