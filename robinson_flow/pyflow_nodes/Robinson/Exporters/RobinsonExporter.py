@@ -71,7 +71,7 @@ class RobinsonExporter(IDataExporter):
             data = instance.graphManager.man.serialize()
 
             base_filename = f"{instance._currentFileName}"
-            base_filename = base_filename[:-8]
+            # base_filename = base_filename[:-8]
             python_filename = base_filename + ".py"
 
             pf = pathlib.Path(python_filename)
