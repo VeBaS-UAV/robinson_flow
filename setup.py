@@ -1,5 +1,5 @@
 import setuptools
-from distutils.extension import Extension
+
 
 setuptools.setup(
     name="robinson-flow",
@@ -18,5 +18,5 @@ setuptools.setup(
         "Operating System :: OS Independent",
     ],
     packages=setuptools.find_packages(),
-    python_requires=">=3.9",
+    python_requires=">=3.7",
 )
