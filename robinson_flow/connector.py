@@ -223,6 +223,9 @@ class ExternalConnectionHandler(Composite):
     def ensure_connector_init(self, protocol):
         if isinstance(self.connectors[protocol], tuple):
             cls, kw_args = self.connectors[protocol]
+            self.logger.debug(
+                f"Creating instance of {cls} with constructor args {kw_args}"
+            )
             component = cls(**kw_args)
             self.connectors[protocol] = component
             component.init()
