@@ -29,11 +29,11 @@ class EnvironmentConnector:
 
 
 class MQTTConnector(EnvironmentConnector, Composite):
-    def __init__(self, server, ns=""):
+    def __init__(self, server, port=1883, ns=""):
         Composite.__init__(self, "EnvironmentConnector")
         self.logger = getLogger(self)
         self.namespace = ns
-        self.mqtt = MQTTConnection("mqtt", server)
+        self.mqtt = MQTTConnection("mqtt", server, port)
 
         self.add_component(self.mqtt)
 
