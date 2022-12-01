@@ -290,7 +290,7 @@ class LambdaExpressionComponent(InputOutputPortComponent):
         self.config = LambdaExpressionComponent.Config(**kwargs)
         self.update_lambda()
 
-    def config_get(self, key=None) -> dict[str, Any]:
+    def config_get(self, key=None) -> Dict[str, Any]:
         if key is None:
             return self.config.dict()
         return self.config["key"]
