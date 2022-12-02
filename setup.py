@@ -19,4 +19,7 @@ setuptools.setup(
     ],
     packages=setuptools.find_packages(),
     python_requires=">=3.7",
+    entry_points={
+        "console_scripts": ["robinson-flow=robinson_flow.__main__:main"],
+    },
 )
