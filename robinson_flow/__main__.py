@@ -77,6 +77,8 @@ def main():
 
     app = QApplication(sys.argv)
 
+    robinson.config.current()
+
     instance = PyFlow.instance(
         software="standalone", graphManager=RobinsonGraphManagerSingleton()
     )
