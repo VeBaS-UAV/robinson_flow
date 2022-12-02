@@ -114,3 +114,8 @@ You can check if it is working and also initialize the first use by running the 
 pre-commit run --all-files
 ```
 > `All done! ✨ 🍰 ✨`
+
+# License Acknowledgement
+
+The original PyFlow was released unter Apache License 2.0
+https://github.com/wonderworks-software/PyFlow/blob/master/LICENSE
