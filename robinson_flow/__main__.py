@@ -1,39 +1,23 @@
-#!/usr/bin/env python3
+import faulthandler
+import inspect
 import os
+import pathlib
+import sys
+
 
 import robinson_flow
 import robinson.config
-
-os.environ["QT_API"] = "PyQt5"  # tells QtPy to use PySide2
-os.environ["MPLBACKEND"] = "Qt5Agg"
-
-import inspect
-import sys
 
 from PyFlow.App import PyFlow
 from PyFlow.Core.Common import SingletonDecorator
 from PyFlow.Core.GraphManager import GraphManager
 from Qt.QtWidgets import QApplication
 
-# os.environ['QT_API'] = 'pyside2'  # tells QtPy to use PySide2
-# os.environ['QT_API'] = 'pyside6'  # tells QtPy to use PySide2
-# os.environ['QT_API'] = 'pyqt5'  # tells QtPy to use PySide2
-
-import sys
-from PyFlow.App import PyFlow
-from Qt.QtWidgets import QApplication
-import robinson.config
-import inspect
 
 print(inspect.getmro(QApplication))
-print()
-import functools
-import pathlib
-import faulthandler
+
 
 faulthandler.enable()
-
-import robinson.logging
 
 
 class RobinsonGraphManager(GraphManager):
@@ -47,7 +31,7 @@ class RobinsonGraphManagerSingleton(object):
         self.man = RobinsonGraphManager()
 
     def get(self):
-        """Returns graph manager instance
+        """Return graph manager instance.
 
         :rtype: :class:`~PyFlow.Core.GraphManager.GraphManager`
         """
