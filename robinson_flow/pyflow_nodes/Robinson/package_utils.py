@@ -1,6 +1,4 @@
-#!/usr/bin/env python3
-
-from robinson.components import Component, InputOutputPortComponent
+from robinson.components import Component
 from robinson_flow.pyflow_nodes.Robinson.Nodes.BaseNode import (
     RobinsonPyFlowBase,
     RobinsonTicker,
@@ -9,12 +7,9 @@ from robinson_flow.pyflow_nodes.Robinson.Nodes.ExternalNodes import (
     ExternalSink,
     ExternalSource,
 )
-from robinson_flow.pyflow_nodes.Robinson.Nodes.OpenCV import FrameView
 from robinson_flow.pyflow_nodes.Robinson.Nodes.utils import LambdaExpressionComponent
 
 import robinson.config
-
-# settings = robinson.config.default_config()
 
 
 def factory(cls):

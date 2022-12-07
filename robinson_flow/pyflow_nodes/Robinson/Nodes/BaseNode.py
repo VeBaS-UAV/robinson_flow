@@ -1,21 +1,21 @@
-from threading import Thread
-from typing import Callable
-import PyFlow
-from PyFlow.Core import NodeBase
-from PyFlow.Core.NodeBase import NodePinsSuggestionsHelper
-from PyFlow.Core.Common import *
-from PyFlow.Packages.PyFlowBase.Pins.BoolPin import BoolPin
 from functools import partial
-
 import cProfile
 import pstats
+import time
 
-from robinson.components.qt import RobinsonQtComponent
-from robinson_flow.connector import ExternalConnectionHandler
-
-from robinson_flow.logger import getNodeLogger
+from PyFlow.Core import NodeBase
+from PyFlow.Core.Common import *
+from PyFlow.Core.Common import DEFAULT_IN_EXEC_NAME
+from PyFlow.Core.Common import DEFAULT_OUT_EXEC_NAME
+from PyFlow.Core.Common import PinOptions
+from PyFlow.Core.Common import StructureType
+from PyFlow.Core.NodeBase import NodePinsSuggestionsHelper
+from PyFlow.Packages.PyFlowBase.Pins.BoolPin import BoolPin
 
 from robinson_flow.base import RobinsonWrapperMixin
+from robinson_flow.connector import ExternalConnectionHandler
+from robinson_flow.logger import getNodeLogger
+from robinson.components.qt import RobinsonQtComponent
 
 
 class RobinsonTicker(NodeBase):
@@ -42,18 +42,15 @@ class RobinsonTicker(NodeBase):
         self.running = False
 
     def Tick(self, delta):
-
-        if self.running is False:
-            return
-
-        if self.dt_exec == 0:
-            self.step()
-            self.dt_exec = -1
-            self.running = False
-
-        if self.dt_exec > 0:
-            if time.time() - self.last_exec > self.dt_exec:
+        if self.running:
+            if self.dt_exec == 0:
                 self.step()
+                self.dt_exec = -1
+                self.running = False
+
+            if self.dt_exec > 0:
+                if time.time() - self.last_exec > self.dt_exec:
+                    self.step()
 
     def single_step(self):
         self.running = True
@@ -77,8 +74,7 @@ class RobinsonTicker(NodeBase):
         try:
             ExternalConnectionHandler.instance().update()
         except Exception as e:
-            self.logger.error("Could not update externen connections")
-            self.logger.error(e)
+            self.logger.error(f"Could not update externen connections: {e}")
 
         for node in g._nodes.values():
             try:
@@ -87,10 +83,7 @@ class RobinsonTicker(NodeBase):
 
                     c.update()
             except Exception as e:
-                self.logger.error(f"Clould not execute node update {node}")
-                self.logger.error(e)
-                # c.update()
-                print(e)
+                self.logger.error(f"Clould not execute node update {node}: {e}")
 
         self.outTick.setData(True)
         self.outExec.call()
@@ -203,7 +196,7 @@ class RobinsonPyFlowBase(NodeBase, RobinsonWrapperMixin):
         self.is_initialized = False
 
     def forward_pin_data_to_port(self, input_name, inp, *args):
-        if inp.dirty == False:
+        if inp.dirty is False:
             return
 
         if self.skip_first_update:
@@ -346,7 +339,7 @@ class RobinsonPyFlowBase(NodeBase, RobinsonWrapperMixin):
         rob["qt_component"] = isinstance(self, RobinsonQtComponent)
         try:
             rob["config"] = self.component.config_get()
-        except:
+        except Exception:
             rob["config"] = {}
             self.logger.error(f"Could not read config for component {self.component}")
 

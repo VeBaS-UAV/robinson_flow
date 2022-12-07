@@ -58,10 +58,8 @@ class AddHelloComponent(Component):
     def update(self):
         if self.msg is not None:
             msg = self.config.fstring.format(**self.__dict__)
-            # print("dataport_output_hex", hex(id(self)),hex(id(self.dataport_output)))
             self.dataport_output(msg)
             self.msg = None
-            # self.dataport_output(k))
 
     def config_update(self, **kwargs):
         self.config = AddHelloComponent.Config(**{**self.config.dict(), **kwargs})
@@ -81,11 +79,10 @@ class TestEventComponent(Component, RobinsonQtComponent):
 
     def dataport_input_blank(self, msg):
         print("got input", msg)
-        pass
 
     def eventport_input_inputevent(self):
-        self.logger.error(f"received event")
-        self.dataport_output_onevent("Received event")
+        self.logger.error("Received event.")
+        self.dataport_output_onevent("Received event.")
         self.eventport_output_eventforward()
 
     def get_widget(self, parent):

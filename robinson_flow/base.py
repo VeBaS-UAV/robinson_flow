@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 
 from functools import partial
-import inspect
-import pydantic
 import importlib
 import inspect
+
+import pydantic
 
 # TODO build some kind of proxy for robinson components for easy reloading
 class RobinsonWrapperMixin:
@@ -122,8 +122,7 @@ class RobinsonWrapperMixin:
                     if name != "self"
                 ]
         except Exception as e:
-            print("Error in extract_config_item")
-            print(e)
+            self.logger.info(f"Error in extract_config_item: {e}")
             return []
 
     def get_callable_by_portname(self, name):
@@ -136,7 +135,6 @@ class RobinsonWrapperMixin:
         try:
             sig = inspect.signature(func)
             param = sig.parameters
-            # print("sig", sig, param, param.items())
             if len(param.items()) == 0:
                 func()
             if len(param.items()) == 1:
@@ -154,8 +152,7 @@ class RobinsonWrapperMixin:
                     else:
                         func(args[0])
         except Exception as e:
-            self.logger.error(f"Could not call input port {self.cls}.{name}")
-            self.logger.error(e)
+            self.logger.error(f"Could not call input port {self.cls}.{name}: {e}")
 
     def update_init(self, key, value):
         self.logger.info(f"update_init {key}:{value}")
@@ -164,8 +161,7 @@ class RobinsonWrapperMixin:
         try:
             self.component.init(**self.init_args)
         except Exception as e:
-            self.logger.warn(f"Could not init config")
-            self.logger.error(e)
+            self.logger.error(f"Could not init config: {e}")
 
     def update_config(self, key, value):
         self.logger.info(f"update_init {key}:{value}")
@@ -174,5 +170,4 @@ class RobinsonWrapperMixin:
         try:
             self.component.config_update(**self.config_args)
         except Exception as e:
-            self.logger.warn(f"Could not init config")
-            self.logger.error(e)
+            self.logger.error(f"Could not init config: {e}")
