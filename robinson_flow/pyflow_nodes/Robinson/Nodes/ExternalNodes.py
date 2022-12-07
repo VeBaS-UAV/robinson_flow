@@ -1,27 +1,15 @@
-import PyFlow
-from PyFlow.Core import NodeBase
-from PyFlow.Core.NodeBase import NodePinsSuggestionsHelper
-from PyFlow.Core.Common import *
-import pydantic
-from robinson.messaging.mqtt import MQTTConnection
-from robinson_flow.connector import (
-    ExternalConnectionHandler,
-    TopicRegistry,
-    TopicRegistryItem,
-)
-
-from robinson.components import Component, InputOutputPortComponent
-
-from functools import partial
-
 from blinker import Signal
+import pydantic
 
 from PyFlow.Core import NodeBase
-from PyFlow.Core.Common import *
-
+from PyFlow.Core import NodeBase
+from PyFlow.Core.Common import PinOptions
+from PyFlow.Core.NodeBase import NodePinsSuggestionsHelper
 from Qt.QtCore import QObject, Signal
 
+from robinson_flow.connector import ExternalConnectionHandler
 from robinson_flow.logger import getNodeLogger
+from robinson.components import Component, InputOutputPortComponent
 
 
 class ExternalBase(NodeBase):
@@ -161,7 +149,7 @@ class ExternalSink(ExternalBase):
         self.init_ports()
 
     def compute(self, *args, **kwargs):
-        if self.inp.dirty == True and self.output_port is not None:
+        if self.inp.dirty is True and self.output_port is not None:
             self.output_port(self.inp.getData())
 
     @staticmethod
