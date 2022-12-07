@@ -1,21 +1,13 @@
-#!/usr/bin/env python3
-from PyFlow.Core.Common import SingletonDecorator
-from robinson import components
-from robinson.messaging.mqtt import MQTTConnection
-from robinson.messaging.mqtt import MQTTConnection
-from pymavlink.dialects.v20.ardupilotmega import MAVLink_message
-from robinson.messaging.mqtt.serializer import Image, JsonTransform, NoTransform
-
-# from vebas.taskplanner.types import Seedling, SeedlingsList
-from robinson.messaging.mavlink import (
-    MavlinkConnection,
-    get_mavlink_msg_args,
-    get_mavlink_msg_class,
-)
+import copy
 
 from robinson_flow.logger import getLogger
-import copy
-from robinson.components import InstanceFilter, ComponentRunner, Composite
+from robinson.components import Composite
+from robinson.components import InstanceFilter
+from robinson.messaging.mavlink import get_mavlink_msg_class
+from robinson.messaging.mavlink import MavlinkConnection
+from robinson.messaging.mqtt import MQTTConnection
+from robinson.messaging.mqtt import MQTTConnection
+from robinson.messaging.mqtt.serializer import JsonTransform
 
 import importlib
 
@@ -215,11 +207,6 @@ class ExternalConnectionHandler(Composite):
         default_item = TopicRegistryItem("mqtt", "NOT_DEFINED_{0}", dict, JsonTransform)
         self.topic_registry = TopicRegistry(default_item, self.registry)
 
-        # self.runner = ComponentRunner("external_connection_runner", self.connectors.values(), cycle_rate=10)
-        # self.runner.start()
-
-        # [self.add_component(c) for c in self.connectors.values()]
-
     def ensure_connector_init(self, protocol):
         if isinstance(self.connectors[protocol], tuple):
             cls, kw_args = self.connectors[protocol]
@@ -286,7 +273,10 @@ class ExternalConnectionHandler(Composite):
             self.ensure_connector_init("default")
             connector = self.connectors["default"]
             self.logger.warn(
-                f"could not find procotol connector for {reg_item.protocol}, using default {connector}"
+                (
+                    f"could not find procotol connector for {reg_item.protocol}, "
+                    f"using default {connector}"
+                )
             )
 
         transformer = reg_item.create()
