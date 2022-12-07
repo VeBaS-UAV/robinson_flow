@@ -4,7 +4,6 @@ import pstats
 import time
 
 from PyFlow.Core import NodeBase
-from PyFlow.Core.Common import *
 from PyFlow.Core.Common import DEFAULT_IN_EXEC_NAME
 from PyFlow.Core.Common import DEFAULT_OUT_EXEC_NAME
 from PyFlow.Core.Common import PinOptions
@@ -25,7 +24,6 @@ class RobinsonTicker(NodeBase):
     def __init__(self, name, uid=None):
         super().__init__(name, uid)
         self.logger = getNodeLogger(self)
-        # self.inExec = self.createInputPin(DEFAULT_IN_EXEC_NAME, 'ExecPin', None, self.compute)
         self.outExec = self.createOutputPin(DEFAULT_OUT_EXEC_NAME, "ExecPin")
         self.outTick = self.createOutputPin("tick", "AnyPin")
 
@@ -131,7 +129,6 @@ class RobinsonProfiler(NodeBase):
     def __init__(self, name, uid=None):
         super().__init__(name, uid)
         self.logger = getNodeLogger(self)
-        # self.inExec = self.createInputPin(DEFAULT_IN_EXEC_NAME, 'ExecPin', None, self.compute)
         self.outExec = self.createOutputPin(DEFAULT_OUT_EXEC_NAME, "ExecPin")
 
         self.thread = None
@@ -291,7 +288,6 @@ class RobinsonPyFlowBase(NodeBase, RobinsonWrapperMixin):
         self.skip_first_update = True
 
     def generic_output_callback(self, name, *args, **kwargs):
-
         try:
             outp = self.output_pins[name]
 
@@ -322,7 +318,6 @@ class RobinsonPyFlowBase(NodeBase, RobinsonWrapperMixin):
         return "AnyPin"
 
     def compute(self, *args, **kwargs):
-
         if self.component is not None:
             self.component.update()
 
