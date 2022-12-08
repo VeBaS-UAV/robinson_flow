@@ -125,85 +125,24 @@ class RobinsonExporter(IDataExporter):
                     print(e)
 
             tmpl_config = mylookup.get_template("config.yaml.tpl")
-            tmpl_env_config = mylookup.get_template("config.env.yaml.tpl")
-            tmpl_local_config = mylookup.get_template("config.local.yaml.tpl")
 
             cfg_buffer = StringIO()
-            cfg_env_buffer = StringIO()
-            cfg_local_buffer = StringIO()
 
             settings = robinson.config.current()
 
             pprint(settings.as_dict())
             project_config = dict()
-            project_env_config = dict()
-            project_local_config = dict()
-
-            # project_config["environment"]= settings.as_dict()["ENVIRONMENT"]
-            project_config["environment"] = dict()
-            project_env_config["environment"] = dict(dynaconf_merge=True, connectors={})
-            project_local_config["dynaconfig_merge"] = True
-
-            envsettings = settings.environment
-            # envsettings_env = settings.environment.connectors
-
-            for group_key in envsettings.keys():
-                group_config = envsettings[group_key]
-                group = dict()
-
-                try:
-                    for part_key in group_config.keys():
-                        group[part_key] = {**group_config[part_key]}
-
-                    project_config["environment"][group_key] = group
-                except Exception as e:
-                    print(
-                        f"Could not export group {group_key} with value {group_config}"
-                    )
-
-            try:
-                project_env_config["environment"]["connectors"] = project_config[
-                    "environment"
-                ]["connectors"]
-                del project_config["environment"]["connectors"]
-            except Exception as e:
-                logger.exception("Could not copy environment.connectors")
 
             project_config["components"] = node_configs
 
             yaml_str = yaml.safe_dump(dict(default=project_config), sort_keys=False)
-            yaml_env_str = yaml.safe_dump(
-                dict(default=project_env_config), sort_keys=False
-            )
-            yaml_local_str = yaml.safe_dump(
-                dict(default=project_local_config), sort_keys=False
-            )
 
             cfg_buffer.write(tmpl_config.render(component_config=yaml_str))
-            cfg_env_buffer.write(tmpl_env_config.render(component_config=yaml_env_str))
-            cfg_local_buffer.write(
-                tmpl_local_config.render(component_config=yaml_local_str)
-            )
 
             cfg_filename = f"{base_filename}.yaml"
 
             with open(cfg_filename, "w") as fh:
                 fh.write(cfg_buffer.getvalue())
-            cfg_env_filename = f"{base_filename}.env.yaml"
-            with open(cfg_env_filename, "w") as fh:
-                fh.write(cfg_env_buffer.getvalue())
-
-            export_env_file = False
-            if export_env_file:
-                cfg_env_filename = f"{base_filename}.env.yaml"
-                logger.debug(f"Writing config file {cfg_filename}")
-                with open(cfg_env_filename, "w") as fh:
-                    fh.write(cfg_env_buffer.getvalue())
-
-            # do not overwrite
-            # cfg_local_filename = f"{instance._currentFileName}.local.yaml"
-            # with open(cfg_local_filename,"w") as fh:
-            #     fh.write(cfg_local_buffer.getvalue())
 
         except Exception as e:
             print("Error while exporting graph")
