@@ -52,6 +52,9 @@ def loadFromFileHook_function(*args, **kwargs):
     robinson.config.merge_config(cfg_file)
     robinson.logging._executable_name = cfg_file.stem
 
+    with open(".latest.pyflow", "w") as fh:
+        fh.write(args[0])
+
 
 def main():
 
@@ -72,7 +75,10 @@ def main():
     )
 
     try:
-        instance.loadFromFile(str(pathlib.Path("latest.pygraph")))
+        with open(".latest.pyflow", "r") as fh:
+            file = fh.read().replace("\n", "")
+            instance.loadFromFile(str(pathlib.Path(file)))
+
     except Exception as e:
         print(e)
     if instance is not None:
