@@ -181,6 +181,19 @@ class ExternalConnectionHandler(Composite):
 
         self.registry = {}
 
+        # import classes from config
+        imports = self.config.imports
+        for class_name, pkg_name in imports.items():
+            try:
+                module = importlib.import_module(pkg_name)
+                loaded_class = getattr(module, class_name)
+                globals()[loaded_class.__name__] = loaded_class
+            except Exception as e:
+                self.logger.error(
+                    f"Could not load class {class_name} from module {pkg_name}",
+                    exec_info=e,
+                )
+
         for name, desc in self.config.connections.items():
             try:
                 connector = desc["connector"]
