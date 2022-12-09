@@ -41,7 +41,7 @@ class ${base.name().title().replace(".","")|pyname}(Composite):
 % endfor
         # #####
 % for key_tuple, cons in base.connections_extern_output().items():
-        self.dataport_output_${key_tuple[0].topic().lower()|pyname} = DataPortOutput("${key_tuple[0]._name.lower()|pyname}_${from_tuple[1]|pyname}")
+        self.dataport_output_${key_tuple[0].topic().lower()|pyname} = DataPortOutput("${key_tuple[0]._name.lower()|pyname}_${key_tuple[1]|pyname}")
 % for c in cons:
         self.${c.from_name().lower()|pyname}.${c.from_port()|pyname} += self.dataport_output_${key_tuple[0].topic().lower()|pyname}
 % endfor
