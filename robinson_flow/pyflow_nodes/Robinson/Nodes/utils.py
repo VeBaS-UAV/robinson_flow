@@ -274,56 +274,6 @@ class LoggingView(Component, RobinsonQtComponent):
 #         self.dirty = True
 
 
-class LambdaExpressionComponent(InputOutputPortComponent):
-    class Config(pydantic.BaseModel):
-        lambda_code: str = "lambda m:m"
-
-    config = Config()
-
-    def __init__(self, name):
-        super().__init__(name)
-        self.msg = None
-
-        self.update_lambda()
-
-    def config_update(self, **kwargs):
-        self.config = LambdaExpressionComponent.Config(**kwargs)
-        self.update_lambda()
-
-    def config_get(self, key=None) -> Dict[str, Any]:
-        if key is None:
-            return self.config.dict()
-        return self.config["key"]
-
-    def update_lambda(self):
-        try:
-            self.logger.info(f"Init lambdaExpression with {self.config.lambda_code}")
-            self.lambda_func = eval(self.config.lambda_code)
-        except Exception as e:
-            self.logger.warn(f"Could not eval code {self.config.lambda_code}")
-
-    def dataport_input(self, msg):
-        self.msg = msg
-
-    def update(self):
-        if self.msg is not None:
-
-            try:
-                if self.lambda_func is None:
-                    self.logger.warn(f"Could not find lambda function")
-                    return
-
-                args = [self.msg]
-                ret = self.lambda_func(*args)
-
-                self.dataport_output(ret)
-            except Exception as e:
-                self.logger.warn("Could not call lambda function")
-                self.logger.error(e)
-
-            self.msg = None
-
-
 class EvalNode(NodeBase, QObject):
 
     _packageName = "Robinson"
