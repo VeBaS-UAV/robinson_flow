@@ -12,7 +12,7 @@ from pydantic import BaseModel
 from typing import Any, List
 import traceback
 import ipdb
-from robinson_flow.connector import ExternalConnectionHandler
+from robinson.connector import ExternalConnectionHandler
 from robinson.components.qt import RobinsonQtComponent
 
 from robinson.messaging.mqtt import MQTTConnection

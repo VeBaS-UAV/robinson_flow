@@ -35,8 +35,9 @@ class RobinsonWrapperMixin:
 
             self.component.init()
         except Exception as e:
-            self.logger.error(f"error while setting up component {self.cls}")
-            self.logger.error(e)
+            self.logger.error(
+                f"error while setting up component {self.cls}", exec_info=e
+            )
             self.component = None
 
     def generic_output_callback(self, name, *args, **kwargs):

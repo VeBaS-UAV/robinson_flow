@@ -29,9 +29,9 @@ default:
     dynaconf_merge: True
     connectors:
         mqtt:
-            class: robinson_flow.connector.MQTTConnector
+            class: robinson.connector.MQTTConnector
         mavlink:
-            class: robinson_flow.connector.MavlinkConnector
+            class: robinson.connector.MavlinkConnector
     connections:
         "/mavlink":
             topic: "/mavlink"

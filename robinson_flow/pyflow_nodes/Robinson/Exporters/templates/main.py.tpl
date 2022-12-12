@@ -1,7 +1,7 @@
 from robinson.components import Composite
 from robinson.components import ComponentRunner
 
-from robinson_flow.connector import ExternalConnectionHandler
+from robinson.connector import ExternalConnectionHandler
 from robinson.components import DataPortOutput, DataPort, DataPortInput, ComponentRunner
 
 <%include file="components_import.py.tpl"/> \

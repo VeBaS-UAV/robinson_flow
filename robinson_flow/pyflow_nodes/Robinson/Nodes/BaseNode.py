@@ -12,7 +12,7 @@ from PyFlow.Core.NodeBase import NodePinsSuggestionsHelper
 from PyFlow.Packages.PyFlowBase.Pins.BoolPin import BoolPin
 
 from robinson_flow.base import RobinsonWrapperMixin
-from robinson_flow.connector import ExternalConnectionHandler
+from robinson.connector import ExternalConnectionHandler
 from robinson_flow.logger import getNodeLogger
 from robinson.components.qt import RobinsonQtComponent
 

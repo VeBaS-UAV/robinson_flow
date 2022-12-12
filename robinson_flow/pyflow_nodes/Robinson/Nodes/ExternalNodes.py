@@ -7,7 +7,7 @@ from PyFlow.Core.Common import PinOptions
 from PyFlow.Core.NodeBase import NodePinsSuggestionsHelper
 from Qt.QtCore import QObject, Signal
 
-from robinson_flow.connector import ExternalConnectionHandler
+from robinson.connector import ExternalConnectionHandler
 from robinson_flow.logger import getNodeLogger
 from robinson.components import Component, InputOutputPortComponent
 
